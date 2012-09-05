@@ -1,7 +1,7 @@
 <?php
 
 class Project{
-	private $HOST_IMG = 'http://media.transmap.com';
+	private $HOST_IMG = '';
 	private $projectMap =  array(
 			'Alexandria'=>"Media10/Alexandria",
 			'Greenburgh'=>'Media10/Greenburgh',
@@ -60,6 +60,8 @@ class Project{
 			throw new Exception("Project name failed to map to project directory.");
 		}
 		
+		//$this->HOST_IMG = 'http://'.$_SERVER['HTTP_HOST'];
+		
 		$this->projectName = $projectName;
 		$this->projectPath = $this->projectMap[$projectName];
 		$this->survey = $survey;
@@ -87,7 +89,7 @@ class Project{
 	}
 	
 	private function getImageResizedUrl($prefix='FL',$percent=25){
-		$temp = "http://projects.transmap.com/surveys/imgsize.php?percent={$percent}&img=".$this->getImageLinkUrl($prefix);
+		$temp = "/images/percent/{$percent}".$this->getImageLinkUrl($prefix);
 		return $temp;
 	}
 	
