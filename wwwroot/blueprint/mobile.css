@@ -1,0 +1,44 @@
+body{background:#FFF;font:large Arial, Helvetica, sans-serif;text-align:left;margin:0;padding:.5em;-webkit-text-size-adjust:200%}
+img,fieldset{border:0}
+a{color:#0000FF}
+#logo{display:none;float:none;width:auto;height:auto;margin:1em auto;background:none}
+#content a{color:#0000FF}
+ul{list-style:none;margin-left:0;padding-left:0}
+ol{margin-left:0;padding-left:0}
+ol li{margin-left:1.5em}
+p{margin-bottom:1em}
+h1,h2,h3,h4,legend{color:#000;padding:0;margin-top:0;font-weight:bold}
+.pageTitle,#sidebar h2{padding-bottom:5px;border-bottom:1px solid #000}
+a{outline:inherit}
+abbr,img{border:none}
+#wrapper{width:auto;text-align:left;margin:auto}
+#sidebar{float:none}
+#content{width:auto;float:none}
+#footer{clear:both}
+#footer *{color:#000}
+#sidebar ul,.pagination,#sidebar .searchForm{margin-bottom:1em}
+#sidebar h2{font-size:120%;color:#000}
+.author{text-transform:capitalize}
+.pagination li{display:inline;margin-right:1em}
+.catDesc{padding-bottom:1em;border-bottom:1px solid #000}
+.post{margin-bottom:1em;border-bottom:1px solid #000}
+.post p,.post li,#commentForm li{line-height:1em}
+.pageTitle{color:#000;font-size:160%;margin-bottom:.5em}
+.pageTitle a{text-decoration:none}
+#content .postTitle a{color:#000;font-size:90%}
+.author,.date{font-size:100%}
+pre, code {font:1em Monaco,"Andale Mono","Lucida Console","Bitstream Vera Sans Mono","Courier New",monospace;line-height:1em}
+fieldset,form{padding:0}
+.required{color:#FF0000;font-weight:bold}
+#commentForm legend{font-size:140%}
+.pageNav{border-top:1px dotted #000;padding:.5em 0 0 0;margin:1em 0}
+.pageNav *,.postmetadata *{display:block}
+.postmetadata a{margin:0;padding:0}
+.postmetadata li{padding-right:.25em;margin:0}
+.postmetadata li + li{border-left:1px solid #000;padding-left:.5em;margin:0}
+.prevlink a{background:none;padding-left:0}
+.nextlink a{background:none;padding-right:0}
+a[target]{background:none;padding-right:0;margin-right:0}
+.skiplink,#logo span{display:block;height:auto;font-size:inherit;overflow:visible;position:inherit;}
+h1,h2,h3,h4,li{margin-bottom:0}
+.postmetadata,#theme,.searchForm label{display:none;visibility:hidden}
