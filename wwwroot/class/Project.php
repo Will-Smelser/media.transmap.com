@@ -31,7 +31,8 @@ class Project{
 			'Milton'=>'/images/Milton',
 			'Escambia'=>'Media11/Escambia',
 			'Kettering'=>'Media11/Kettering',
-			'Hanford'=>'Media11/Hanford'
+			'Hanford'=>'Media11/Hanford',
+			'Conroe'=>'/iamges/conroe'
 	);
 	
 	
