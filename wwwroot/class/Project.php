@@ -32,7 +32,7 @@ class Project{
 			'Escambia'=>'Media11/Escambia',
 			'Kettering'=>'Media11/Kettering',
 			'Hanford'=>'Media11/Hanford',
-			'Conroe'=>'/iamges/conroe'
+			'Conroe'=>'/images/conroe'
 	);
 	
 	
