@@ -48,7 +48,7 @@ if(Login::hasMessage()){
 	<input type="hidden" value="removeProject" name="action" />
 	
 	<input type="submit" value="Delete" />&nbsp;&nbsp;
-	<input type="button" value="View Project" />
+	<input type="button" value="View Project" onclick="openProject()" />
 </form>
 </div>
 
@@ -57,6 +57,8 @@ function openProject(){
 	//get the value of dropdown
 	var project = $('#currentList').val();
 	var url = '/surveys/index.php?Project='+project;
+
+	window.open(url);
 }
 </script>
 
