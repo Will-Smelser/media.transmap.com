@@ -1,4 +1,5 @@
 <?php
+//error_reporting(E_ALL);
 header ("Content-type: image/jpeg");
 /*
 JPEG / PNG Image Resizer
@@ -26,10 +27,10 @@ Filename : imgsize.php
 */
 
 $img = $_GET['img'];
-$percent = $_GET['percent'];
-$constrain = $_GET['constrain'];
-$w = $_GET['w'];
-$h = $_GET['h'];
+$percent = (isset($_GET['percent'])) ? $_GET['percent'] : 25;
+$constrain = (isset($_GET['constrain']) && $_GET['constrain'] === 'true') ? $_GET['constrain'] : false;
+$w = (isset($_GET['w'])) ? $_GET['w'] : null;
+$h = (isset($_GET['h'])) ? $_GET['h'] : null;
 
 // get image size of img
 $x = @getimagesize($img);
@@ -52,7 +53,7 @@ if ($percent > 0) {
 		// autocompute width if only height is set
 		$w = (100 / ($sh / $h)) * .01;
 		$w = @round ($sw * $w);
-	} elseif (isset ($h) AND isset ($w) AND isset ($constrain)) {
+	} elseif (isset ($h) AND isset ($w) AND $constrain) {
 		// get the smaller resulting image dimension if both height
 		// and width are set and $constrain is also set
 		$hx = (100 / ($sw / $w)) * .01;
@@ -71,9 +72,9 @@ if ($percent > 0) {
 	}
 }
 
-$im = @ImageCreateFromJPEG ($img) or // Read JPEG Image
-$im = @ImageCreateFromPNG ($img) or // or PNG Image
-$im = @ImageCreateFromGIF ($img) or // or GIF Image
+$im = imagecreatefromjpeg ($img) or // Read JPEG Image
+$im = imagecreatefrompng ($img) or // or PNG Image
+$im = imagecreatefromgif ($img) or // or GIF Image
 $im = false; // If image is not JPEG, PNG, or GIF
 
 if (!$im) {
