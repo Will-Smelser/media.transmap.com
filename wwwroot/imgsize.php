@@ -1,5 +1,6 @@
 <?php
-//error_reporting(E_ALL);
+
+
 header ("Content-type: image/jpeg");
 /*
 JPEG / PNG Image Resizer
@@ -27,7 +28,6 @@ Filename : imgsize.php
 */
 
 $img = (preg_match('/^http/i',$_GET['img'])) ? $_GET['img'] : $_SERVER['DOCUMENT_ROOT'].$_GET['img'];
-
 
 $percent = (isset($_GET['percent'])) ? $_GET['percent'] : 25;
 $constrain = (isset($_GET['constrain']) && $_GET['constrain'] === 'true') ? $_GET['constrain'] : false;
@@ -74,7 +74,7 @@ if ($percent > 0) {
 	}
 }
 
-$im = imagecreatefromjpeg ($img) or // Read JPEG Image
+$im = ImageCreateFromJPEG ($img) or // Read JPEG Image
 $im = imagecreatefrompng ($img) or // or PNG Image
 $im = imagecreatefromgif ($img) or // or GIF Image
 $im = false; // If image is not JPEG, PNG, or GIF

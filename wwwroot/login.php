@@ -2,6 +2,7 @@
 include 'includes/header.php';
 include 'class/Login.php';
 
+session_start();
 Login::interceptRequests();
 
 if(Login::hasMessage()){

@@ -67,7 +67,9 @@ function handleActions(){
 	
 		if(!$found)
 			if(file_put_contents($file,$_POST['project'].':'.$_POST['pfolder']."\n",FILE_APPEND))
-			Login::setMessage("Successfully added.");
+				Login::setMessage("Successfully added.");
+			else
+				Login::setMessage("Failed to add project.");
 	
 	}elseif(isset($_POST['action']) && $_POST['action'] == 'removeProject'){
 		//check if this alread exists
@@ -86,9 +88,9 @@ function handleActions(){
 			}
 		}
 	
-		if($found)
+		if($found && file_put_contents($file,$output))
 			Login::setMessage("Removed \"{$_POST['project']}\" project.");
-	
-		file_put_contents($file,$output);
+		else
+			Login::setMessage("Failed to remove \"{$_POST['project']}\" project.");
 	}
 }

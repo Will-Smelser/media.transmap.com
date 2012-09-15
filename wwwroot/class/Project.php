@@ -115,8 +115,7 @@ class Project{
 		if(!empty($this->HOST_IMG)){
 			return "{$this->HOST_IMG}{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$this->imageStr}";
 		} else {
-			$temp = $_SERVER['DOCUMENT_ROOT']."/{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$this->imageStr}";
-			
+			$temp = rtrim($_SERVER['DOCUMENT_ROOT'],'/\\')."/{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$this->imageStr}";
 			if(file_exists($temp)){
 				return str_replace($_SERVER['DOCUMENT_ROOT'].'/','',$temp);
 			} else {
