@@ -20,7 +20,7 @@ class Session{
 	/**
 	 * Singleton
 	 */
-	public function &getInstance(){
+	public static function &getInstance(){
 		if(!self::$instance)
 			self::$instance = new Session();
 		
@@ -33,8 +33,20 @@ class Session{
 	 */
 	public function register($obj){
 		$name = get_class($obj);
-		$_SESSION[$name] = null;
+		
+		if(!$this->isRegistered($obj))
+			$_SESSION[$name] = null;
+		
 		$this->registered[$name] = true;
+	}
+	
+	public function isRegistered($obj){
+		$name = get_class($obj);
+		
+		if(isset($_SESSION[$name]))
+			return true;
+		
+		return false;
 	}
 	
 	/**

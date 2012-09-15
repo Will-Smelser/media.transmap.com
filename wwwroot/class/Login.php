@@ -10,10 +10,9 @@ class Login{
 	private static $NAMESPACE = "LOGIN";
 	private static $LOGGED_IN = "LOGGEDIN";
 	private static $MESSAGE = "message";
-	
-	
-	
+			
 	public static function protect(){
+		
 		session_start();
 		
 		if(!$_SESSION[self::$NAMESPACE][self::$LOGGED_IN]){
@@ -24,7 +23,7 @@ class Login{
 	}
 	
 	public static function interceptRequests(){
-		if($_POST['action']=="login"){
+		if(isset($_POST['action']) && $_POST['action']==='login'){
 			if(self::testLogin($_POST['username'],$_POST['password'])){
 				$_SESSION[Login::$NAMESPACE][Login::$LOGGED_IN] = true;
 				self::setMessage('Successfully Logged in.');
@@ -33,6 +32,10 @@ class Login{
 				self::setMessage('Login Failed.');
 			}
 			
+		}elseif((isset($_POST['action']) && $_POST['action']==='logout') || 
+				(isset($_GET['action']) && $_GET['action']==='logout')){
+			self::logout();
+			self::setMessage("Successfully Logged out.");
 		}
 	}
 	
@@ -74,7 +77,7 @@ class Login{
 		return false;
 	}
 	
-	public function logout(){
+	public static function logout(){
 		$_SESSION[self::$NAMESPACE][self::$LOGGED_IN] = false;
 		unset($_SESSION[self::$NAMESPACE]);	
 	}

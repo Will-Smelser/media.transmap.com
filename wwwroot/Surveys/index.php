@@ -1,5 +1,8 @@
 <?php
 require_once '../class/Project.php';
+require_once '../class/Session.php';
+
+$session = Session::getInstance();
 
 
 //definitions
@@ -9,7 +12,7 @@ define('VIEW_DEFAULT','front');
 $Version = (empty($_GET['view'])) ? VIEW_DEFAULT : $_GET['view'];
 
 try{
-	$project = new Project($_GET['Project'], $_GET['Survey'], $_GET['Image']);
+	$project = new Project($_GET['Project'], $_GET['Survey'], $_GET['Image'], $session);
 }catch(Exception $e){
 	echo $e->getMessage();
 	exit;
@@ -54,11 +57,22 @@ try{
 			<br/>
 			<h3>Images x 1</h3>
 			<p class="span-2 last">
-				<a href="<?php echo $project->getNextImageUrl(1) ?>"><img src="images/f.gif" alt="forward" width="120" height="44" border="0" align="left"/></a> 
+				<?php 
+				$img = $project->getNextImageUrl(1);
+				if($project->hasProjectImages($img)){
+				?>
+				<a href="<?php echo $img ?>"><img src="images/f.gif" alt="forward" width="120" height="44" border="0" align="left"/></a>
+				<?php } ?> 
 			</p>
 		
 			<p class="span-2">
+				<?php 
+				$img = $project->getNextImageUrl(-1);
+				
+				if($project->hasProjectImages($img)){
+				?>
 				<a href="<?php echo $project->getNextImageUrl(-1) ?>"><img src="images/b.gif" alt="backward" width="120" height="44" border="0" align="left"/></a>
+				<?php } ?>
 			</p>
 		</div>
 	
@@ -66,10 +80,26 @@ try{
 			<br/>
 			<h3>Images x 5</h3>
 			<p class="span-2">
-				<a href="<?php echo $project->getNextImageUrl(5) ?>"><img src="images/f.gif" alt="backward" width="120" height="44" border="0" align="left"/></a>
+				<?php 
+				$img = $project->getNextImageUrl(5); 
+				
+				if($project->hasProjectImages($img)){
+				?>
+					<a href="<?php echo $img; ?>">
+						<img src="images/f.gif" alt="backward" width="120" height="44" border="0" align="left"/>
+					</a>
+				<?php } ?>
 			</p>
 			<p class="span-2">
-				<a href="<?php echo $project->getNextImageUrl(-5) ?>"><img src="images/b.gif" alt="backward" width="120" height="44" border="0" align="left"/></a>
+				<?php 
+				$img = $project->getNextImageUrl(-5);
+				
+				if($project->hasProjectImages($img)){
+				?>
+					<a href="<?php echo $img ?>">
+						<img src="images/b.gif" alt="backward" width="120" height="44" border="0" align="left"/>
+					</a>
+				<?php } ?>
 			</p>
 		</div>
 	</div>

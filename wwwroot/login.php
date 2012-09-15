@@ -2,17 +2,16 @@
 include 'includes/header.php';
 include 'class/Login.php';
 
-session_start();
-
 Login::interceptRequests();
 
 if(Login::hasMessage()){
 ?>
-<div class="message">
-	<?php echo Login::getMessage(); Login::clearMessage(); ?>
-</div>
+	<div class="message">
+		<?php echo Login::getMessage(); Login::clearMessage(); ?>
+	</div>
 
 <?php } ?>
+
 <div class="container">
 <form action="login.php" method="POST">
 	<label for"username">

@@ -26,7 +26,9 @@ By: Michael John G. Lopez - www.sydel.net
 Filename : imgsize.php
 */
 
-$img = $_GET['img'];
+$img = (preg_match('/^http/i',$_GET['img'])) ? $_GET['img'] : $_SERVER['DOCUMENT_ROOT'].$_GET['img'];
+
+
 $percent = (isset($_GET['percent'])) ? $_GET['percent'] : 25;
 $constrain = (isset($_GET['constrain']) && $_GET['constrain'] === 'true') ? $_GET['constrain'] : false;
 $w = (isset($_GET['w'])) ? $_GET['w'] : null;
