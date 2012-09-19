@@ -2,25 +2,33 @@
 require_once '../class/Project.php';
 require_once '../class/Session.php';
 
-$session = Session::getInstance();
-
+$session = &Session::getInstance();
 
 //definitions
 define('VIEW_DEFAULT','front');
 
-//determine layout
-$Version = (empty($_GET['view'])) ? VIEW_DEFAULT : $_GET['view'];
+//get everything to lowercase
+foreach($_GET as $key=>$val) $_GET[strtolower($key)] = $val;
+
+//get display vars
+$version = (empty($_GET['view']))    ? VIEW_DEFAULT     : $_GET['view'];
+$project = (isset($_GET['project'])) ? $_GET['project'] : null;
+$survey  = (isset($_GET['survey']))  ? $_GET['survey']  : null;
+$image   = (isset($_GET['image']))   ? $_GET['image']   : null;
 
 try{
-	$project = new Project($_GET['Project'], $_GET['Survey'], $_GET['Image'], $session);
+	
+	$project = new Project($project, $survey, $image, $session);
+	
 }catch(Exception $e){
 	echo $e->getMessage();
 	exit;
 }
 
-?>
 
-<?php include '../includes/header.php'; ?>
+include '../includes/header.php'; 
+
+?>
 
 	<div class="container">
 		<div class="span-19 last">
@@ -104,4 +112,4 @@ try{
 		</div>
 	</div>
 
-<?php include "../includes/footer.php" ?>
+<?php include "../includes/footer.php"; ?>

@@ -1,20 +1,29 @@
 <?php
+
+class SessionInfo{}
+
 class Session{
+	
+	
 	
 	private static $SESS_NAME = 'session';
 	private static $MESSAGES = 'messages';
+	private static $CREATED = 'created';
+	
+	private $info;
 	
 	private static $instance;
 	
 	private $registered = array();
 	
+	/**
+	 * Setup the Session Class
+	 */
 	private function __construct(){
 		session_start();
 		
-		$_SESSION[self::$SESS_NAME] = array(
-			self::$MESSAGES	=> array()
-		);
-		
+		$this->info = new SessionInfo();
+		$this->register($this->info);
 	}
 	
 	/**
@@ -34,12 +43,18 @@ class Session{
 	public function register($obj){
 		$name = get_class($obj);
 		
-		if(!$this->isRegistered($obj))
+		if(!$this->isRegistered($obj)){
 			$_SESSION[$name] = null;
-		
-		$this->registered[$name] = true;
+			$this->registered[$name] = true;
+			$this->setNameValue($this->info, $name, array());
+			$this->setChildNameValue($this->info, $name, self::$CREATED, time());
+		}
 	}
 	
+	/**
+	 * Check if the object is already registered
+	 * @param unknown_type $obj
+	 */
 	public function isRegistered($obj){
 		$name = get_class($obj);
 		
@@ -80,6 +95,43 @@ class Session{
 		$session[$name] = $value;
 	}
 	
+	public function setChildNameValue($obj, $parent, $name, $value, &$session=null){
+		if($session === null)
+			$session = &$this->getSession($obj);
+				
+		if(!is_array($session)) return;
+		
+		if(isset($session[$parent])){
+			$session[$parent][$name] = $value;
+			return;
+		} else {
+			foreach($session as $key=>$val){
+				$this->setChildNameValue(null, $parent, $name, $value, $session[$key]);
+			}
+		}
+				
+	}
+	
+	public function getChildValue($obj, $parent, $name, &$session=null){
+		if($session === null)
+			$session = &$this->getSession($obj);
+		
+		if(empty($session) || !is_array($session)) return;
+		
+		//the parent is in this array
+		if(isset($session[$parent])){
+			return (isset($session[$parent][$name])) ? $session[$parent][$name] : null;
+			
+		//gotta look deeper
+		}else{
+			foreach($session as $key=>$val){
+				$result = $this->getChildValue($obj, $parent, $name, $session[$key]);
+				
+				if($result !== null) return $result;
+			}
+		}
+	}
+	
 	/**
 	 * Convienence method to get session value
 	 * @param $obj Object The class object in session
@@ -92,6 +144,16 @@ class Session{
 			return null;
 		
 		return $session[$name]; 
+	}
+	
+	public function getCreatedValue($obj){
+		if(!$this->isRegistered($obj))
+			$this->register($obj);
+		
+		$objname = get_class($obj);
+		$info = &$this->getSession($this->info);
+		
+		return $this->getChildValue(null, $objname, self::$CREATED, $info);
 	}
 	
 	/**
@@ -121,35 +183,6 @@ class Session{
 		}
 	}
 	
-	private function &getMessages(){
-		$session = &$this->getSession($this);
-		return $session[self::$MESSAGES];
-	}
-	
-	public function setMessage($message, $level=0){
-		$messages = &$this->getMessages();
-		$messages[$level] = $message;
-	}
-	
-	public function getMessage($level=0){
-		$messages = &$this->getMessages();
-		if(!isset($messages[$level]))
-			return null;
-		
-		return $messages[$level];
-	}
-	
-	public function removeMessage($level=0){
-		$messages = &$this->getMessages();
-		unset($messages[$level]);
-	}
-	
-	public function removeMessages(){
-		$messages = &$this->getMessages();
-		foreach($messages as $key=>$val){
-			unset($messages[$key]);
-		}
-	}
 	
 	public function clearRegistered(){
 		foreach($this->registered as $key=>$value){

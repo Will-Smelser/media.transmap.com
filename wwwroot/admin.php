@@ -1,14 +1,12 @@
 <?php
 include 'includes/header.php';
 require_once 'class/Login.php';
-include 'includes/admin_funcs.php';
+require_once 'includes/admin_funcs.php';
 
 Login::protect();
 
-
 //see includes/admin_funcs.php
 handleActions();
-
 
 if(Login::hasMessage()){
 	echo '<div class="message">'.Login::getMessage().'</div>';

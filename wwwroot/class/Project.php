@@ -29,10 +29,17 @@ class Project{
 	function Project($projectName, $survey, $image, Session &$session){
 		$this->session = &$session;
 		
-		if(!$session->isRegistered($this)){
+		$propfile = $_SERVER['DOCUMENT_ROOT'].$this->properties;
+		
+		$time = filemtime($propfile);
+		
+		//if no session value, or the file has been altered
+		if(!$session->isRegistered($this) || 
+				!$time ||$session->getCreatedValue($this) < $time
+				){
 			$session->register($this);
 			//build project list
-			$handle = @fopen($_SERVER['DOCUMENT_ROOT'].$this->properties, "r");
+			$handle = @fopen($propfile, "r");
 			while(($buffer = fgets($handle)) !== false){
 				$parts = explode(":",trim($buffer));
 				$this->projectMap[$parts[0]] = '/images'.$parts[1];
