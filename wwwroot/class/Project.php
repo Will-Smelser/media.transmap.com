@@ -10,19 +10,10 @@ class Project{
 
 	//each image is just a number
 	private $imagePos;
-	private $imageStr;
 
 	private $properties = '/Surveys/projects.properties';
 	private $noImage = '/images/default/no-survey-image.jpg';
 	private $surveyImages = '/images';
-
-	private $imageLinkUrlFr;
-	private $imageLinkUrlFl;
-	private $imageLinkUrlBr;
-
-	private $imageUrlFr;
-	private $imageUrlFl;
-	private $imageUrlBr;
 	
 	private $session;
 
@@ -73,15 +64,6 @@ class Project{
 		$this->survey = $survey;
 
 		$this->imagePos = intval($image);
-		$this->imageStr = str_pad(strval($this->imagePos),5,'0',STR_PAD_LEFT).'.jpg';
-
-		$this->imageLinkUrlFl = $this->getImageLinkUrl('FL');
-		$this->imageLinkUrlFr = $this->getImageLinkUrl('RF');
-		$this->imageLinkUrlBr = $this->getImageLinkUrl('BR');
-
-		$this->imageUrlFr = $this->getImageResizedUrl('RF',25);
-		$this->imageUrlFl = $this->getImageResizedUrl('FL',25);
-		$this->imageUrlBr = $this->getImageResizedUrl('BR',18);
 
 	}
 
@@ -94,6 +76,10 @@ class Project{
 			}
 		}
 		return 'failed';
+	}
+	
+	private function getImageFile($imagePos){
+		return str_pad(strval($imagePos),5,'0',STR_PAD_LEFT).'.jpg';
 	}
 	
 	private function findFirstImage($project, $survey){
@@ -116,13 +102,16 @@ class Project{
 		return 'failed';
 	}
 	
-	private function getImageLinkUrl($prefix='FL'){
+	private function getImageLinkUrl($prefix='FL', $offset = 0){
 		$temp = null;
 		
+		$imagePos = $this->imagePos + $offset;
+		$imageStr = $this->getImageFile($imagePos);
+		
 		if(!empty($this->HOST_IMG)){
-			return "{$this->HOST_IMG}{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$this->imageStr}";
+			return "{$this->HOST_IMG}{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$imageStr}";
 		} else {
-			$temp = rtrim($_SERVER['DOCUMENT_ROOT'],'/\\')."/{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$this->imageStr}";
+			$temp = rtrim($_SERVER['DOCUMENT_ROOT'],'/\\')."/{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$imageStr}";
 			if(file_exists($temp)){
 				return str_replace($_SERVER['DOCUMENT_ROOT'].'/','',$temp);
 			} else {
@@ -132,8 +121,8 @@ class Project{
 		
 	}
 
-	private function getImageResizedUrl($prefix='FL',$percent=25){
-		$temp = $this->HOST_IMG."/imgsize.php?percent={$percent}&img=".$this->getImageLinkUrl($prefix);
+	private function getImageResizedUrl($prefix='FL',$percent=25, $offset=0){
+		$temp = $this->HOST_IMG."/imgsize.php?percent={$percent}&img=".$this->getImageLinkUrl($prefix, $offset);
 		return $temp;
 	}
 
@@ -154,27 +143,27 @@ class Project{
 	}
 
 	public function getImageLinkFr(){
-		return $this->imageLinkUrlFr;
+		return $this->getImageLinkUrl('RF');
 	}
 
 	public function getImageLinkFl(){
-		return $this->imageLinkUrlFl;
+		return $this->getImageLinkUrl('FL');
 	}
 
 	public function getImageLinkBr(){
-		return $this->imageLinkUrlBr;
+		return $this->getImageLinkUrl('BR');
 	}
 
 	public function getImageFr(){
-		return $this->imageUrlFr;
+		return $this->getImageResizedUrl('RF',25);
 	}
 
-	public function getImageFl(){
-		return $this->imageUrlFl;
+	public function getImageFl($offset=0, $size=25){
+		return $this->getImageResizedUrl('FL',$size,$offset);
 	}
 
 	public function getImageBr(){
-		return $this->imageUrlBr;
+		return $this->getImageResizedUrl('BR',18);
 	}
 
 	public function getNextImageUrl($offset){
