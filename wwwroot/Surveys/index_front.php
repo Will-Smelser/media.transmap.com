@@ -6,6 +6,7 @@ $session = &Session::getInstance();
 
 //definitions
 define('VIEW_DEFAULT','front');
+define('IMAGE_SIZE','40');
 
 //get everything to lowercase
 foreach($_GET as $key=>$val) $_GET[strtolower($key)] = $val;
@@ -32,6 +33,8 @@ include '../includes/header_front.php';
 <script>
 
 window.onload = function () {
+	
+	var imageSize = <?php echo IMAGE_SIZE; ?>;
 	var image = <?php echo $image; ?>;
 	var project = "<?php echo $project1; ?>";
 	var survey = "<?php echo $survey; ?>";
@@ -42,6 +45,9 @@ window.onload = function () {
 	var width = $('#image-main').width();
 	var height= $('#image-main').height();
 
+	$('#image-container').css('height',height+'px');
+	$('#canvas').css('width',width+'px');
+	
 	var vanish = height/1.75;
 	
 	var inPaper = false;
@@ -104,8 +110,8 @@ window.onload = function () {
 			window.mytest = test;
 			window.myy = y;
 			if(y < test){
-				console.log("y="+y+", temp = "+temp+", steps="+i+", interval="+interval);
-				steps = i;
+				//console.log("y="+y+", temp = "+temp+", steps="+i+", interval="+interval);
+				steps = i+1;
 				break;
 			}
 			//draw some lines showing the breaks
@@ -114,25 +120,76 @@ window.onload = function () {
 			temp+=(interval/Math.pow(f,i));
 		}
 		
-		document.location.href = "/Surveys/index_front.php?"+
-			"Image="+(image+steps)+"&"+
-			"Project="+project+"&"+
-			"Survey="+survey;
-		
+		canvasClick(image+steps);
 	};
+
+	function pad (str, max) {
+		limit = 10;
+		str = str + "";
+		while(str.length < max && str.length < limit)
+			str = "0" + str;
+		
+		return str;
+	}
+
+	var $imageCounter = $('#image-counter');
+	var $imageMain = $('#image-main');
+	var $imageNext = $('#image-next');
+	var $loaderWrap = $('#image-loading');
+	var loadedImages = [];
+	function preloadImage(image){
+		if(typeof loadedImages[image] == "undefined"){
+			//mark as loaded
+			loadedImages[image] = true;
+
+			//load the image
+			var $img = $(document.createElement('img'));
+			$img.attr('src',getImageUrl(image)).attr('id','image-'+image);
+			$loaderWrap.append($img);
+		}
+	}
+
+	function getImageUrl(image){
+		image = pad(image,5);
+		console.log(image);
+		return "/imgsize.php?percent="+imageSize+"&img=/images/"+project+"/"+survey+"/FL"+survey+"/FL_"+image+".jpg";
+	}
+	
+	function canvasClick(img){
+		//document.location.href = getImageUrl(image);
+		image = img;
+		
+		
+		$imageCounter.html(pad(img,5));
+		
+		//transition current image
+		var newImgSrc = $loaderWrap.find('#image-'+img).attr('src');
+		$imageMain.fadeOut(function(){});
+		$imageNext.attr('src',newImgSrc).fadeIn(function(){
+			$imageMain.attr('src',newImgSrc).show();
+			$imageNext.hide();
+		});
+	}
 	
 	var paper = Raphael("canvas", width, height);
     paper.clear();
     
-    $('#canvas svg').css('position','absolute');
+    $('#canvas svg').css('position','absolute').css('z-index','100');
     
     var elipse = paper.ellipse(300,100, 50, 20);
     elipse.attr({stroke:"#FFF", "stroke-width":3, fill:"#efefef", "stroke-opacity":0.5, "fill-opacity":0.5}).hide();
     
 	$("#canvas").hover(mouseOverCanvas,mouseOutCanvas).mousemove(whileOverCanvas).click(clickCanvas);
+
+	//preload some images
+	preloadImage(image);
+	preloadImage(image+1);
+	preloadImage(image+2);
+	preloadImage(image+3);
+	preloadImage(image+4);
+	preloadImage(image+5);
     
 };
-
 //var paper = Raphael("#canvas", 400, 300);
 
 //posx = e.pageX - $(document).scrollLeft() - $('#canvas').offset().left;
@@ -145,14 +202,15 @@ window.onload = function () {
 	<div class="container">
 		<div class="span-19 last">
 			<h1><?php echo $project->getProjectName(); ?> Road Image Viewer</h1>
-			<h3>Survey: <?php echo $project->getSurvey(); ?> - Image: <?php echo $project->getImagePadded(); ?></h3>
+			<h3>Survey: <?php echo $project->getSurvey(); ?> - Image: <span id="image-counter"><?php echo $project->getImagePadded(); ?></span></h3>
 		</div>
 	</div>
 	
 	<div class="container" style="background:#F8F8F8;padding:6px;border-width:1px;border-style:dotted;border-color:black;">
-		<div class="image-container">
-			<div id="canvas" style="margin:0px auto;width:640px;">
-				<img id="image-main" src="<?php echo $project->getImageFl(0,40); ?>" />
+		<div class="image-container" id="image-container">
+			<div id="canvas" style="margin:0px auto;">
+				<img id="image-main" src="<?php echo $project->getImageFl(0,IMAGE_SIZE); ?>" style="position:absolute;" />
+				<img id="image-next" src="<?php echo $project->getImageFl(1,IMAGE_SIZE); ?>" style="position:absolute;display:none;" />
 			</div>
 		</div>
 	</div>
