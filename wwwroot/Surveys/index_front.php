@@ -137,6 +137,7 @@ window.onload = function () {
 	var $imageNext = $('#image-next');
 	var $loaderWrap = $('#image-loading');
 	var loadedImages = [];
+	
 	function preloadImage(image){
 		if(typeof loadedImages[image] == "undefined"){
 			//mark as loaded
@@ -149,6 +150,12 @@ window.onload = function () {
 		}
 	}
 
+	function removeImage(image){
+		if(typeof loadedImages[image] != "undefined"){
+			$loadWrap.find('#image-'+image).remove();
+		}
+	}
+	
 	function getImageUrl(image){
 		image = pad(image,5);
 		console.log(image);
@@ -169,6 +176,16 @@ window.onload = function () {
 			$imageMain.attr('src',newImgSrc).show();
 			$imageNext.hide();
 		});
+
+		//add the next 5 images
+		for(i=0; i<5; i++){
+			preloadImage(img+i);
+		}
+
+		//remove previous images
+		for(i=5; i<10; i++){
+			removeImage(img-i);
+		}
 	}
 	
 	var paper = Raphael("canvas", width, height);
