@@ -106,7 +106,7 @@ window.onload = function () {
 		for(i=0; i<maxSteps; i++){
 			
 			var test = Math.round(temp+(interval/Math.pow(f,i)),0);
-			console.log("test = "+test);
+			//console.log("test = "+test);
 			window.mytest = test;
 			window.myy = y;
 			if(y < test){
@@ -152,13 +152,13 @@ window.onload = function () {
 
 	function removeImage(image){
 		if(typeof loadedImages[image] != "undefined"){
-			$loadWrap.find('#image-'+image).remove();
+			$loaderWrap.find('#image-'+image).remove();
 		}
 	}
 	
 	function getImageUrl(image){
 		image = pad(image,5);
-		console.log(image);
+		
 		return "/imgsize.php?percent="+imageSize+"&img=/images/"+project+"/"+survey+"/FL"+survey+"/FL_"+image+".jpg";
 	}
 	
@@ -178,7 +178,7 @@ window.onload = function () {
 		});
 
 		//add the next 5 images
-		for(i=0; i<5; i++){
+		for(i=0; i<6; i++){
 			preloadImage(img+i);
 		}
 
