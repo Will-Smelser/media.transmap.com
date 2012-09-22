@@ -39,8 +39,8 @@ window.onload = function () {
 	var project = "<?php echo $project1; ?>";
 	var survey = "<?php echo $survey; ?>";
 	
-	var elipseHfactor = .4;
-	var maxSteps = 5;
+	var elipseHfactor = .25;
+	var maxSteps = 8;
 
 	var width = $('#image-main').width();
 	var height= $('#image-main').height();
@@ -69,6 +69,14 @@ window.onload = function () {
 		updateElipse(e);
 	};
 
+	function exponentialDecay(x, goalMax, scaleMax, exponent){
+		return goalMax / Math.pow(scaleMax/(scaleMax-x),exponent);
+	}
+
+	function expoentialGrow(x, goalMax, scaleMax, exponent){
+		return goalMax / Math.pow(scaleMax/x,exponent);
+	}
+	
 	function updateElipse(e){
 		//relative to top left
 		x = e.offsetX;
@@ -81,9 +89,8 @@ window.onload = function () {
 		lineX = (1 / slope) * y;
 		elipseX = Math.round(Math.abs(2 * ((width/2) - 	lineX)),0) * .5;
 
-		//height of elipse
-		percent = y/vanish;
-		elipseY = (y>vanish) ? 0 : Math.round((vanish-y)*elipseHfactor,0);
+		elipseMaxH = 100;
+		elipseY = (y>vanish) ? 0 : exponentialDecay(y, elipseMaxH, vanish, 1.2);
 		
 		elipse.attr({rx:elipseX, ry:elipseY});
 	}
@@ -91,35 +98,10 @@ window.onload = function () {
 	function clickCanvas(e){
 		y = height - e.offsetY;
 		elipseHeight = elipse.attr('ry');
+	
+		steps = Math.ceil(expoentialGrow(y, maxSteps, vanish, 2));
 
-		//calculate the interval
-		f = 1.6;
-		temp = 0;
-		for(i=0; i<maxSteps; i++)
-			temp = temp + 1/(Math.pow(f,i));
-		
-		interval = vanish / temp;
-		
-		//determin which interval we are in
-		steps = maxSteps;
-		temp = 0;
-		for(i=0; i<maxSteps; i++){
-			
-			var test = Math.round(temp+(interval/Math.pow(f,i)),0);
-			//console.log("test = "+test);
-			window.mytest = test;
-			window.myy = y;
-			if(y < test){
-				//console.log("y="+y+", temp = "+temp+", steps="+i+", interval="+interval);
-				steps = i+1;
-				break;
-			}
-			//draw some lines showing the breaks
-			//paper.rect(0,height-test, 300,1);
-			
-			temp+=(interval/Math.pow(f,i));
-		}
-		
+		console.log(steps);
 		canvasClick(image+steps);
 	};
 
@@ -178,13 +160,14 @@ window.onload = function () {
 		});
 
 		//add the next 5 images
-		for(i=0; i<6; i++){
+		for(i=0; i<maxSteps*2; i++){
 			preloadImage(img+i);
 		}
 
 		//remove previous images
-		for(i=5; i<10; i++){
+		for(i=maxSteps; i<maxSteps*2+5; i++){
 			removeImage(img-i);
+			loadedImages.splice(img-i,1);
 		}
 	}
 	
@@ -199,20 +182,11 @@ window.onload = function () {
 	$("#canvas").hover(mouseOverCanvas,mouseOutCanvas).mousemove(whileOverCanvas).click(clickCanvas);
 
 	//preload some images
-	preloadImage(image);
-	preloadImage(image+1);
-	preloadImage(image+2);
-	preloadImage(image+3);
-	preloadImage(image+4);
-	preloadImage(image+5);
+	for(i=0; i<=maxSteps; i++){
+		preloadImage(image+i);
+	}
     
 };
-//var paper = Raphael("#canvas", 400, 300);
-
-//posx = e.pageX - $(document).scrollLeft() - $('#canvas').offset().left;
-//posy = e.pageY - $(document).scrollTop() - $('#canvas').offset().top;
-
-//paper.ellipse(100,100, 50, 20);
 
 </script>
 
