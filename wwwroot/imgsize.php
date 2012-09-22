@@ -1,7 +1,27 @@
 <?php
 
+$img = (preg_match('/^http/i',$_GET['img'])) ? $_GET['img'] : $_SERVER['DOCUMENT_ROOT'].$_GET['img'];
 
-header ("Content-type: image/jpeg");
+session_start();
+
+header("Cache-Control: private, max-age=31556926, pre-check=10800");
+header("Pragma: private");
+header("Expires: " . date('D, d M Y H:i:s',time()+360*60*60*24)); //a little less than 1 day into the future
+header("Content-type: image/jpeg");
+
+$modtime = filemtime($img);
+
+if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])
+		&&
+		(strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) == $modtime)
+	) {
+	// send the last mod time of the file back
+	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $modtime).' GMT', true, 304);
+	exit;
+}
+
+header('Last-Modified: '.gmdate('D, d M Y H:i:s', $modtime).' GMT', true, 200);
+
 /*
 JPEG / PNG Image Resizer
 Parameters (passed via URL):
@@ -26,8 +46,6 @@ Outputs the resulting image in JPEG Format
 By: Michael John G. Lopez - www.sydel.net
 Filename : imgsize.php
 */
-
-$img = (preg_match('/^http/i',$_GET['img'])) ? $_GET['img'] : $_SERVER['DOCUMENT_ROOT'].$_GET['img'];
 
 $percent = (isset($_GET['percent'])) ? $_GET['percent'] : 25;
 $constrain = (isset($_GET['constrain']) && $_GET['constrain'] === 'true') ? $_GET['constrain'] : false;
