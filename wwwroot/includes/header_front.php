@@ -1,4 +1,46 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<?php
+//check if we have cookie set for last direction and image
+if(isset($_COOKIE['camera']) || isset($_COOKIE['last-image'])){
+	$cCamera = isset($_COOKIE['camera']) ? $_COOKIE['camera'] : $_GET['camera'];
+	$cImage = isset($_COOKIE['last-image']) ? $_COOKIE['last-image'] : $_GET['Image'];
+	
+	if($_GET['Image'] !== $cImage){
+		header("Location: ".basename($_SERVER['PHP_SELF']) .
+			 "?Image=$cImage&camera=$cCamera&Survey={$_GET['Survey']}&Project={$_GET['Project']}");
+	}
+}
+
+
+require_once '../class/Project.php';
+require_once '../class/Session.php';
+
+$session = &Session::getInstance();
+
+//definitions
+define('VIEW_DEFAULT','front');
+define('IMAGE_SIZE','40');
+
+//get everything to lowercase
+foreach($_GET as $key=>$val) $_GET[strtolower($key)] = $val;
+
+//get display vars
+$version = (empty($_GET['view']))    ? VIEW_DEFAULT     : $_GET['view'];
+$project1= (isset($_GET['project'])) ? $_GET['project'] : null;
+$survey  = (isset($_GET['survey']))  ? $_GET['survey']  : null;
+$image   = (isset($_GET['image']))   ? $_GET['image']   : null;
+$camera  = (isset($_GET['camera']))  ? $_GET['camera']  : 'FL';
+$imageSz = ($camera === 'BR') ? 25 : 40;
+
+try{
+	
+	$project = new Project($project1, $survey, $image, $session);
+	
+}catch(Exception $e){
+	echo $e->getMessage();
+	exit;
+}
+
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
   
@@ -35,6 +77,28 @@ h3.room { padding:.9em;}
   
   <script src="http://code.jquery.com/jquery-1.8.1.min.js" ></script>
   <script src="/js/raphael-min.js" ></script>
+  <script src="/js/cookie.js" ></script>
+  <script src="/js/viewer.js" ></script>
+  
+  <script>
+  	var camera = 'FL';
+	var imageSize = <?php echo IMAGE_SIZE; ?>;
+	var image = <?php echo $image; ?>;
+	var project = "<?php echo $project1; ?>";
+	var survey = "<?php echo $survey; ?>";
+
+	window.onload = function(){
+	//$(document).ready(function(){ //jquery load doesnt work
+		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",'$image','$project1','$survey','$camera'"; ?>);
+	};
+  </script>
+  
+  
+  
+  
+  
+  
+  
 </head>
 
 <body>

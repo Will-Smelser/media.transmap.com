@@ -154,16 +154,20 @@ class Project{
 		return $this->getImageLinkUrl('BR');
 	}
 
-	public function getImageFr(){
-		return $this->getImageResizedUrl('RF',25);
+	public function getImage($camera='FL', $offset=0, $size){
+		return $this->getImageResizedUrl($camera, $size, $offset);
+	}
+	
+	public function getImageFr($offset=0, $size=25){
+		return $this->getImageResizedUrl('RF',$size,$offset);
 	}
 
 	public function getImageFl($offset=0, $size=25){
 		return $this->getImageResizedUrl('FL',$size,$offset);
 	}
 
-	public function getImageBr(){
-		return $this->getImageResizedUrl('BR',18);
+	public function getImageBr($offset=0, $size=18){
+		return $this->getImageResizedUrl('BR',$size,$offset);
 	}
 
 	public function getNextImageUrl($offset){

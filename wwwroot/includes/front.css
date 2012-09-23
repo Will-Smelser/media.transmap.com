@@ -30,3 +30,11 @@ body{
 #image-main, #canvas{
 	margin:0px auto;
 }
+
+#image-counter{
+	width: 85px;
+	font-size:16px;
+	font-weight:bold;
+	margin:2px;
+	padding:0px;
+}
