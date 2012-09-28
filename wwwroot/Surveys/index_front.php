@@ -16,6 +16,9 @@
 			<div id="canvas" style="margin:0px auto;">
 				<img id="image-main" src="<?php echo $project->getImage($camera, 0, $imageSz); ?>" style="position:absolute;" />
 				<img id="image-next" src="<?php echo $project->getImage($camera, 1, $imageSz); ?>" style="position:absolute;display:none;" />
+				<div id="loading" >
+					<div class="inner"><img src="/images/layout/loading.gif" /><i>Loading ...</i></div>
+				</div>
 			</div>
 		</div>
 	</div>

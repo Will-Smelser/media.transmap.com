@@ -1,52 +1,78 @@
 var Viewer = {
 	
+	//link to the display file
 	baseref : "/Surveys/index_front.php",
+	
+	loading : "/images/layout/loading.gif",
+	
+	//project settings
 	camera : 'FL',
 	image : 0,
 	imageSize : 0,
 	project: '',
 	survey: '',
 		
-	elipseHfactor : .25,
+	//max steps within vanish point
 	maxSteps : 8,
+	
+	//max height of vanish, changes for different cameras
 	vanish : 180,
 	
+	//dims of canvas...overriden onload
 	width  : 600,
 	height : 300,
+	
+	//max/min
+	firstImage : 0,
+	lastImage  : 0,
 
+	//svg objects
 	paper : null,
 	elipse : null,
 	arrow : null,
 	arrowTxt : null,
 	
+	//left bar for turn around width
 	leftArea : 120,
 	
+	//states
 	inPaper : false,
+	loading : false,
     
-	load : function(baseref, imageSize, image, project, survey, camera){
+	//last clicked...for if the image wasnt loaded
+	lastClicked : 0,
+	
+	load : function(baseref, imageSize, image, project, survey, camera, first, last){
+		//set values
 		this.baseref = baseref;
-		this.image = image;
+		this.image = parseInt(image);
 		this.imageSize = imageSize;
 		this.project = project;
 		this.survey = survey;
 		this.camera = camera;
+		this.firstImage = first;
+		this.lastImage  = last;
 		
+		//get the image width/height
 		this.width = $('#image-main').width(); 
 		this.height = $('#image-main').height();
 		
+		//set some attributes for containers and canvas
 		$('#image-container').css('height',this.height+'px');
 		$('#canvas').css('width',this.width+'px');
+		$('#loading').css('width',this.width+'px').first().css('margin-top',(this.height/2-40)+'px');
 		
+		//setup canvas
 		this.paper = Raphael("canvas", this.width, this.height)
 		this.paper.clear();
 		this.elipse = this.paper.ellipse(300,100, 50, 20);
 		
 		this.vanish = (camera == 'BR') ? this.height : this.height/1.75;
 		
-		
 		$('#canvas svg').css('position','absolute').css('z-index','100');
 		this.elipse.attr({stroke:"#FFF", "stroke-width":3, fill:"#efefef", "stroke-opacity":0.5, "fill-opacity":0.5}).hide();
 		
+		//watch the events
 		$("#canvas").hover(
 			$.proxy(this.mouseOverCanvas,this),
 			$.proxy(this.mouseOutCanvas, this)
@@ -55,11 +81,11 @@ var Viewer = {
 		).click(
 			$.proxy(this.clickCanvas, this)
 		);
-		
+		/*
 		//preload some images
 		for(i=0; i<=this.maxSteps; i++){
-			this.preloadImage(image+i);
-		}
+			this.preloadImage(this.addSteps(this.image, i));
+		}*/
 		
 		//load the reverse arrow
 		this.arrow = this.paper.path("M12.981,9.073V6.817l-12.106,6.99l12.106,6.99v-2.422c3.285-0.002,9.052,0.28,9.052,2.269c0,2.78-6.023,4.263-6.023,4.263v2.132c0,0,13.53,0.463,13.53-9.823C29.54,9.134,17.952,8.831,12.981,9.073z").
@@ -135,8 +161,21 @@ var Viewer = {
 		return image + steps;
 	},
 	
-	clickCanvas : function(e){
+	minusSteps : function(image,steps){
+		image = parseInt(image);
+		steps = parseInt(steps);
+		if(this.camera.toUpperCase() == 'BR'){
+			return image + steps;
+		} 
 		
+		return image - steps;
+	},
+	
+	clickCanvas : function(e){
+		//make sure we arent waiting on an action
+		if(this.waiting) return;
+		
+		//if NOT turn around
 		if(e.offsetX > this.leftArea){
 			var y = this.height - e.offsetY;
 			var elipseHeight = this.elipse.attr('ry');
@@ -144,6 +183,8 @@ var Viewer = {
 			steps = Math.ceil(this.expoentialGrow(y, this.maxSteps, this.vanish, 2));
 	
 			this.canvasClick.call(this, this.addSteps(this.image,steps));
+			
+		//toggle view
 		} else {
 			var camera = (this.camera.toUpperCase() == "FL") ? "BR" : "FL";
 			this.goToImage(this.image,camera);
@@ -151,9 +192,8 @@ var Viewer = {
 	},
 
 	pad : function(str, max) {
-		limit = 10;
 		str = str + "";
-		while(str.length < max && str.length < limit)
+		while(str.length < max && str.length < 10)
 			str = "0" + str;
 		
 		return str;
@@ -163,10 +203,15 @@ var Viewer = {
 	$imageMain : $('#image-main'),
 	$imageNext : $('#image-next'),
 	$loaderWrap : $('#image-loading'),
-	loadedImages : [],
+	loadedImages : [], //loading or complete
+	completedImages : [], //loading complete
 	
 	preloadImage : function(image){
-		image = image * 1;
+
+		image = parseInt(image);
+
+		//console.log("loading image: "+image);
+		
 		if(typeof this.loadedImages[image] == "undefined"){
 			
 			//mark as loaded
@@ -178,13 +223,18 @@ var Viewer = {
 			var url = obj.getImageUrl(image);
 			
 			
-			$img.attr('src', url).attr('id','image-'+image);
+			$img.attr('src', url).attr('id','image-'+image).load(function(){
+				console.log("image finished loading");
+				obj.completedImages[image] = true;
+			});
 			
 			$('#image-loading').append($img);
 		}
 	},
 
 	removeImage : function(image){
+		this.completedImages.splice(image,1);
+		this.loadedImages.splice(image,1);
 		if(typeof this.loadedImages[image] != "undefined"){
 			$('#image-loading').find('#image-'+image).remove();
 		}
@@ -203,13 +253,72 @@ var Viewer = {
 		}
 		
 		$.cookie('last-image',null);
-		document.location.href = this.baseref + "?Image="+
-			image+"&survey="+this.survey+"&Project="+this.project+
+		var loc = this.baseref + "?Image="+
+			this.pad(image,5)+"&survey="+this.survey+"&Project="+this.project+
 			"&camera="+camera;
+		
+		document.location.href = loc;
+	},
+	
+	loadingShow : function(){
+		$('#loading').show();
+		console.log("Loading...");
+	},
+	
+	loadingHide : function(){
+		$('#loading').hide();
+		console.log("Load complete.");
+	},
+	
+	waitCount : 0,
+	waitMax : 100,
+	waiting : false,
+	waitImageReady : function(){
+		console.log("waiting...");
+		var obj = this;
+		if(obj.waitCount > this.waitMax){
+			//error
+			obj.waiting = false;
+			obj.waitMax = 0;
+			obj.loadingHide();
+		}else if(typeof obj.completedImages[obj.lastClicked] != "undefined"){
+			obj.waiting = false;
+			obj.waitMax = 0;
+			obj.canvasClick(this.lastClicked);
+			obj.loadingHide();
+		} else {
+			obj.waitCount++;
+			obj.waiting = true;
+			setTimeout(function(){obj.waitImageReady();}, 100);
+		}
 	},
 	
 	canvasClick : function(img){
 		img = parseInt(img);
+		
+		if(img > this.lastImage || img < this.firstImage){
+			(img > this.lastImage) ? this.canvasClick(this.lastImage) : this.canvasClick(this.firstImage);
+			alert("No more images in this direction.");
+			return;
+		}
+		
+		this.lastClicked = img;
+		
+		//check if the image was added to DOM
+		if(typeof this.loadedImages[img] == "undefined"){
+			console.log("image must load");
+			this.preloadImage(img);
+			this.loadingShow();
+			this.waitImageReady();
+			return;
+		}
+		
+		//check image finished loading in the DOM
+		if(typeof this.completedImages[img] == "undefined"){
+			return;
+		}
+		
+		
 		
 		$imageCounter = $('#image-counter');
 		$imageMain = $('#image-main');
@@ -229,6 +338,7 @@ var Viewer = {
 		var obj = this;
 		var newImgSrc = $loaderWrap.find('#image-'+img).attr('src');
 		
+		//the animation
 		$imageMain.fadeOut(function(){});
 		$imageNext.attr('src',newImgSrc).fadeIn(
 			$.proxy(function(){
@@ -237,15 +347,15 @@ var Viewer = {
 			}, obj)
 		);
 
-		//add the next 5 images
+		//add the next maxSteps*2 images
 		for(i=0; i<this.maxSteps*2; i++){
 			this.preloadImage(this.addSteps(img,i));
 		}
 
 		//remove previous images
 		for(i=this.maxSteps; i<this.maxSteps*2+5; i++){
-			this.removeImage(this.addSteps(img,i));
-			this.loadedImages.splice(this.addSteps(img,i),1);
+			//console.log("removing :"+this.minusSteps(img,i));
+			this.removeImage(this.minusSteps(img,i));
 		}
 	}
     

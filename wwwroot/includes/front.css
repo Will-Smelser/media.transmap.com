@@ -38,3 +38,19 @@ body{
 	margin:2px;
 	padding:0px;
 }
+#loading{
+	position:absolute;
+	display:none;
+}
+#loading .inner{
+	width:200px;
+	margin:0px auto;
+	background-color:#FFF;
+	padding:20px 40px;
+	font-size:24px;
+}
+#loading .inner i{
+	padding-left:20px;
+	margin-bottom:13px;
+	display:inline-block;
+}

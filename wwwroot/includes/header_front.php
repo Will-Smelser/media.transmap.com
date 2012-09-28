@@ -86,10 +86,12 @@ h3.room { padding:.9em;}
 	var image = <?php echo $image; ?>;
 	var project = "<?php echo $project1; ?>";
 	var survey = "<?php echo $survey; ?>";
+	var first = <?php echo intval($project->firstImage); ?>;
+	var last = <?php echo intval($project->lastImage); ?>;
 
 	window.onload = function(){
 	//$(document).ready(function(){ //jquery load doesnt work
-		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",'$image','$project1','$survey','$camera'"; ?>);
+		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).",'$project1','$survey','$camera', first, last"; ?>);
 	};
   </script>
   

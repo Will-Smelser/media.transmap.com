@@ -15,6 +15,9 @@ class Project{
 	private $noImage = '/images/default/no-survey-image.jpg';
 	private $surveyImages = '/images';
 	
+	public $firstImage= '';
+	public $lastImage = '';
+	
 	private $session;
 
 	function Project($projectName, $survey, $image, Session &$session){
@@ -57,7 +60,11 @@ class Project{
 				$image = $this->findFirstImage($projectName, $survey);
 			
 			header('Location: '.$_SERVER['PHP_SELF'].'?Image='.$image.'&Project='.$projectName.'&Survey='.$survey);
-		}		
+		}
+		
+		$limits = $this->findImageLimits($projectName, $survey);
+		$this->firstImage = $limits[0];
+		$this->lastImage  = $limits[1];
 
 		$this->projectName = $projectName;
 		$this->projectPath = $this->projectMap[$projectName];
@@ -80,6 +87,28 @@ class Project{
 	
 	private function getImageFile($imagePos){
 		return str_pad(strval($imagePos),5,'0',STR_PAD_LEFT).'.jpg';
+	}
+	
+	private function findImageLimits($project, $survey){
+		$prefix = 'FL';
+		$base = $_SERVER['DOCUMENT_ROOT'].$this->surveyImages.'/'.$project.'/'.$survey.'/'.$prefix.$survey;
+		$dirs = scandir($base);
+		
+		$first = $last = null;
+		
+		if(count($dirs) > 0)
+			while(!preg_match('/(jpe?g)$/i',($first=array_shift($dirs))) && count($dirs) > 0);
+			
+		if(count($dirs) > 0)
+			while(!preg_match('/(jpe?g)$/i',($last=array_pop($dirs))) && count($dirs) > 0);
+		
+		$first = (preg_match('/(jpe?g)$/i',$first)) ? $first : null;
+		$last  = (preg_match('/(jpe?g)$/i',$last)) ? $last : $first;
+		
+		$first = preg_replace("/(({$prefix}_)|(\.jpe?g))/i",'',$first);
+		$last  = preg_replace("/(({$prefix}_)|(\.jpe?g))/i",'',$last);
+		
+		return array($first, $last);
 	}
 	
 	private function findFirstImage($project, $survey){
