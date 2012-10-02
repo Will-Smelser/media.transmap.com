@@ -82,11 +82,11 @@ var Viewer = {
 		).click(
 			$.proxy(this.clickCanvas, this)
 		);
-		/*
+		
 		//preload some images
 		for(i=0; i<=this.maxSteps; i++){
 			this.preloadImage(this.addSteps(this.image, i));
-		}*/
+		}
 		
 		//load the reverse arrow
 		this.arrow = this.paper.path("M12.981,9.073V6.817l-12.106,6.99l12.106,6.99v-2.422c3.285-0.002,9.052,0.28,9.052,2.269c0,2.78-6.023,4.263-6.023,4.263v2.132c0,0,13.53,0.463,13.53-9.823C29.54,9.134,17.952,8.831,12.981,9.073z").
@@ -292,11 +292,11 @@ var Viewer = {
 		if(obj.waitCount > this.waitMax){
 			//error
 			obj.waiting = false;
-			obj.waitMax = 0;
+			obj.waitCount = 0;
 			obj.loadingHide();
 		}else if(typeof obj.completedImages[obj.lastClicked] != "undefined"){
 			obj.waiting = false;
-			obj.waitMax = 0;
+			obj.waitCount = 0;
 			obj.canvasClick(this.lastClicked);
 			obj.loadingHide();
 		} else {
@@ -309,9 +309,12 @@ var Viewer = {
 	canvasClick : function(img){
 		img = parseInt(img);
 		
+		//clicked image outside of range
 		if(img > this.lastImage || img < this.firstImage){
-			(img > this.lastImage) ? this.canvasClick(this.lastImage) : this.canvasClick(this.firstImage);
-			alert("No more images in this direction.");
+			this.lastClicked = (img > this.lastImage) ? this.lastImage : this.firstImage;
+			this.canvasClick(this.lastClicked);
+			//need to wait till the transition happens till alerting
+			setTimeout(function(){alert("No more images in this direction.")},200);
 			return;
 		}
 		
