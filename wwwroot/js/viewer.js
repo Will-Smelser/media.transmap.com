@@ -73,6 +73,7 @@ var Viewer = {
 		this.elipse.attr({stroke:"#FFF", "stroke-width":3, fill:"#efefef", "stroke-opacity":0.5, "fill-opacity":0.5}).hide();
 		
 		//watch the events
+		var obj = this;
 		$("#canvas").hover(
 			$.proxy(this.mouseOverCanvas,this),
 			$.proxy(this.mouseOutCanvas, this)
@@ -172,8 +173,13 @@ var Viewer = {
 	},
 	
 	clickCanvas : function(e){
+		console.log("clicked");
+		
 		//make sure we arent waiting on an action
-		if(this.waiting) return;
+		if(this.waiting){
+			console.log("We are waiting on image");
+			return;
+		}
 		
 		//if NOT turn around
 		if(e.offsetX > this.leftArea){
@@ -182,8 +188,9 @@ var Viewer = {
 		
 			steps = Math.ceil(this.expoentialGrow(y, this.maxSteps, this.vanish, 2));
 	
+			console.log("before click");
 			this.canvasClick.call(this, this.addSteps(this.image,steps));
-			
+			console.log("after click");
 		//toggle view
 		} else {
 			var camera = (this.camera.toUpperCase() == "FL") ? "BR" : "FL";
@@ -223,18 +230,24 @@ var Viewer = {
 			var url = obj.getImageUrl(image);
 			
 			
-			$img.attr('src', url).attr('id','image-'+image).load(function(){
-				console.log("image finished loading");
-				obj.completedImages[image] = true;
-			});
+			$img.attr('src', url).attr('id','image-'+image).load(function(ref,refImg){
+				return function(){
+					console.log("image finished loading("+refImg+")");
+					ref.completedImages[refImg] = true;
+				}
+			}(obj,image));
 			
 			$('#image-loading').append($img);
 		}
 	},
 
 	removeImage : function(image){
+		if(parseInt(image) < 0) return;
+
+		//remove images
 		this.completedImages.splice(image,1);
 		this.loadedImages.splice(image,1);
+		
 		if(typeof this.loadedImages[image] != "undefined"){
 			$('#image-loading').find('#image-'+image).remove();
 		}
@@ -314,7 +327,8 @@ var Viewer = {
 		}
 		
 		//check image finished loading in the DOM
-		if(typeof this.completedImages[img] == "undefined"){
+		if(typeof this.completedImages[img] == "undefined"  && this.waiting){
+			console.log("Should be waiting on image to load.");
 			return;
 		}
 		
