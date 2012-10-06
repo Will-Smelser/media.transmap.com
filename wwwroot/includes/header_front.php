@@ -79,6 +79,7 @@ h3.room { padding:.9em;}
   <script src="/js/raphael-min.js" ></script>
   <script src="/js/cookie.js" ></script>
   <script src="/js/viewer.js" ></script>
+  <script src="/js/preload.js" ></script>
   
   <script>
   	var camera = 'FL';

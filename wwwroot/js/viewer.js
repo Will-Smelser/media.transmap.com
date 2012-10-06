@@ -42,6 +42,15 @@ var Viewer = {
 	//last clicked...for if the image wasnt loaded
 	lastClicked : 0,
 	
+	//preloader
+	preloader : null,
+	
+	//preloaderImage function to get image
+	imageToNumber : function(){
+		//console.log(this.url.match(/(\d+\.jpe?g)$/g)).pop().split('.');
+		return parseInt(this.url.match(/(\d+\.jpe?g)$/g).pop().split('.')[0]*1);
+	},
+	
 	load : function(baseref, imageSize, image, project, survey, camera, first, last){
 		//set values
 		this.baseref = baseref;
@@ -83,11 +92,6 @@ var Viewer = {
 			$.proxy(this.clickCanvas, this)
 		);
 		
-		//preload some images
-		for(i=0; i<=this.maxSteps; i++){
-			this.preloadImage(this.addSteps(this.image, i));
-		}
-		
 		//load the reverse arrow
 		this.arrow = this.paper.path("M12.981,9.073V6.817l-12.106,6.99l12.106,6.99v-2.422c3.285-0.002,9.052,0.28,9.052,2.269c0,2.78-6.023,4.263-6.023,4.263v2.132c0,0,13.53,0.463,13.53-9.823C29.54,9.134,17.952,8.831,12.981,9.073z").
 			attr({stroke:"#FFF", "stroke-width":3, fill:"#efefef", "stroke-opacity":0.5, "fill-opacity":0.5})
@@ -99,6 +103,11 @@ var Viewer = {
 					   "font-size":"16", 
 					   stroke:"#FFF", "stroke-width":1, fill:"#efefef", "stroke-opacity":0.5, "fill-opacity":0.5}).hide();
 		
+		//preload some images
+		this.preloader = new Preload('image-preloader');
+		this.preloader.extendImage('getNumber',this.imageToNumber);
+		for(i=0; i<=this.maxSteps; i++)
+			this.preloadImage(this.addSteps(this.image, i));
 	},
 	
 	mouseOverCanvas : function(e){
@@ -187,10 +196,8 @@ var Viewer = {
 			var elipseHeight = this.elipse.attr('ry');
 		
 			steps = Math.ceil(this.expoentialGrow(y, this.maxSteps, this.vanish, 2));
-	
-			console.log("before click");
 			this.canvasClick.call(this, this.addSteps(this.image,steps));
-			console.log("after click");
+			
 		//toggle view
 		} else {
 			var camera = (this.camera.toUpperCase() == "FL") ? "BR" : "FL";
@@ -210,47 +217,31 @@ var Viewer = {
 	$imageMain : $('#image-main'),
 	$imageNext : $('#image-next'),
 	$loaderWrap : $('#image-loading'),
-	loadedImages : [], //loading or complete
-	completedImages : [], //loading complete
+	
 	
 	preloadImage : function(image){
-
 		image = parseInt(image);
-
-		//console.log("loading image: "+image);
 		
-		if(typeof this.loadedImages[image] == "undefined"){
-			
-			//mark as loaded
-			this.loadedImages[image] = true;
-
-			//load the image
-			var obj = this;
-			var $img = $(document.createElement('img'));
-			var url = obj.getImageUrl(image);
-			
-			
-			$img.attr('src', url).attr('id','image-'+image).load(function(ref,refImg){
-				return function(){
-					console.log("image finished loading("+refImg+")");
-					ref.completedImages[refImg] = true;
-				}
-			}(obj,image));
-			
-			$('#image-loading').append($img);
-		}
+		if(image < 0) return;
+		
+		var url = this.getImageUrl(image);
+		
+		//preloader wont preload image that has already loaded
+		this.preloader.preload(url,this.imageLoadComplete,this);			
 	},
-
+	
+	imageLoadComplete : function(imgObj){
+		//console.log("image finished loading("+imgObj.url+")");
+	},
+	
 	removeImage : function(image){
-		if(parseInt(image) < 0) return;
+		image = parseInt(image);
+		if(image < 0) return;
 
 		//remove images
-		this.completedImages.splice(image,1);
-		this.loadedImages.splice(image,1);
+		var url = this.getImageUrl(image);
+		this.preloader.removeImage(url);
 		
-		if(typeof this.loadedImages[image] != "undefined"){
-			$('#image-loading').find('#image-'+image).remove();
-		}
 	},
 	
 	getImageUrl : function(image){
@@ -275,36 +266,22 @@ var Viewer = {
 	
 	loadingShow : function(){
 		$('#loading').show();
-		console.log("Loading...");
 	},
 	
 	loadingHide : function(){
 		$('#loading').hide();
-		console.log("Load complete.");
 	},
 	
 	waitCount : 0,
 	waitMax : 100,
 	waiting : false,
-	waitImageReady : function(){
-		console.log("waiting...");
-		var obj = this;
-		if(obj.waitCount > this.waitMax){
-			//error
-			obj.waiting = false;
-			obj.waitCount = 0;
-			obj.loadingHide();
-		}else if(typeof obj.completedImages[obj.lastClicked] != "undefined"){
-			obj.waiting = false;
-			obj.waitCount = 0;
-			obj.canvasClick(this.lastClicked);
-			obj.loadingHide();
-		} else {
-			obj.waitCount++;
-			obj.waiting = true;
-			setTimeout(function(){obj.waitImageReady();}, 100);
-		}
+	waitImageReady : function(imgObj){
+		console.log("done waiting");
+		this.canvasClick(this.lastClicked);
+		this.loadingHide();
 	},
+	
+	
 	
 	canvasClick : function(img){
 		img = parseInt(img);
@@ -313,6 +290,7 @@ var Viewer = {
 		if(img > this.lastImage || img < this.firstImage){
 			this.lastClicked = (img > this.lastImage) ? this.lastImage : this.firstImage;
 			this.canvasClick(this.lastClicked);
+			
 			//need to wait till the transition happens till alerting
 			setTimeout(function(){alert("No more images in this direction.")},200);
 			return;
@@ -321,16 +299,23 @@ var Viewer = {
 		this.lastClicked = img;
 		
 		//check if the image was added to DOM
-		if(typeof this.loadedImages[img] == "undefined"){
-			console.log("image must load");
+		var url = this.getImageUrl(img);
+		var imgObj = this.preloader.getImage(url);
+		
+		if(imgObj === null || typeof imgObj === "undefined"){
+		//if(typeof this.loadedImages[img] == "undefined"){
+			console.log("image must load: "+url);
 			this.preloadImage(img);
 			this.loadingShow();
-			this.waitImageReady();
+			//this.waitImageReady();
+			this.preloader.waitOnImage(url, this.waitImageReady, this, 50, 200)
+			
 			return;
 		}
 		
 		//check image finished loading in the DOM
-		if(typeof this.completedImages[img] == "undefined"  && this.waiting){
+		if(!imgObj.loaded && this.waiting){
+		//if(typeof this.completedImages[img] == "undefined"  && this.waiting){
 			console.log("Should be waiting on image to load.");
 			return;
 		}
@@ -340,7 +325,6 @@ var Viewer = {
 		$imageCounter = $('#image-counter');
 		$imageMain = $('#image-main');
 		$imageNext = $('#image-next');
-		$loaderWrap = $('#image-loading');
 		
 		//document.location.href = getImageUrl(image);
 		this.image = img;
@@ -353,13 +337,13 @@ var Viewer = {
 		
 		//transition current image
 		var obj = this;
-		var newImgSrc = $loaderWrap.find('#image-'+img).attr('src');
+		var newImgSrc = imgObj.url;
 		
 		//the animation
 		$imageMain.fadeOut(function(){});
-		$imageNext.attr('src',newImgSrc).fadeIn(
+		$imageNext.attr('src',imgObj.url).fadeIn(
 			$.proxy(function(){
-				$imageMain.attr('src',newImgSrc).show();
+				$imageMain.attr('src',imgObj.url).show();
 				$imageNext.hide();
 			}, obj)
 		);
@@ -371,8 +355,11 @@ var Viewer = {
 
 		//remove previous images
 		for(i=this.maxSteps; i<this.maxSteps*2+5; i++){
-			//console.log("removing :"+this.minusSteps(img,i));
-			this.removeImage(this.minusSteps(img,i));
+			var temp = this.minusSteps(img,i);
+			if(temp < 0) break;
+			
+			console.log("removing :"+temp);
+			//this.removeImage(temp);
 		}
 	}
     
