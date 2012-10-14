@@ -12,7 +12,7 @@ var Preload = function(id)
 		 * @property {String}
 		 */
 		_loadingNodeId : 'mioPreloadNode',
-			
+		
 		/**
 		 * @classDescription Image object which holds information about the image which is preloading.
 		 * This object can be prototyped with extendImage.
@@ -31,6 +31,10 @@ var Preload = function(id)
 			this.loaded = loaded;
 			this.$img = $img;
 			this.func = objRef._imageLoadComplete;
+			this.loadFailed = true;
+			this.timeout = 5000;//5 seconds
+			this.start = new Date().getTime();
+			this.finish = 0;
 		},
 		
 		/**
@@ -56,7 +60,18 @@ var Preload = function(id)
 		 * @see _Image
 		 */
 		_imageLoadComplete : function(imageObj){
+			//we may have already called this.
+			if(imageObj.loaded) return;
+			
+			imageObj.finish = (imageObj.finish === 0) ? new Date().getTime() : imageObj.finish;
 			imageObj.loaded = true;
+			imageObj.loadFailed = ((imageObj.finish-imageObj.start) > imageObj.timeout);
+			
+			if(imageObj.loadFailed) console.log("Image failed to load", imageObj);
+			
+			//users callback function
+			if(typeof imageObj.callback === "function")
+				imageObj.callback.call(imageObj.scope, imageObj);
 		},
 			
 		/**
@@ -103,8 +118,11 @@ var Preload = function(id)
 		 * @param {String} url The url of the image to load.  Absolute or relative.
 		 * @param {Function} callback A function to be called when load is complete.
 		 * @param {Object} scope [optional] The scope to call the callback in. Defaults to window.
+		 * @param {Integer} timeout [optional] The timeout for loading image.  Defaults to _Image.timeout.  
+		 * 		Can override this using prototype or ImageExtend
+		 * @return {_Image} The created image object
 		 */
-		preload : function(url, callback, scope){
+		preload : function(url, callback, scope, timeout){
 			var hash = this._hashCode(url);
 			if(this.isLoaded(hash)) return;
 			
@@ -117,20 +135,21 @@ var Preload = function(id)
 				.attr('id',hash);
 			this._images[hash] = new this._Image(url, callback, scope, false, $img, this);
 			
-			//bind the onload
+			
+			//bind the onload...pass vars using closure ;)
 			this._images[hash].$img.load(function(obj, hash){
-					return function(){
-						if(typeof callback === "function")
-							//obj._images[hash].callback.call(obj._images[hash].scope, obj._images[hash]);
-						
-						obj._images[hash].func.call(obj, obj._images[hash]);
-					}
+					//only executes on successful load
+					return function(){obj._images[hash].func.call(obj, obj._images[hash]);}
 				}(this, hash));
-			 
+			
+			//we always want to trigger our functions, but jquery only
+			//callsback on success, so have to keep poll at the image timeout
+			if(typeof timeout !== "undefined") this._images[hash].timeout = timeout;
+			this.waitOnImage(url, this._imageLoadComplete, this, this._images[hash].timeout, 2);
+			
 			this._$loadNode.append(this._images[hash].$img);
 			
-			console.log("loaded: "+url);
-			
+			return this._images[hash];
 		},
 		
 		/**
@@ -147,24 +166,16 @@ var Preload = function(id)
 			if(typeof maxTries === "undefined") maxTries = 100;
 			if(typeof scope === "undefined") scope = window;
 			if(typeof tryCount == "undefined") tryCount = 0;
-			
-			console.log("trycount = "+tryCount);
-			
-			if(tryCount > 200){
-				console.log("Error loading");
-				return;
-			}
-			
+						
 			var hash = this._hashCode(url);
 			var imgObj = this._images[hash];
-			console.log(imgObj);
 			
-			if(imgObj.loaded){
+			if(typeof imgObj === "undefined"){
+				this.preload(url, null, null);
+			} else if(imgObj.loaded || tryCount > maxTries){
 				callback.call(scope, imgObj);
 				return;
-			}else if(imgObj === null){
-				this.preload(url, null, null);
-			} 
+			}
 			
 			//use closures to call self
 			setTimeout(
