@@ -1,10 +1,9 @@
 <?php
-
 $graph = false;
 $image = $_GET['image'];
 $file = $_SERVER['DOCUMENT_ROOT'] . "/images/Milton/12033014(1)/FL12033014(1)/FL_".$image.'.jpg';
 
-if(!$graph) header("Content-type: image/jpeg");
+//if(!$graph) header("Content-type: image/jpeg");
 
 $im = imagecreatefromjpeg($file);
 
@@ -17,9 +16,9 @@ class States {
 }
 class PtMin {
 	//colors
-	private $r=0;
-	private $g=0;
-	private $b=0;
+	public $r=0;
+	public $g=0;
+	public $b=0;
 	
 	public $min=99999;
 	public $max=0;
@@ -61,8 +60,16 @@ function color($x,$y){
 	imagefilledellipse($im, $x, $y, 10, 10, $ellipseColor);
 }
 
-//start at lower right and keep going left as long
-//as things are getting darker
+/**
+ * 
+ * @param $xMin
+ * @param $xMax
+ * @param $height
+ * @param $group The number of pixels to use in a horizontal grouping for calculating the average
+ * @param array $matrix This is kind of a rotation matrix to include pixels to include in average calculation
+ * 			array(array(offset_left, offset_top),...) 
+ * @throws Exception
+ */
 function findMins($xMin, $xMax, $height, $group=1){
 	global $im;
 	global $graph;
@@ -149,12 +156,89 @@ function findMins($xMin, $xMax, $height, $group=1){
 	return $mins;
 }
 
+/**
+ * Find nearest neighbor $x, $y
+ * @param int $x
+ * @param int $y
+ * @param array $rgbAvg
+ * @param int $radius
+ */
+function bestNeighbor($x, $y,array $rgbAvg, $radius){
+	global $width, $height, $im;
+	
+	$neighbors = getCircle($x,$y,40,0,$width,0,$height,5);
+	
+	$minAvg = 999;
+	$minX; $minY;
+	foreach($neighbors as $pts){
+		$tavg = avg(int2rgb(imagecolorat($im, $pts[0], $pts[1])));
+		if($tavg < $minAvg)
+			list($minX, $minY) = $pts;
+	}
+	
+	return array($minX,$minY);
+}
+
+/**
+ * 
+ * @param int $x
+ * @param int $y
+ * @param int $radius
+ * @param int $minX
+ * @param int $maxX
+ * @param int $minY
+ * @param int $maxY
+ * @param int $angle
+ * @return array Return an array of points
+ */
+
+function getCircle($x, $y, $radius, $minX, $maxX, $minY, $maxY, $angle=20){
+	$offset = ($angle * 3.14) / 180;
+	
+	//all 4 quadrants
+	$q1 = $q2 = $q3 = $q4 = array();
+	
+	//cycle through pi/2 radians
+	$i=0;
+	for($i=0; $i<1.57; $i=$i+$offset){
+		$tempX = floor($radius * sin($i+1.57));
+		$tempY = floor($radius * cos($i+1.57));
+		
+		//need to track, but dont want duplication
+		if($tempX + $x < $maxX && $y + $tempY < $maxY) 
+			$q1[($x + $tempX).','.($y+$tempY)] = 1;
+		if($tempX + $x < $maxX && $y - $tempY > $minY)
+			$q2[($x + $tempX).','.($y - $tempY)] = 1;
+		if($x - $tempX > $minX && $y - $tempY > $minY)
+			$q3[($x - $tempX).','.($y - $tempY)] = 1;
+		if($x - $tempX > $minX && $y + $tempY < $maxY)
+			$q4[($x - $tempX).','.($y + $tempY)] = 1;
+			
+	}
+	
+	$result = array();
+	foreach(array_merge($q1,$q2,$q3,$q4) as $key=>$val){
+		$tx; $ty;
+		
+		list($tx, $ty) = explode(',',$key);
+		array_push($result,array($tx,$ty));
+	}
+
+	return $result;
+}
+
 for($n=1; $n<10; $n++){
 	$temp = $height - 50 * $n;
 	$mins = findMins($width*.5,$width-1,$temp,25);
 	
 	foreach($mins as $key=>$obj){
 		color($obj->x,$obj->y);
+		$closest = bestNeighbor($obj->x,$obj->y,array($obj->r,$obj->g,$obj->b),10);
+		
+		if($closest[0] > 0 && $closest[1]>0)
+			color($closest[0],$closest[1]);
+		//foreach(getCircle($obj->x,$obj->y,40,0,$width,0,$height,30) as $entry)
+			//color($entry[0],$entry[1]);
 	}
 }
 
