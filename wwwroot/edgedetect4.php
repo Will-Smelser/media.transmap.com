@@ -1,9 +1,10 @@
 <?php
+//error_reporting(0);
 $graph = false;
 $image = $_GET['image'];
 $file = $_SERVER['DOCUMENT_ROOT'] . "/images/Milton/12033014(1)/FL12033014(1)/FL_".$image.'.jpg';
 
-//if(!$graph) header("Content-type: image/jpeg");
+if(!$graph) header("Content-type: image/jpeg");
 
 $im = imagecreatefromjpeg($file);
 
@@ -19,15 +20,12 @@ class PtMin {
 	public $r=0;
 	public $g=0;
 	public $b=0;
-	
-	public $min=99999;
-	public $max=0;
 		
 	//the position
 	public $x, $y;
 	
 	//total number of points used
-	public $totalPoints = 1;
+	public $totalPoints = 0;
 	
 	public function PtMin(){
 	}
@@ -40,6 +38,9 @@ class PtMin {
 		$this->g += $rgb[1];
 		$this->b += $rgb[2];
 		$this->totalPoints++;
+	}
+	public function getAvg(){
+		return array($this->r/$this->totalPoints, $this->g/$this->totalPoints, $this->b/$this->totalPoints);
 	}
 }
 
@@ -65,9 +66,7 @@ function color($x,$y){
  * @param $xMin
  * @param $xMax
  * @param $height
- * @param $group The number of pixels to use in a horizontal grouping for calculating the average
- * @param array $matrix This is kind of a rotation matrix to include pixels to include in average calculation
- * 			array(array(offset_left, offset_top),...) 
+ * @param $group The number of pixels to use in a horizontal grouping for calculating the average) 
  * @throws Exception
  */
 function findMins($xMin, $xMax, $height, $group=1){
@@ -102,6 +101,7 @@ function findMins($xMin, $xMax, $height, $group=1){
 		
 		$pt = ($mins[count($mins)-1]);
 		
+		//not moving in any direction
 		if($cur <= ($prev + $t) && $cur >= ($prev - $t)){
 			if($graph) echo "same";
 			$pt = null;
@@ -131,7 +131,7 @@ function findMins($xMin, $xMax, $height, $group=1){
 			$pt = ($mins[count($mins)-1]);
 			$pt->add($color);
 			
-		//we at at a local max
+		//we are at a local max
 		}else if ($cur < $prev - $t && $state === States::INCREASE){
 			if($graph) echo "max";
 			$pt = null;
@@ -146,15 +146,15 @@ function findMins($xMin, $xMax, $height, $group=1){
 		
 		if($graph){ echo str_pad("-",avg(int2rgb(imagecolorat($im, $i, $height)))-50,'#'); echo "<br/>\n";}
 		
-		//if($pt->min > $cur) $pt->min = $cur;
-		//if($pt->max < $cur) $pt->max = $cur;
-		
 		$prev = $cur;
 		if($i<$xMin) break;
 		
 	}
+	//first point is always trash
+	array_shift($mins);
 	return $mins;
 }
+
 
 /**
  * Find nearest neighbor $x, $y
@@ -166,17 +166,31 @@ function findMins($xMin, $xMax, $height, $group=1){
 function bestNeighbor($x, $y,array $rgbAvg, $radius){
 	global $width, $height, $im;
 	
-	$neighbors = getCircle($x,$y,40,0,$width,0,$height,5);
+	$neighbors = getCircle($x,$y,15,0,$width,0,$height,$radius);
 	
+	$minColor = array();
 	$minAvg = 999;
 	$minX; $minY;
 	foreach($neighbors as $pts){
-		$tavg = avg(int2rgb(imagecolorat($im, $pts[0], $pts[1])));
-		if($tavg < $minAvg)
-			list($minX, $minY) = $pts;
+		if($pts[0] < $width && $pts[0] > 0 && $pts[1] > 0 && $pts[1] < $height){
+			$tcolor = int2rgb(imagecolorat($im, $pts[0], $pts[1]));
+			$tavg = avg($tcolor);
+			//color($pts[0],$pts[1]);
+			if($tavg < $minAvg){
+				list($minX, $minY) = $pts;
+				$minColor = $tcolor;
+				$minAvg = $tavg;
+			}
+		}
 	}
 	
-	return array($minX,$minY);
+	$pt = new PtMin();
+	$pt->setPos($minX,$minY);
+	$pt->add($minColor);
+	
+	color($pt->x,$pt->y);
+	
+	return $pt;
 }
 
 /**
@@ -201,19 +215,20 @@ function getCircle($x, $y, $radius, $minX, $maxX, $minY, $maxY, $angle=20){
 	//cycle through pi/2 radians
 	$i=0;
 	for($i=0; $i<1.57; $i=$i+$offset){
-		$tempX = floor($radius * sin($i+1.57));
-		$tempY = floor($radius * cos($i+1.57));
+		$tempX = floor($radius * sin($i+3.14));
+		$tempY = floor($radius * cos($i+3.14));
 		
 		//need to track, but dont want duplication
 		if($tempX + $x < $maxX && $y + $tempY < $maxY) 
-			$q1[($x + $tempX).','.($y+$tempY)] = 1;
+			$q4[($x + $tempX).','.($y+$tempY)] = 1;
+		
 		if($tempX + $x < $maxX && $y - $tempY > $minY)
-			$q2[($x + $tempX).','.($y - $tempY)] = 1;
+			$q3[($x + $tempX).','.($y - $tempY)] = 1;
 		if($x - $tempX > $minX && $y - $tempY > $minY)
-			$q3[($x - $tempX).','.($y - $tempY)] = 1;
+			$q2[($x - $tempX).','.($y - $tempY)] = 1;
 		if($x - $tempX > $minX && $y + $tempY < $maxY)
-			$q4[($x - $tempX).','.($y + $tempY)] = 1;
-			
+			$q1[($x - $tempX).','.($y + $tempY)] = 1;
+		
 	}
 	
 	$result = array();
@@ -222,25 +237,58 @@ function getCircle($x, $y, $radius, $minX, $maxX, $minY, $maxY, $angle=20){
 		
 		list($tx, $ty) = explode(',',$key);
 		array_push($result,array($tx,$ty));
+		color($tx,$ty);
 	}
 
 	return $result;
 }
 
-for($n=1; $n<10; $n++){
-	$temp = $height - 50 * $n;
-	$mins = findMins($width*.5,$width-1,$temp,25);
-	
-	foreach($mins as $key=>$obj){
-		color($obj->x,$obj->y);
-		$closest = bestNeighbor($obj->x,$obj->y,array($obj->r,$obj->g,$obj->b),10);
+function findNearest(PtMin $obj, $offset=15, $left=30, $right=5){
+	global $im;
+	$goal = avg($obj->getAvg());
 		
-		if($closest[0] > 0 && $closest[1]>0)
-			color($closest[0],$closest[1]);
-		//foreach(getCircle($obj->x,$obj->y,40,0,$width,0,$height,30) as $entry)
-			//color($entry[0],$entry[1]);
+	$diffMin = 9999;
+	$cMin;
+	$xMin;
+	
+	for($i=($obj->x-$left); $i<($obj->x+$right); $i++){
+		$temp = int2rgb(imagecolorat($im, $i, ($obj->y-$offset)));
+		$color = avg($temp);
+		$diff = abs($goal - $color);
+		
+		if($diff < $diffMin){
+			$diffMin = $diff;
+			$xMin = $i;
+			$cMin = $temp;
+		}
 	}
+	
+	$pt = new PtMin();
+	$pt->setPos($xMin, $obj->y-$offset);
+	$pt->add($cMin);
+	return $pt;
+	
 }
+
+$mins = findMins($width*.5,$width-1,($height - 30),10);
+foreach($mins as $obj)
+	color($obj->x,$obj->y);
+$obj = $mins[0];
+
+$obj = findNearest($obj,10);
+color($obj->x,$obj->y);
+
+$obj = findNearest($obj,10);
+color($obj->x,$obj->y);
+
+
+$obj = findNearest($obj,10);
+color($obj->x,$obj->y);
+
+
+$obj = findNearest($obj,10);
+color($obj->x,$obj->y);
+
 
 @ImageJPEG($im);
 imagedestroy($im);
