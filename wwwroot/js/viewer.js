@@ -152,7 +152,7 @@ var Viewer = {
 		var x2= this.width;
 		var y2= this._polylineGetY(x2);
 		console.log("M"+x+","+y+"L"+x2+","+y2);
-		this.paper.path("M"+x+","+y+"L"+x2+","+y2);
+		//this.paper.path("M"+x+","+y+"L"+x2+","+y2);
 		
 	},
 	
