@@ -18,7 +18,7 @@ $image   = (isset($_GET['image']))   ? $_GET['image']   : null;
 
 try{
 	
-	$project = new Project($project, $survey, $image, $session);
+	$project = new Project($project, $survey, $image, $session, 'http://media.transmap.local', false);
 	
 }catch(Exception $e){
 	echo $e->getMessage();

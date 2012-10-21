@@ -12,7 +12,7 @@ if(Login::hasMessage()){
 	echo '<div class="message">'.Login::getMessage().'</div>';
 	Login::clearMessage();
 }
-	
+
 ?>
 
 <div class="container">

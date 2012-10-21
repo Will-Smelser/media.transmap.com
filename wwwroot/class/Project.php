@@ -1,7 +1,9 @@
 <?php
 
 class Project{
-	private $HOST_IMG = '';
+	private $DS = '/';
+	private $HOST = '';
+	private $LOCAL = true;
 	private $projectMap =  array();
 
 	private $projectName;
@@ -13,15 +15,17 @@ class Project{
 
 	private $properties = '/Surveys/projects.properties';
 	private $noImage = '/images/default/no-survey-image.jpg';
-	private $surveyImages = '/images';
 	
 	public $firstImage= '';
 	public $lastImage = '';
 	
 	private $session;
 
-	function Project($projectName, $survey, $image, Session &$session){
+	function Project($projectName, $survey, $image, Session &$session, $host=null, $local=true, $low=0, $high=99999){
+		$this->HOST = (empty($host)) ? '' : $host;
+		$this->HOST = rtrim($this->HOST,'/\\');
 		$this->session = &$session;
+		$this->LOCAL = $local;
 		
 		$propfile = $_SERVER['DOCUMENT_ROOT'].$this->properties;
 		
@@ -32,13 +36,20 @@ class Project{
 				!$time ||$session->getCreatedValue($this) < $time
 				){
 			$session->register($this);
+			
 			//build project list
-			$handle = @fopen($propfile, "r");
+			$handle = fopen($propfile, "r");
+			
+			if(!$handle){
+				throw new Exception("Failed to read property file.");
+				return;
+			}
+			
 			while(($buffer = fgets($handle)) !== false){
 				$parts = explode(":",trim($buffer));
 				$this->projectMap[$parts[0]] = '/images'.$parts[1];
-				
 			}
+			
 			fclose($handle);
 			$session->setNameValue($this, 'projectMap', $this->projectMap);
 		} else {
@@ -49,36 +60,58 @@ class Project{
 		if(!array_key_exists($projectName,$this->projectMap)){
 			throw new Exception("Project name failed to map to project directory.");
 		}
-
-		//$this->HOST_IMG = 'http://'.$_SERVER['HTTP_HOST'];
 		
-		if(empty($survey) || empty($image)){
-			if(empty($survey))
-				$survey = $this->findFirstSurvey($projectName);
+		$path = $this->projectMap[$projectName];
+		
+		//if this is hosted, then we dont have access to directory
+		//listings and cannot perform these checks
+		if($this->LOCAL){
 			
-			if(!empty($survey) && empty($image))
-				$image = $this->findFirstImage($projectName, $survey);
+			//verify the file paths are valid
+			$basePath = $_SERVER['DOCUMENT_ROOT'].$this->DS.$path;
+			if(!is_dir($basePath)){
+				throw new Exception("Bad project path given ($basePath)");
+				return;
+			}
 			
-			header('Location: '.$_SERVER['PHP_SELF'].'?Image='.$image.'&Project='.$projectName.'&Survey='.$survey);
+			//works if we werent given a survey, because it is just same check
+			//as above
+			if(!is_dir($basePath.$this->DS.$survey)){
+				throw new Exception("Bad survey path given ({$basePath}{$this->DS}{$survey})");
+				return;
+			}
+			
+			if(empty($survey) || empty($image)){
+				if(empty($survey))
+					$survey = $this->findFirstSurvey($projectName);
+				
+				if(!empty($survey) && empty($image))
+					$image = $this->findFirstImage($projectName, $survey);
+				
+				if(!empty($survey) && !empty($image)){
+					header('Location: '.$_SERVER['PHP_SELF'].'?Image='.$image.'&Project='.$projectName.'&Survey='.$survey);
+				} else {
+					throw new Exception("Failed to locate valid survey and/or starting image.");
+				}
+			}
+			
+			$this->firstImage = $low;
+			$this->lastImage  = $high;
 		}
-		
-		$limits = $this->findImageLimits($projectName, $survey);
-		$this->firstImage = $limits[0];
-		$this->lastImage  = $limits[1];
-
 		$this->projectName = $projectName;
 		$this->projectPath = $this->projectMap[$projectName];
 		$this->survey = $survey;
 
 		$this->imagePos = intval($image);
-
 	}
 
 	private function findFirstSurvey($project){
-		$base = $_SERVER['DOCUMENT_ROOT'].$this->surveyImages.'/'.$project;
+		if(!$this->LOCAL) 'failed';
+		
+		$base = $_SERVER['DOCUMENT_ROOT'].$this->surveyImages.$this->DS.$project;
 		
 		foreach(scandir($base) as $file){
-			if($file[0] != '.' && is_dir($base.'/'.$file)){
+			if($file[0] != '.' && is_dir($base.$this->DS.$file)){
 				return $file;
 			}
 		}
@@ -89,7 +122,8 @@ class Project{
 		return str_pad(strval($imagePos),5,'0',STR_PAD_LEFT).'.jpg';
 	}
 	
-	private function findImageLimits($project, $survey){
+	public function findImageLimits($project, $survey){
+		if(!$this->LOCAL) return array(0,0);
 		$prefix = 'FL';
 		$base = $_SERVER['DOCUMENT_ROOT'].$this->surveyImages.'/'.$project.'/'.$survey.'/'.$prefix.$survey;
 		$dirs = scandir($base);
@@ -137,12 +171,14 @@ class Project{
 		$imagePos = $this->imagePos + $offset;
 		$imageStr = $this->getImageFile($imagePos);
 		
-		if(!empty($this->HOST_IMG)){
-			return "{$this->HOST_IMG}{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$imageStr}";
+		if(!$this->LOCAL){
+			return "{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$imageStr}";
 		} else {
-			$temp = rtrim($_SERVER['DOCUMENT_ROOT'],'/\\')."/{$this->projectPath}/{$this->survey}/$prefix{$this->survey}/{$prefix}_{$imageStr}";
+			$temp = rtrim($_SERVER['DOCUMENT_ROOT'],'/\\').$this->projectPath.
+				$this->DS . $this->survey . $this->DS . $prefix . 
+				$this->survey . $this->DS . "{$prefix}_{$imageStr}";
 			if(file_exists($temp)){
-				return str_replace($_SERVER['DOCUMENT_ROOT'].'/','',$temp);
+				return str_replace($_SERVER['DOCUMENT_ROOT'],'',$temp);
 			} else {
 				return $this->noImage;
 			}
@@ -151,7 +187,7 @@ class Project{
 	}
 
 	private function getImageResizedUrl($prefix='FL',$percent=25, $offset=0){
-		$temp = $this->HOST_IMG."/imgsize.php?percent={$percent}&img=".$this->getImageLinkUrl($prefix, $offset);
+		$temp = $this->HOST."/imgsize.php?percent={$percent}&img=".$this->getImageLinkUrl($prefix, $offset);
 		return $temp;
 	}
 
@@ -172,15 +208,15 @@ class Project{
 	}
 
 	public function getImageLinkFr(){
-		return $this->getImageLinkUrl('RF');
+		return $this->HOST.$this->getImageLinkUrl('RF');
 	}
 
 	public function getImageLinkFl(){
-		return $this->getImageLinkUrl('FL');
+		return $this->HOST.$this->getImageLinkUrl('FL');
 	}
 
 	public function getImageLinkBr(){
-		return $this->getImageLinkUrl('BR');
+		return $this->HOST.$this->getImageLinkUrl('BR');
 	}
 
 	public function getImage($camera='FL', $offset=0, $size){
@@ -211,13 +247,14 @@ class Project{
 		
 		parse_str($parts['query']);
 		
-		$path = "{$this->projectPath}/{$this->survey}/FL{$this->survey}/FL_{$Image}.jpg";
+		$path = $this->projectPath.$this->DS.$this->survey.$this->DS.'FL'.
+			$this->survey.$this->DS."FL_{$Image}.jpg";
 		$fullpath = null;
 		
-		if(empty($this->HOST_IMG)){
+		if($this->LOCAL){
 			return file_exists($_SERVER['DOCUMENT_ROOT'].$path);
 		} else {
-			return file_exists($this->HOST_IMG.$path);
+			return file_exists($this->HOST.$path);
 		}
 		
 	}
