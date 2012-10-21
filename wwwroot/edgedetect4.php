@@ -150,8 +150,7 @@ function findMins($xMin, $xMax, $height, $group=1){
 		if($i<$xMin) break;
 		
 	}
-	//first point is always trash
-	array_shift($mins);
+	
 	return $mins;
 }
 
@@ -242,7 +241,7 @@ function getCircle($x, $y, $radius, $minX, $maxX, $minY, $maxY, $angle=20){
 
 	return $result;
 }
-
+/*
 function findNearest(PtMin $obj, $offset=15, $left=30, $right=5){
 	global $im;
 	$goal = avg($obj->getAvg());
@@ -269,8 +268,14 @@ function findNearest(PtMin $obj, $offset=15, $left=30, $right=5){
 	return $pt;
 	
 }
-
+*/
+function findNearest(PtMin $obj, $offset=15, $left=50, $right=15){
+	$res = findMins($obj->x-$left,$obj->x+$right,$obj->y-$offset,5);
+	array_shift($res);
+	return array_shift($res); 
+}
 $mins = findMins($width*.5,$width-1,($height - 30),10);
+array_shift($mins);
 foreach($mins as $obj)
 	color($obj->x,$obj->y);
 $obj = $mins[0];
