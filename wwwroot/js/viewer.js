@@ -151,7 +151,7 @@ var Viewer = {
 		var y = this._polylineGetY(x);
 		var x2= this.width;
 		var y2= this._polylineGetY(x2);
-		console.log("M"+x+","+y+"L"+x2+","+y2);
+		//console.log("M"+x+","+y+"L"+x2+","+y2);
 		//this.paper.path("M"+x+","+y+"L"+x2+","+y2);
 		
 	},
@@ -160,9 +160,9 @@ var Viewer = {
 		//poitnts were calculated using 640x380
 		var pt1 = [(499/640)*this.width, (250/380)*this.height];
 		var pt2 = [((640-15)/640)*this.width, this.height];
-		console.log(pt1,pt2);
+		//console.log(pt1,pt2);
 		var slope = (pt1[1]-pt2[1])/(pt1[0]-pt2[0]);
-		console.log(slope);
+		//console.log(slope);
 		//y1 = m * x1 + b
 		//y2 = m * x2 + b
 		//y1+y2 - m(x1+x2) = 2b
@@ -184,7 +184,7 @@ var Viewer = {
 	},
 
 	whileOverCanvas : function(e){
-		console.log(e.offsetX,e.offsetY);
+		//console.log(e.offsetX,e.offsetY);
 		//turn around area
 		if(e.offsetX < this.leftArea){
 			this.elipse.hide();
@@ -382,7 +382,7 @@ var Viewer = {
 		var url = this.getImageUrl(img);
 		var imgObj = this.preloader.getImage(url);
 		
-		if(imgObj === null || typeof imgObj === "undefined"){
+		if(imgObj === null || typeof imgObj === "undefined" || !imgObj.loaded){
 			//this.preloadImage(img);
 			this.loadingShow();
 			this.preloader.waitOnImage(url, this.waitImageReady, this, 50, 200)
