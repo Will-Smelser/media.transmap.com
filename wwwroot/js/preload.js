@@ -139,7 +139,10 @@ var Preload = function(id)
 			//bind the onload...pass vars using closure ;)
 			this._images[hash].$img.load(function(obj, hash){
 					//only executes on successful load
-					return function(){obj._images[hash].func.call(obj, obj._images[hash]);}
+					return function(){
+						if(typeof obj._images[hash] !== "undefined")
+							obj._images[hash].func.call(obj, obj._images[hash]);
+					}
 				}(this, hash));
 			
 			//we always want to trigger our functions, but jquery only

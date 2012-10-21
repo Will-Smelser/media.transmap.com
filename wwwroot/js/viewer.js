@@ -63,8 +63,10 @@ var Viewer = {
 		this.preloader.extendImage('getNumber',this._imageToNumber);
 		
 		//preload forward images
-		for(i=0; i<=this.maxSteps+5; i++)
+		for(i=0; i<=this.maxSteps+5; i++){
 			this.preloadImage(this.addSteps(this.image, i));
+			this.preloadImage(this.minusSteps(this.image, i));
+		}
 		
 		//bind click events
 		$('#forward').click($.proxy(this._forwardClick,this));
@@ -264,18 +266,23 @@ var Viewer = {
 			}, obj)
 		);
 
-		//add the next maxSteps*2 images
+		//add the next maxSteps
 		for(i=0; i<this.maxSteps; i++){
 			this.preloadImage(this.addSteps(img,i));
+			this.preloadImage(this.minusSteps(img,i));
 		}
 
 		//remove previous images
 		for(i=this.maxSteps; i<this.maxSteps+5; i++){
 			var temp = this.minusSteps(img,i);
-			if(temp < 0) break;
+			var temp2 = this.addSteps(img,i);
+			
+			if(temp < 0 || temp2 < 0) break;
 			
 			console.log("removing :"+temp);
-			//this.removeImage(temp);
+			console.log("removing :"+temp2);
+			this.removeImage(temp);
+			this.removeImage(temp2);
 		}
 	}
     

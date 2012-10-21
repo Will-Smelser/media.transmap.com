@@ -50,12 +50,14 @@ switch($camera){
 
 try{
 	
-	$project = new Project($project1, $survey, $image, $session);
+	$project = new Project($project1, $survey, $image, $session, null,true);
 	
 }catch(Exception $e){
 	echo $e->getMessage();
 	exit;
 }
+
+$limits = $project->findImageLimits($project1, $survey);
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -100,11 +102,11 @@ h3.room { padding:.9em;}
   <script>
   	var camera = '<?php echo $camera?>';
 	var imageSize = <?php echo $imageSz; ?>;
-	var image = <?php echo $image; ?>;
+	var image = <?php echo intval($image); ?>;
 	var project = "<?php echo $project1; ?>";
 	var survey = "<?php echo $survey; ?>";
-	var first = <?php echo intval($project->firstImage); ?>;
-	var last = <?php echo intval($project->lastImage); ?>;
+	var first = <?php echo intval($limits[0]); ?>;
+	var last = <?php echo intval($limits[1]); ?>;
 
 	window.onload = function(){
 	//$(document).ready(function(){ //jquery load doesnt work

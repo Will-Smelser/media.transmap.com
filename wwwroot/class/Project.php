@@ -122,10 +122,17 @@ class Project{
 		return str_pad(strval($imagePos),5,'0',STR_PAD_LEFT).'.jpg';
 	}
 	
-	public function findImageLimits($project, $survey){
-		if(!$this->LOCAL) return array(0,0);
+	public function findImageLimits(){
+		if(!$this->LOCAL) return array(0,99999);
 		$prefix = 'FL';
-		$base = $_SERVER['DOCUMENT_ROOT'].$project.$this->DS.$survey.$this->DS.$prefix.$survey;
+		$base = $_SERVER['DOCUMENT_ROOT'].$this->projectPath.$this->DS.$this->survey.$this->DS.$prefix.$this->survey;
+		
+		if(!is_dir($base)){
+			throw new Exception("Failed to locate dir: $base");
+			exit;
+			return array(0,99999);
+		}
+		
 		$dirs = scandir($base);
 		
 		$first = $last = null;
