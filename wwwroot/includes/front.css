@@ -9,8 +9,12 @@ body{
 	line-height:0px;
 }
 
-.image-container{
+#image-container{
 	margin:0px auto;
+}
+
+#image-container img{
+	position:absolute;
 }
 
 .image-wrapper{
@@ -27,8 +31,9 @@ body{
 	background-repeat:no-repeat;
 }
 
-#image-main, #canvas{
+#image-main{
 	margin:0px auto;
+	display:block;
 }
 
 #image-counter{
@@ -42,6 +47,9 @@ body{
 	position:absolute;
 	display:none;
 }
+#loading img{
+	position:relative;
+}
 #loading .inner{
 	width:200px;
 	margin:0px auto;
@@ -53,4 +61,14 @@ body{
 	padding-left:20px;
 	margin-bottom:13px;
 	display:inline-block;
+}
+
+#image-nav{
+	float:right;
+	width:200px;
+}
+#image-nav li{
+	display:block;
+	font-size:14px;
+	line-height:16px;
 }

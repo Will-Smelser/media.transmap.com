@@ -6,7 +6,8 @@ var Viewer = {
 	loading : "/images/layout/loading.gif",
 	
 	//project settings
-	camera : 'FL',
+	camera : 'BR',
+	type : 'p',
 	image : 0,
 	imageSize : 0,
 	project: '',
@@ -15,9 +16,6 @@ var Viewer = {
 	//max steps within vanish point
 	maxSteps : 8,
 	
-	//max height of vanish, changes for different cameras
-	vanish : 180,
-	
 	//dims of canvas...overriden onload
 	width  : 600,
 	height : 300,
@@ -25,12 +23,6 @@ var Viewer = {
 	//max/min
 	firstImage : 0,
 	lastImage  : 0,
-
-	//svg objects
-	paper : null,
-	elipse : null,
-	arrow : null,
-	arrowTxt : null,
 	
 	//left bar for turn around width
 	leftArea : 120,
@@ -45,14 +37,15 @@ var Viewer = {
 	//preloader
 	preloader : null,
 	
-	load : function(baseref, imageSize, image, project, survey, camera, first, last){
+	load : function(baseref, imageSize, image, project, survey, camera, type, first, last){
 		//set values
 		this.baseref = baseref;
-		this.image = parseInt(image);
+		this.image = this.lastClicked = parseInt(image);
 		this.imageSize = imageSize;
 		this.project = project;
 		this.survey = survey;
 		this.camera = camera;
+		this.type = type;
 		this.firstImage = first;
 		this.lastImage  = last;
 		
@@ -60,18 +53,10 @@ var Viewer = {
 		this.width = $('#image-main').width(); 
 		this.height = $('#image-main').height();
 		
-		//the vanishishing line
-		this.vanish = (camera == 'BR') ? this.height : this.height/1.75;
 		
 		//set some attributes for containers and canvas
 		$('#image-container').css('height',this.height+'px');
-		$('#canvas').css('width',this.width+'px');
 		$('#loading').css('width',this.width+'px').first().css('margin-top',(this.height/2-40)+'px');
-		
-		this._setupCanvas();
-		this._createElipse();
-		this._createArrow();
-		this._createPolygon();
 		
 		//create preloader
 		this.preloader = new Preload('image-preloader');
@@ -80,148 +65,38 @@ var Viewer = {
 		//preload forward images
 		for(i=0; i<=this.maxSteps+5; i++)
 			this.preloadImage(this.addSteps(this.image, i));
+		
+		//bind click events
+		$('#forward').click($.proxy(this._forwardClick,this));
+		$('#backward').click($.proxy(this._backwardClick,this));
+		$('#selectView').change($.proxy(this._changeView,this))
+			.val(this.type+'-'+this.camera+'-'+this.imageSize);
+		
 	},
+	
+	_forwardClick : function(){
+		this.canvasClick(this.addSteps(this.lastClicked,1));
+	},
+	
+	_backwardClick : function(){
+		this.canvasClick(this.minusSteps(this.lastClicked,1));
+	},
+	
+	_changeView : function($ev){
+		var val = $($ev.currentTarget).val().split('-');
+		this.type = val[0];
+		this.camera = val[1];
+		this.imageSize = val[2];
+		
+		this.canvasClick(this.lastClicked);
+	},
+	
 	//preloaderImage function to get image
 	_imageToNumber : function(){
 		//console.log(this.url.match(/(\d+\.jpe?g)$/g)).pop().split('.');
 		return parseInt(this.url.match(/(\d+\.jpe?g)$/g).pop().split('.')[0]*1);
 	},
-	_setupCanvas : function(){
-		this.paper = Raphael("canvas", this.width, this.height)
-		this.paper.clear();
-		
-		$('#canvas svg')
-		.css('position','absolute').css('z-index','100')
-		//events
-		.hover(
-			$.proxy(this.mouseOverCanvas,this),
-			$.proxy(this.mouseOutCanvas, this)
-		).mousemove(
-			$.proxy(this.whileOverCanvas,this)
-		).click(
-			$.proxy(this.clickCanvas, this)
-		);
-	},
-	_polyAttr : {stroke:"#FFF", "stroke-width":3, fill:"#efefef", "stroke-opacity":0.5, "fill-opacity":0.5},
-	_createElipse : function(){
-		this.elipse = this.paper.ellipse(300,100, 50, 20);
-		this.elipse.attr(this._polyAttr).hide();
-	},
-	_createArrow : function(){
-		//load the reverse arrow
-		this.arrow = this.paper.path("M12.981,9.073V6.817l-12.106,6.99l12.106,6.99v-2.422c3.285-0.002,9.052,0.28,9.052,2.269c0,2.78-6.023,4.263-6.023,4.263v2.132c0,0,13.53,0.463,13.53-9.823C29.54,9.134,17.952,8.831,12.981,9.073z").
-			attr(this._polyAttr)
-			.scale(4,2).hide();
-		
-		this.arrowTxt = this.paper.text(50, 50, "Turn Around").attr(
-				  {"font-family":"Arial", "font-style":"none", "font-size":"16", 
-					   stroke:"#FFF", "stroke-width":1, fill:"#efefef", 
-					   "stroke-opacity":0.5, "fill-opacity":0.5} ).hide();
-	},
 	
-	
-	
-	_createPolygon : function(){
-		var slope = this.height/this.width;
-		var start = 5;
-		var end   = 20;
-		var stretch = 10;
-		var offsetY = 20;
-	
-		//construe the rectangle
-		var top      = 4;
-		var bottom   = 0;
-		
-		
-		var p1 = [start,start*slope*bottom+stretch-8];
-		var p2 = [start+end, (start+end)*slope+stretch];
-		var p3 = [p2[0],-p2[1]-stretch];
-		var p4 = [p1[0],start*-slope*top-stretch];
-		
-		this.polygon = this.paper.path(
-				"M"+p1[0]+","+p1[1]+
-				"L"+p2[0]+","+p2[1]+
-				"L"+p3[0]+","+p3[1]+
-				"L"+p4[0]+","+p4[1]+
-				"L"+p1[0]+","+p1[1])
-			.translate(this.width/2,this.height/2-offsetY).attr(this._polyAttr).hide();
-		
-		
-		var x = 0;
-		var y = this._polylineGetY(x);
-		var x2= this.width;
-		var y2= this._polylineGetY(x2);
-		//console.log("M"+x+","+y+"L"+x2+","+y2);
-		//this.paper.path("M"+x+","+y+"L"+x2+","+y2);
-		
-	},
-	
-	_polylineGetY : function(x){
-		//poitnts were calculated using 640x380
-		var pt1 = [(499/640)*this.width, (250/380)*this.height];
-		var pt2 = [((640-15)/640)*this.width, this.height];
-		//console.log(pt1,pt2);
-		var slope = (pt1[1]-pt2[1])/(pt1[0]-pt2[0]);
-		//console.log(slope);
-		//y1 = m * x1 + b
-		//y2 = m * x2 + b
-		//y1+y2 - m(x1+x2) = 2b
-		var xint = (pt1[1]+pt2[1] - slope*(pt1[0]+pt2[0])) / 2;
-		
-		return x * slope + xint;
-	},
-	
-	mouseOverCanvas : function(e){
-		this.inPaper = true;
-	},
-
-	mouseOutCanvas : function(e){
-		this.inPaper = false;
-		this.elipse.hide();
-		this.arrow.hide().translate(0,0);
-		this.arrowTxt.hide();
-		this.polygon.hide();
-	},
-
-	whileOverCanvas : function(e){
-		//console.log(e.offsetX,e.offsetY);
-		//turn around area
-		if(e.offsetX < this.leftArea){
-			this.elipse.hide();
-			this.polygon.hide();
-			this.arrow.transform("T"+e.offsetX+","+(e.offsetY-20)).scale(4,2).show();
-			this.arrowTxt.transform("T"+(e.offsetX-30)+","+(e.offsetY-90)).show();
-		//in side wall area
-		}else if(
-			//only show if we are at front camera
-			this.camera.toLocaleUpperCase() === 'FL' &&
-			
-			//on right side of canvas
-			(e.offsetX > (this.width/2)*1.4 ) && (
-				//below diagonal
-				e.offsetY < (this.height/(this.width*1.0)*e.offsetX) //||
-				//above diagonal
-				//e.offsetY < this.height - (this.height/(this.width*1.0)*e.offsetX)
-			)
-		){
-			this.arrow.hide();
-			this.arrowTxt.hide();
-			this.elipse.hide();
-			this.polygon.show();
-			
-			var scale = (e.offsetX-(this.width/2))/(.5*this.width/2)*5+1;
-			this.polygon.transform("T"+(e.offsetX-10)+","+((this.height/2)-30)).scale(scale,scale).show();
-
-		//in elipse / road area
-		} else {
-			this.elipse.attr({cx:e.offsetX, cy:e.offsetY}).show();
-			this.arrow.hide();
-			this.arrowTxt.hide();
-			this.polygon.hide();
-			this.updateElipse(e);
-		}
-	},
-
 	exponentialDecay : function exponentialDecay(x, goalMax, scaleMax, exponent){
 		return goalMax / Math.pow(scaleMax/(scaleMax-x),exponent);
 	},
@@ -229,22 +104,7 @@ var Viewer = {
 	expoentialGrow : function(x, goalMax, scaleMax, exponent){
 		return goalMax / Math.pow(scaleMax/x,exponent);
 	},
-	
-	updateElipse : function(e){
-		//relative to top left
-		var x = e.offsetX;
-		var y = this.height - e.offsetY; //convert to bottom left
-
-		slope = this.vanish / (this.width / 2);
-		lineX = (1 / slope) * y;
-		elipseX = Math.round(Math.abs(2 * ((this.width/2) - lineX)),0) * .5;
-
-		elipseMaxH = 100;
-		elipseY = (y>this.vanish) ? 0 : this.exponentialDecay(y, elipseMaxH, this.vanish, 1.2);
 		
-		this.elipse.attr({rx:elipseX, ry:elipseY});
-	},
-	
 	addSteps : function(image,steps){
 		image = parseInt(image);
 		steps = parseInt(steps);
@@ -278,7 +138,6 @@ var Viewer = {
 	$imageNext : $('#image-next'),
 	$loaderWrap : $('#image-loading'),
 	
-	
 	preloadImage : function(image){
 		image = parseInt(image);
 		
@@ -311,15 +170,16 @@ var Viewer = {
 			this.project+"/"+this.survey+"/"+this.camera+this.survey+"/"+this.camera+"_"+image+".jpg";
 	},
 	
-	goToImage : function(image, camera){
-		if(typeof camera == "undefined" || camera == null){
-			camera = this.camera;
+	goToImage : function(image, type){
+		
+		if(typeof type == "undefined" || type == null){
+			type = this.type;
 		}
 		
 		$.cookie('last-image',null);
 		var loc = this.baseref + "?Image="+
 			this.pad(image,5)+"&survey="+this.survey+"&Project="+this.project+
-			"&camera="+camera;
+			"&type="+type;
 		
 		document.location.href = loc;
 	},
@@ -343,22 +203,6 @@ var Viewer = {
 	
 	alertUser : function(message){
 		alert(message);
-	},
-	
-	clickCanvas : function(e){
-		//if NOT turn around
-		if(e.offsetX > this.leftArea){
-			var y = this.height - e.offsetY;
-			var elipseHeight = this.elipse.attr('ry');
-		
-			steps = Math.ceil(this.expoentialGrow(y, this.maxSteps, this.vanish, 2));
-			this.canvasClick.call(this, this.addSteps(this.image,steps));
-			
-		//toggle view
-		} else {
-			var camera = (this.camera.toUpperCase() == "FL") ? "BR" : "FL";
-			this.goToImage(this.image,camera);
-		}
 	},
 	
 	canvasClick : function(img){
@@ -402,7 +246,7 @@ var Viewer = {
 		this.image = img;
 
 		$.cookie("last-image",this.pad(img,5));
-		$.cookie("camera",this.camera);
+		$.cookie("type",this.camera);
 		
 		
 		$imageCounter.val(this.pad(img,5));

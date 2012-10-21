@@ -6,7 +6,7 @@ if(isset($_COOKIE['camera']) || isset($_COOKIE['last-image'])){
 	
 	if($_GET['Image'] !== $cImage){
 		header("Location: ".basename($_SERVER['PHP_SELF']) .
-			 "?Image=$cImage&camera=$cCamera&Survey={$_GET['Survey']}&Project={$_GET['Project']}");
+			 "?Image=$cImage&type=$cCamera&Survey={$_GET['Survey']}&Project={$_GET['Project']}");
 	}
 }
 
@@ -28,8 +28,25 @@ $version = (empty($_GET['view']))    ? VIEW_DEFAULT     : $_GET['view'];
 $project1= (isset($_GET['project'])) ? $_GET['project'] : null;
 $survey  = (isset($_GET['survey']))  ? $_GET['survey']  : null;
 $image   = (isset($_GET['image']))   ? $_GET['image']   : null;
-$camera  = (isset($_GET['camera']))  ? $_GET['camera']  : 'FL';
-$imageSz = ($camera === 'BR') ? 25 : 40;
+$camera  = (isset($_GET['type']))  ? $_GET['type']  : 'p';
+
+switch($camera){
+	default:
+	case 'p':
+		$camera = 'BR';
+		$type = 'p';
+		$imageSz = 23;
+		break;
+	case 's':
+		$camera = 'RF';
+		$type = 's';
+		$imageSz = 39;
+		break;
+	case 'f':
+		$type = 'f';
+		$camera = 'FL';
+		$imageSz = 39;
+}
 
 try{
 	
@@ -76,14 +93,13 @@ h3.room { padding:.9em;}
   <link rel="stylesheet" href="/includes/front.css" type="text/css" media="screen">
   
   <script src="http://code.jquery.com/jquery-1.8.1.min.js" ></script>
-  <script src="/js/raphael-min.js" ></script>
   <script src="/js/cookie.js" ></script>
   <script src="/js/viewer.js" ></script>
   <script src="/js/preload.js" ></script>
   
   <script>
-  	var camera = 'FL';
-	var imageSize = <?php echo IMAGE_SIZE; ?>;
+  	var camera = '<?php echo $camera?>';
+	var imageSize = <?php echo $imageSz; ?>;
 	var image = <?php echo $image; ?>;
 	var project = "<?php echo $project1; ?>";
 	var survey = "<?php echo $survey; ?>";
@@ -92,7 +108,7 @@ h3.room { padding:.9em;}
 
 	window.onload = function(){
 	//$(document).ready(function(){ //jquery load doesnt work
-		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).",'$project1','$survey','$camera', first, last"; ?>);
+		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).",'$project1','$survey', '$camera','$type', first, last"; ?>);
 	};
   </script>
   

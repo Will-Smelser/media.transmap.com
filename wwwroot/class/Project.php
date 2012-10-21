@@ -47,7 +47,7 @@ class Project{
 			
 			while(($buffer = fgets($handle)) !== false){
 				$parts = explode(":",trim($buffer));
-				$this->projectMap[$parts[0]] = '/images'.$parts[1];
+				$this->projectMap[$parts[0]] = $parts[1];
 			}
 			
 			fclose($handle);
@@ -83,12 +83,12 @@ class Project{
 			
 			if(empty($survey) || empty($image)){
 				if(empty($survey))
-					$survey = $this->findFirstSurvey($projectName);
+					$survey = $this->findFirstSurvey($path);
 				
 				if(!empty($survey) && empty($image))
-					$image = $this->findFirstImage($projectName, $survey);
+					$image = $this->findFirstImage($path, $survey);
 				
-				if(!empty($survey) && !empty($image)){
+				if(!empty($survey) && !empty($image) && (empty($_GET['Image']) || empty($_GET['Survey']))){
 					header('Location: '.$_SERVER['PHP_SELF'].'?Image='.$image.'&Project='.$projectName.'&Survey='.$survey);
 				} else {
 					throw new Exception("Failed to locate valid survey and/or starting image.");
@@ -105,10 +105,10 @@ class Project{
 		$this->imagePos = intval($image);
 	}
 
-	private function findFirstSurvey($project){
+	private function findFirstSurvey($projectPath){
 		if(!$this->LOCAL) 'failed';
 		
-		$base = $_SERVER['DOCUMENT_ROOT'].$this->surveyImages.$this->DS.$project;
+		$base = $_SERVER['DOCUMENT_ROOT'].$this->DS.$projectPath;
 		
 		foreach(scandir($base) as $file){
 			if($file[0] != '.' && is_dir($base.$this->DS.$file)){
@@ -125,7 +125,7 @@ class Project{
 	public function findImageLimits($project, $survey){
 		if(!$this->LOCAL) return array(0,0);
 		$prefix = 'FL';
-		$base = $_SERVER['DOCUMENT_ROOT'].$this->surveyImages.'/'.$project.'/'.$survey.'/'.$prefix.$survey;
+		$base = $_SERVER['DOCUMENT_ROOT'].$project.$this->DS.$survey.$this->DS.$prefix.$survey;
 		$dirs = scandir($base);
 		
 		$first = $last = null;
@@ -145,8 +145,8 @@ class Project{
 		return array($first, $last);
 	}
 	
-	private function findFirstImage($project, $survey){
-		$base = $_SERVER['DOCUMENT_ROOT'].$this->surveyImages.'/'.$project.'/'.$survey;
+	private function findFirstImage($projectPath, $survey){
+		$base = $_SERVER['DOCUMENT_ROOT'].$projectPath.'/'.$survey;
 		foreach(scandir($base) as $file){
 			if($file[0] != '.' && is_dir($base.'/'.$file)){
 				foreach(scandir($base.'/'.$file) as $img){
