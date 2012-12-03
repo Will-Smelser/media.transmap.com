@@ -5,10 +5,14 @@ var Viewer = {
 	
 	loading : "/images/layout/loading.gif",
 	
+	//the service query url
+	query : null,
+	
 	//project settings
 	camera : 'BR',
 	type : 'p',
 	image : 0,
+	imagePath: '',
 	imageSize : 0,
 	project: '',
 	survey: '',
@@ -37,10 +41,11 @@ var Viewer = {
 	//preloader
 	preloader : null,
 	
-	load : function(baseref, imageSize, image, project, survey, camera, type, first, last){
+	load : function(baseref, imageSize, image, project, imagePath, survey, camera, type, first, last, query){
 		//set values
 		this.baseref = baseref;
 		this.image = this.lastClicked = parseInt(image);
+		this.imagePath = imagePath;
 		this.imageSize = imageSize;
 		this.project = project;
 		this.survey = survey;
@@ -48,6 +53,7 @@ var Viewer = {
 		this.type = type;
 		this.firstImage = first;
 		this.lastImage  = last;
+		this.query = query;
 		
 		//get the image width/height
 		this.width = $('#image-main').width(); 
@@ -76,12 +82,33 @@ var Viewer = {
 		
 	},
 	
+	loadData : function(){
+		//load the data
+		if(this.query != null){
+			$('#data-details').html("Loading...");
+			$.getJSON(this.query+"&where=IMAGENUM="+this.image,function(data){
+				console.log(data);
+				var str="";
+				var obj = data.features.shift();
+				for(var x in obj.attributes){
+					str+=x+":"+obj.attributes[x]+'<br/>';
+				}
+				$('#data-details').html(str);
+			});
+			
+		}else {
+			$('#data-details').html("No Data");
+		}
+	},
+	
 	_forwardClick : function(){
 		this.canvasClick(this.addSteps(this.lastClicked,1));
+		this.loadData();
 	},
 	
 	_backwardClick : function(){
 		this.canvasClick(this.minusSteps(this.lastClicked,1));
+		this.loadData();
 	},
 	
 	_changeView : function($ev){
@@ -168,8 +195,8 @@ var Viewer = {
 	getImageUrl : function(image){
 		image = this.pad(image,5);
 		
-		return "/imgsize.php?percent="+this.imageSize+"&img=/images/"+
-			this.project+"/"+this.survey+"/"+this.camera+this.survey+"/"+this.camera+"_"+image+".jpg";
+		return "/imgsize.php?percent="+this.imageSize+"&img="+
+			this.imagePath+"/"+this.survey+"/"+this.camera+this.survey+"/"+this.camera+"_"+image+".jpg";
 	},
 	
 	goToImage : function(image, type){

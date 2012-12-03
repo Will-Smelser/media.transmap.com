@@ -8,6 +8,7 @@ class Project{
 
 	private $projectName;
 	private $projectPath;
+	private $projectService;
 	private $survey;
 
 	//each image is just a number
@@ -47,7 +48,8 @@ class Project{
 			
 			while(($buffer = fgets($handle)) !== false){
 				$parts = explode(":",trim($buffer));
-				$this->projectMap[$parts[0]] = $parts[1];
+				$service = (empty($parts[2])) ? null : $parts[2];
+				$this->projectMap[$parts[0]] = array($parts[1],$service);
 			}
 			
 			fclose($handle);
@@ -61,7 +63,7 @@ class Project{
 			throw new Exception("Project name failed to map to project directory.");
 		}
 		
-		$path = $this->projectMap[$projectName];
+		$path = $this->projectMap[$projectName][0];
 		
 		//if this is hosted, then we dont have access to directory
 		//listings and cannot perform these checks
@@ -99,7 +101,8 @@ class Project{
 			$this->lastImage  = $high;
 		}
 		$this->projectName = $projectName;
-		$this->projectPath = $this->projectMap[$projectName];
+		$this->projectPath = $this->projectMap[$projectName][0];
+		$this->projectService = $this->projectMap[$projectName][1];
 		$this->survey = $survey;
 
 		$this->imagePos = intval($image);
@@ -208,6 +211,48 @@ class Project{
 
 	public function getProjectPath(){
 		return $this->projectPath;
+	}
+	
+	public function getProjectServiceBaseUrl(){
+		return (empty($this->projectService)) ? null : "http://{$this->projectService}";
+	}
+	
+	public function getProjectQueryUrl(){
+		$base = $this->getProjectServiceBaseUrl();
+		if(empty($base)) return null;
+		
+		//check if we have this already in session
+		$key = 'projectQueryUrl-'.$this->projectName;
+		$url = $this->session->getValue($this, $key);
+		if(!empty($url)) return $url;
+		
+		//get a list of services
+		$ch = curl_init($base.'/0?f=json');
+		$options = array(
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_HTTPHEADER => array('Content-type: application/json')
+		);
+		
+		// Setting curl options
+		curl_setopt_array( $ch, $options);
+		$output = curl_exec($ch);
+		curl_close($ch);
+		
+		$json = array();
+		try{
+			$json = json_decode($output,true);
+		}catch(Exception $e){
+			//do nothing
+		}
+		
+		$url = $base . "/0/query?f=json&returnGeometry=false&";
+		$url.= 'GeometryType=esriGeometryEnvelope&';
+		$url.= 'outFields=*&';
+		$url.= 'Geometry='.urlencode(json_encode($json['extent']));
+
+		$this->session->setNameValue($this, $key, $url);
+		
+		return $url;
 	}
 
 	public function getImagePadded(){

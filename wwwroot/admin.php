@@ -13,6 +13,24 @@ if(Login::hasMessage()){
 	Login::clearMessage();
 }
 
+//get a list of services
+$ch = curl_init("http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/ArcGIS/rest/services?f=json");
+$options = array(
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_HTTPHEADER => array('Content-type: application/json')
+);
+
+// Setting curl options
+curl_setopt_array( $ch, $options);
+$output = curl_exec($ch); 
+curl_close($ch);
+
+$json = array();
+try{
+	$json = json_decode($output,true);
+}catch(Exception $e){
+	//do nothing
+}
 ?>
 
 <div class="container">
@@ -26,6 +44,7 @@ if(Login::hasMessage()){
 	<label for="project">
 		<span style="display:inline-block;width:200px;">Project:</span>
 		<input id="project" name="project" type="text"/>
+			<i style="font-weight:normal">(No ":" please)</i>
 	</label><br/>
 	<label for="pfolder">
 		<span  style="display:inline-block;width:200px;">Image Location:</span>
@@ -33,6 +52,18 @@ if(Login::hasMessage()){
 		<?php makeOptions($base); ?>
 		</select>
 	</label><br/>
+	<label for="service">
+		<span style="display:inline-block;width:200px;">Service:</span>
+		<select name="service" id="service">
+		<?php  
+			foreach($json['services'] as $val){
+				$url = preg_replace('/https?\:\/\//i', '', $val['url']);
+				echo "<option value='$url'>{$val['name']}</option>";
+			}
+		?>
+		</select>
+	</label><br/>
+	
 	<input type="hidden" value="addProject" name="action" />
 	<input type="submit" value="Add Project" />
 </form>

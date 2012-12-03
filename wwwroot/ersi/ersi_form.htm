@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-1.8.3.min.js" ></script>
+<style>
+input{width:100%}
+input.submit{width:50px}
+.optional{background-color:yellow}
+</style>
+
+<script>
+$(document).ready(function(){
+	$('#submit').click(function(){
+		var action=$('#baseUrl').val().replace(' ','').replace('\n','');
+		$('#myform').attr('action',action).submit();
+		
+		var get = action+"?"+$('#myform').serialize()+"&where="+$('#where').val();
+		
+		$('#url').val(get);
+		
+		$.getJSON(get,function(data){
+			console.log(data);
+			
+		});
+	});
+	
+});
+</script>
+
+</head>
+
+<body>
+<h2>Fill out the form</h2>
+<form id="myform" target="window" method="get" action="test">
+<table>
+	<tr><td>baseUrl</td><td>
+		<textarea id="baseUrl" cols="70" rows="5">http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/arcgis/rest/services/Wilmington%2C_NC_Sign_Management_Data_%282011%29/FeatureServer/0/query</textarea>
+	<tr><td>f</td><td><select name="f" id="f"><option>json</option></select>
+	<tr><td>returnGeometry<td>
+		<select id="returnGeometry" name="returnGeometry">
+			<option value="true">true</option>
+			<option value="false">false</option>
+		</select>
+	<tr class="optional"><td>spatialRel</td><td><input name="spatialRel" id="spatialRel" value="esriSpatialRelIntersects" />
+	<tr><td>GeometryType<td>
+		<input type="text" name="geometryType" id="geometryType" value="esriGeometryEnvelope" />
+	<tr><td>Geometry<td>
+		<textarea name="geometry" id="geometry" cols="60" rows="5">{"xmin":-8678608.95181998,"ymin":4059398.28463193,"xmax":-8674975.48195002,"ymax":4061008.36596805,"spatialReference":{"wkid":102100}}</textarea>
+	<tr class="optional"><td>inSR<td>
+		<input name="inSR" id="inSR" type="text" value="102100" />
+	<tr class="optional"><td>outSR<td>
+		<input name="outSR" id="outSR" type="text" value="102100" />
+	<tr><td>outFields<td>
+		<input name="outFields" id="outFields" value="*" />
+</table>
+</form>
+<table style="width:100%">
+<tr class="optional"><td>where<td>
+		<input name="where" id="where" value="" />
+</table>
+
+<input class="submit" id="submit" type="button" value="Query" />
+<br/>
+<textarea id="url" rows="8" cols="70" ></textarea>
+</body>
+</html>

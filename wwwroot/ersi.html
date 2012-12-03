@@ -1,113 +1,47 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" /> 
-    <title>
-      Create web map from id
-    </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
+      on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Create Map</title>
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css" />
 
-
+    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script>
     <script type="text/javascript">
-      var dojoConfig = {
-        parseOnLoad: true
-      };
-    </script>
-    
-    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2">
-    </script>
-    <script type="text/javascript">
-      dojo.require("dijit.dijit"); 
-      dojo.require("dijit.layout.BorderContainer");
-      dojo.require("dijit.layout.ContentPane");
       dojo.require("esri.map");
-      dojo.require("esri.arcgis.utils");
-      dojo.require("esri.dijit.Legend");
-      dojo.require("esri.dijit.Scalebar");
-
-      var map;
 
       function init() {
-        
-        var mapDeferred = esri.arcgis.utils.createMap("dbd1c6d52f4e447f8c01d14a691a70fe", "map", {
-          mapOptions: {
-            slider: true,
-            nav:false
-          }
-        });
-        mapDeferred.then(function(response) {
-          
-          dojo.byId("title").innerHTML = response.itemInfo.item.title;
-          dojo.byId("subtitle").innerHTML = response.itemInfo.item.snippet;
-          
-          map = response.map;
-          
-          //resize the map when the browser resizes
-          dojo.connect(dijit.byId('map'), 'resize', map,map.resize);
-          //add the legend
-          var layers = response.itemInfo.itemData.operationalLayers;   
-          if(map.loaded){
-            initMap(layers);
-          }
-          else{
-          dojo.connect(map,"onLoad",function(){
-            initMap(layers);
-          });
-        }
-        },function(error){
-          console.log("Map creation failed: ", dojo.toJson(error));        
-        });
+        var map = new esri.Map("map");
 
-      }
-      
-      function initMap(layers){
-
-
-       //add a scalebar
-        var scalebar = new esri.dijit.Scalebar({
-          map:map,
-          scalebarUnit: 'english'
-        });
-        //add a legend
-        var layerInfo = dojo.map(layers, function(layer,index){
-          return {layer:layer.layerObject,title:layer.title};
-        });
-        if(layerInfo.length > 0){
-          var legendDijit = new esri.dijit.Legend({
-            map:map,
-            layerInfos:layerInfo
-          },"legend");
-
-          legendDijit.startup();
-        }
-        else{
-          dojo.byId('legend').innerHTML = 'No operational layers';
-        }
-
+        var imageParameters = new esri.layers.ImageParameters();
+        imageParameters.format = "jpeg";  //set the image type to PNG24, note default is PNG8.
+        //Takes a URL to a non cached map service.
+        var dynamicMapServiceLayer = new esri.layers.ArcGISDynamicMapServiceLayer("http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Population_World/MapServer", {"opacity":0.5, "imageParameters":imageParameters});
+        map.addLayer(dynamicMapServiceLayer);
       }
 
-      //show map on load
       dojo.addOnLoad(init);
-
     </script>
-
   </head>
-
-
-
   <body class="claro">
-    <div id="mainWindow" data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design:'headline'" style="width:100%; height:100%;">
-      <div id="header" class="shadow roundedCorners" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'top'">
-        <div id="title"></div>
-        <div id="subtitle" > </div>
-      </div>
-      <div id="map" class="roundedCorners shadow" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'center'"></div>
-      <div id="rightPane" class="roundedCorners shadow" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'right'" >
-        <div id="legend"></div>
-      </div>
-    </div>
+    <div id="map" style="width:900px; height:600px; border:1px solid #000;"></div>
+    Creates a map and adds an ArcGISDynamicMapServiceLayer.<br />
+    Map navigation using mouse:
+    <ul>
+      <li>Drag to pan</li>
+      <li>SHIFT + Click to recenter</li>
+      <li>SHIFT + Drag to zoom in</li>
+      <li>SHIFT + CTRL + Drag to zoom out</li>
+      <li>Mouse Scroll Forward to zoom in</li>
+      <li>Mouse Scroll Backward to zoom out</li>
+      <li>Use Arrow keys to pan</li>
+      <li>+ key to zoom in a level</li>
+      <li>- key to zoom out a level</li>
+      <li>Double Click to Center and Zoom in</li>
+    </ul>
   </body>
-
-
-
 </html>

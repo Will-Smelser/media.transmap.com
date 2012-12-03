@@ -1,7 +1,7 @@
 <?php
 //check if we have cookie set for last direction and image
 if(isset($_COOKIE['camera']) || isset($_COOKIE['last-image'])){
-	$cCamera = isset($_COOKIE['camera']) ? $_COOKIE['camera'] : $_GET['camera'];
+	$cCamera = isset($_COOKIE['camera']) ? $_COOKIE['camera'] : (isset($_GET['camera'])?$_GET['camera']:"");
 	$cImage = isset($_COOKIE['last-image']) ? $_COOKIE['last-image'] : $_GET['Image'];
 	
 	if($_GET['Image'] !== $cImage){
@@ -110,7 +110,9 @@ h3.room { padding:.9em;}
 
 	window.onload = function(){
 	//$(document).ready(function(){ //jquery load doesnt work
-		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).",'$project1','$survey', '$camera','$type', first, last"; ?>);
+		var queryBaseUrl = '<?php echo $project->getProjectQueryUrl(); ?>';
+		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
+		Viewer.loadData();
 	};
   </script>
   

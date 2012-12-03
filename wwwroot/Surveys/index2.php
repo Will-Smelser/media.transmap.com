@@ -34,6 +34,12 @@
 			<li><a href="#" id="backward" >Move Backward</a></li>
 			<li><a href="<?php echo $project->getNextImageUrl(0); ?>">Default Viewer</a></li>
 		</ul>
+		<hr/>
+		<ul style="display:block">
+			<li>
+				<div id="data-details" style="max-height:200px;overflow:auto">No Data</div>
+			</li>
+		</ul>
 		</div>
 		
 		<div class="image-container" id="image-container">

@@ -66,7 +66,7 @@ function handleActions(){
 		fclose($handle);
 	
 		if(!$found)
-			if(file_put_contents($file,$_POST['project'].':'.$_POST['pfolder']."\n",FILE_APPEND))
+			if(file_put_contents($file,$_POST['project'].':'.$_POST['pfolder'].':'.$_POST['service']."\n",FILE_APPEND))
 				Login::setMessage("Successfully added.");
 			else
 				Login::setMessage("Failed to add project.");
