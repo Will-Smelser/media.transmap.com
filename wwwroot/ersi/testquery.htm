@@ -1,0 +1,67 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples 
+      on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Query State Info without Map</title>
+    
+    
+    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script>
+    <script type="text/javascript" language="Javascript">
+      dojo.require("esri.tasks.query");
+      dojo.require("esri.map");
+
+      var queryTask, query;
+
+      function init() {
+        
+      }
+
+      function execute(image, survey) {
+    	//build query
+          //queryTask = new esri.tasks.QueryTask("http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/5");
+          queryTask = new esri.tasks.QueryTask(dojo.byId('url').value);
+          //dojo.connect(queryTask, "onComplete", showResults);
+
+          //build query filter
+          query = new esri.tasks.Query();
+          query.returnGeometry = false;
+          query.outFields = ["IMAGENUM","IMAGE_LINK","Sequence"];
+    	  
+        query.where = "IMAGENUM='"+image+"' and Sequence='"+survey+"'";
+        
+        //execute query
+        queryTask.execute(query,showResults);
+      }
+
+      function showResults(results) {
+        var s = "";
+        for (var i=0, il=results.features.length; i<il; i++) {
+          var featureAttributes = results.features[i].attributes;
+          for (att in featureAttributes) {
+            s = s + "<b>" + att + ":</b>  " + featureAttributes[att] + "<br />";
+          }
+        }
+        dojo.byId("info").innerHTML = s;
+      }
+
+      dojo.addOnLoad(init);
+    </script>
+  </head>
+  <body>
+  	URL: <input type="text" value="http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/ArcGIS/rest/services/Milton_Vanimg/FeatureServer/0/query" id="url" style="width:100%"/>
+  	<br/>
+    Transmap image number : <input type="text" id="imageNum" value="00340" />
+    <br/>
+    Survey number: <input type="text" id="survey" value="11072114(4)" /> <br/>
+    <input type="button" value="Get Details" onclick="execute(dojo.byId('imageNum').value, dojo.byId('survey').value);" />
+    <br />
+    <br />
+    <div id="info" style="padding:5px; margin:5px; background-color:#eee;">
+    </div>
+  </body>
+</html>

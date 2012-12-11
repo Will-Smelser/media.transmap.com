@@ -7,6 +7,7 @@ var Viewer = {
 	
 	//the service query url
 	query : null,
+	queryTask : null,
 	
 	//project settings
 	camera : 'BR',
@@ -80,25 +81,32 @@ var Viewer = {
 		$('#selectView').change($.proxy(this._changeView,this))
 			.val(this.type+'-'+this.camera+'-'+this.imageSize);
 		
+		//setup the arcgis query task
+		this.queryTask = new esri.tasks.QueryTask(this.query);
+		this.query = new esri.tasks.Query();
+	    this.query.returnGeometry = false;
+	    this.query.outFields = ["*"];//["IMAGENUM","IMAGE_LINK","Sequence"];
 	},
 	
 	loadData : function(){
 		//load the data
-		if(this.query != null){
-			$('#data-details').html("Loading...");
-			$.getJSON(this.query+"&where=IMAGENUM="+this.image,function(data){
-				console.log(data);
-				var str="";
-				var obj = data.features.shift();
-				for(var x in obj.attributes){
-					str+=x+":"+obj.attributes[x]+'<br/>';
-				}
-				$('#data-details').html(str);
-			});
-			
-		}else {
-			$('#data-details').html("No Data");
-		}
+		$('#data-details').html("Loading...");
+		this.query.where = "IMAGENUM='"+this.pad(this.image,5)+"' and Survey='"+this.survey+"'";
+		this.queryTask.execute(this.query, this._showData);
+		
+	},
+	_showData : function(results){
+		var s = "";
+        for (var i=0, il=results.features.length; i<il; i++) {
+          var featureAttributes = results.features[i].attributes;
+          for (att in featureAttributes) {
+            s = s + "<b>" + att + ":</b>  " + featureAttributes[att] + "<br />";
+          }
+        }
+        
+        if(s == "") s = "No Data";
+        
+		$('#data-details').html(s);
 	},
 	
 	_forwardClick : function(){

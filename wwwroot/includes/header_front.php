@@ -94,12 +94,16 @@ h3.room { padding:.9em;}
 
   <link rel="stylesheet" href="/includes/front.css" type="text/css" media="screen">
   
+  <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script>
   <script src="http://code.jquery.com/jquery-1.8.1.min.js" ></script>
   <script src="/js/cookie.js" ></script>
   <script src="/js/viewer.js" ></script>
   <script src="/js/preload.js" ></script>
   
   <script>
+	dojo.require("esri.tasks.query");
+	dojo.require("esri.map");
+	
   	var camera = '<?php echo $camera?>';
 	var imageSize = <?php echo $imageSz; ?>;
 	var image = <?php echo intval($image); ?>;

@@ -224,7 +224,7 @@ class Project{
 		//check if we have this already in session
 		$key = 'projectQueryUrl-'.$this->projectName;
 		$url = $this->session->getValue($this, $key);
-		if(!empty($url)) return $url;
+		//if(!empty($url)) return $url;
 		
 		//get a list of services
 		$ch = curl_init($base.'/0?f=json');
@@ -245,10 +245,10 @@ class Project{
 			//do nothing
 		}
 		
-		$url = $base . "/0/query?f=json&returnGeometry=false&";
-		$url.= 'GeometryType=esriGeometryEnvelope&';
-		$url.= 'outFields=*&';
-		$url.= 'Geometry='.urlencode(json_encode($json['extent']));
+		$url = $base . "/0/query";//?f=json&returnGeometry=false&";
+		//$url.= 'GeometryType=esriGeometryEnvelope&';
+		//$url.= 'outFields=*&';
+		//$url.= 'Geometry='.urlencode(json_encode($json['extent']));
 
 		$this->session->setNameValue($this, $key, $url);
 		
