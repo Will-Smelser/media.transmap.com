@@ -128,9 +128,10 @@ h3.room { padding:.9em;}
 		//var queryBaseUrl = "http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/ArcGIS/rest/services/vanimg/FeatureServer/0";
 		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
 
-		$.getJSON(Viewer.qbase.replace(/\/query/g,'')+'?f=json',init);
-		
-		Viewer.loadData();
+		//$.getJSON(Viewer.qbase.replace(/\/query/g,'')+'?f=json',init);
+		dojo.ready(function(){
+			$.getJSON(Viewer.qbase.replace(/\/0\/query/,"")+'?f=json',init);
+		});
 	};
   </script>
   

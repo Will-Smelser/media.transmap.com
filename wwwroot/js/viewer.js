@@ -82,8 +82,6 @@ var Viewer = {
 		$('#selectView').change($.proxy(this._changeView,this))
 			.val(this.type+'-'+this.camera+'-'+this.imageSize);
 		
-		//load the map
-		//this._startLoadMap(this.qbase);
 		
 		//setup the arcgis query task
 		this.queryTask = new esri.tasks.QueryTask(this.qbase);
@@ -91,10 +89,7 @@ var Viewer = {
 	    this.query.returnGeometry = true;
 	    this.query.outFields = ["*"];//["IMAGENUM","IMAGE_LINK","Sequence"];
 	},
-	_startLoadMap : function(){
-		$.getJSON(this.qbase.replace(/\/query/g,'')+'?f=json',mapInit);
 		
-	},	
 	loadData : function(){
 		//load the data
 		$('#data-details').html("Loading...");
@@ -117,7 +112,7 @@ var Viewer = {
         if(s == ""){
         	s = "No Data";
         } else {
-        	window.map.centerAndZoom(feature.geometry,20);
+        	window.map.centerAndZoom(feature.geometry,16);
         }
         
 		$('#data-details').html(s);
