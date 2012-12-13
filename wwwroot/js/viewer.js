@@ -6,6 +6,7 @@ var Viewer = {
 	loading : "/images/layout/loading.gif",
 	
 	//the service query url
+	qbase : null,
 	query : null,
 	queryTask : null,
 	
@@ -54,7 +55,7 @@ var Viewer = {
 		this.type = type;
 		this.firstImage = first;
 		this.lastImage  = last;
-		this.query = query;
+		this.qbase = query;
 		
 		//get the image width/height
 		this.width = $('#image-main').width(); 
@@ -81,30 +82,43 @@ var Viewer = {
 		$('#selectView').change($.proxy(this._changeView,this))
 			.val(this.type+'-'+this.camera+'-'+this.imageSize);
 		
+		//load the map
+		//this._startLoadMap(this.qbase);
+		
 		//setup the arcgis query task
-		this.queryTask = new esri.tasks.QueryTask(this.query);
+		this.queryTask = new esri.tasks.QueryTask(this.qbase);
 		this.query = new esri.tasks.Query();
-	    this.query.returnGeometry = false;
+	    this.query.returnGeometry = true;
 	    this.query.outFields = ["*"];//["IMAGENUM","IMAGE_LINK","Sequence"];
 	},
-	
+	_startLoadMap : function(){
+		$.getJSON(this.qbase.replace(/\/query/g,'')+'?f=json',mapInit);
+		
+	},	
 	loadData : function(){
 		//load the data
 		$('#data-details').html("Loading...");
 		this.query.where = "IMAGENUM='"+this.pad(this.image,5)+"' and Survey='"+this.survey+"'";
 		this.queryTask.execute(this.query, this._showData);
+		//featureLayer.queryFeatures(this.query,this._showData);
 		
 	},
 	_showData : function(results){
+		console.log(results);
 		var s = "";
-        for (var i=0, il=results.features.length; i<il; i++) {
-          var featureAttributes = results.features[i].attributes;
-          for (att in featureAttributes) {
-            s = s + "<b>" + att + ":</b>  " + featureAttributes[att] + "<br />";
-          }
+		var found = null;
+		
+		var feature = (results.features.length > 0) ?
+				results.features[0] : [];
+				
+		for(var x in feature.attributes)
+			s = s + "<b>" + x + ":</b>  " + feature.attributes[x] + "<br />";
+		        
+        if(s == ""){
+        	s = "No Data";
+        } else {
+        	window.map.centerAndZoom(feature.geometry,20);
         }
-        
-        if(s == "") s = "No Data";
         
 		$('#data-details').html(s);
 	},

@@ -224,7 +224,7 @@ class Project{
 		//check if we have this already in session
 		$key = 'projectQueryUrl-'.$this->projectName;
 		$url = $this->session->getValue($this, $key);
-		//if(!empty($url)) return $url;
+		if(!empty($url)) return $url;
 		
 		//get a list of services
 		$ch = curl_init($base.'/0?f=json');

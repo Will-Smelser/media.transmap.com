@@ -19,6 +19,9 @@ $session = &Session::getInstance();
 //definitions
 define('VIEW_DEFAULT','front');
 define('IMAGE_SIZE','40');
+define('IMAGE_SIZE_BR', 18);
+define('IMAGE_SIZE_RF', 27);
+define('IMAGE_SIZE_FL', 27);
 
 //get everything to lowercase
 foreach($_GET as $key=>$val) $_GET[strtolower($key)] = $val;
@@ -35,17 +38,17 @@ switch($camera){
 	case 'p':
 		$camera = 'BR';
 		$type = 'p';
-		$imageSz = 23;
+		$imageSz = IMAGE_SIZE_BR;
 		break;
 	case 's':
 		$camera = 'RF';
 		$type = 's';
-		$imageSz = 39;
+		$imageSz = IMAGE_SIZE_RF;
 		break;
 	case 'f':
 		$type = 'f';
 		$camera = 'FL';
-		$imageSz = 39;
+		$imageSz = IMAGE_SIZE_FL;
 }
 
 try{
@@ -94,7 +97,14 @@ h3.room { padding:.9em;}
 
   <link rel="stylesheet" href="/includes/front.css" type="text/css" media="screen">
   
+  <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/dojo/dijit/themes/claro/claro.css"/>
+  <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css" />
   <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script>
+   <style>
+      html, body {} .esriScalebar{
+      padding: 20px 20px; } #map{ padding:0;}
+    </style>
+  
   <script src="http://code.jquery.com/jquery-1.8.1.min.js" ></script>
   <script src="/js/cookie.js" ></script>
   <script src="/js/viewer.js" ></script>
@@ -115,7 +125,11 @@ h3.room { padding:.9em;}
 	window.onload = function(){
 	//$(document).ready(function(){ //jquery load doesnt work
 		var queryBaseUrl = '<?php echo $project->getProjectQueryUrl(); ?>';
+		//var queryBaseUrl = "http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/ArcGIS/rest/services/vanimg/FeatureServer/0";
 		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
+
+		$.getJSON(Viewer.qbase.replace(/\/query/g,'')+'?f=json',init);
+		
 		Viewer.loadData();
 	};
   </script>
@@ -128,7 +142,7 @@ h3.room { padding:.9em;}
   
 </head>
 
-<body>
+<body class="caro">
   
   
   
