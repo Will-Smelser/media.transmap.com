@@ -22,6 +22,8 @@ var Viewer = {
 	//max steps within vanish point
 	maxSteps : 8,
 	
+	zoom: 17,
+	
 	//dims of canvas...overriden onload
 	width  : 600,
 	height : 300,
@@ -83,19 +85,99 @@ var Viewer = {
 			.val(this.type+'-'+this.camera+'-'+this.imageSize);
 		
 		
-		//setup the arcgis query task
-		this.queryTask = new esri.tasks.QueryTask(this.qbase);
+		//setup the arcgis query
 		this.query = new esri.tasks.Query();
 	    this.query.returnGeometry = true;
 	    this.query.outFields = ["*"];//["IMAGENUM","IMAGE_LINK","Sequence"];
+	    this.query.where = "IMAGENUM='"+this.pad(this.image,5)+"' and Survey='"+this.survey+"'";
+	    
+	    
+	    //wait on the map to load
+	    var obj = this;
+    	this.queryTask = new esri.tasks.QueryTask(this.qbase);
+    	this.queryTask.execute(this.query,function(data){
+    		Viewer.firstPoint = data.features[0];
+    		$.getJSON(Viewer.qbase.replace(/\/0\/query/,"")+'?f=json',Viewer._loadMap);
+    	});
+    	//window.geometryService = new esri.tasks.GeometryService("http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer");
+
 	},
+	_loadMap : function(data){
+				
+		var popup = new esri.dijit.Popup({
+	          fillSymbol: new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255,0,0]), 2), new dojo.Color([255,255,0,0.25])),
+			  
+	        }, dojo.create("div"));
+
 		
+		var featureQuery = Viewer.qbase.replace(/\/query(\/.*)?/i,'');
+		var initExtent = new esri.geometry.Extent(data.fullExtent);
+
+		map = new esri.Map("map", {
+		    extent: initExtent,
+		    maxRecordCount:100,
+		    infoWindow : popup,
+			outFields : ["*"]
+		});
+		
+		dojo.addClass(map.infoWindow.domNode, "myTheme");
+		
+		var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
+		map.addLayer(basemap);
+		
+		dojo.connect(map, "onLoad", function() {
+			  //after map loads, connect to listen to mouse move & drag events
+			map.centerAndZoom(Viewer.firstPoint.geometry, Viewer.zoom);
+			
+			//now we need to load the featureLayer
+			featureLayer = new esri.layers.FeatureLayer(featureQuery, {
+	        	mode: esri.layers.FeatureLayer.MODE_ONDEMAND,
+	        	outFields: ['*']
+	        });
+	        map.addLayer(featureLayer);
+	        
+	        Viewer.loadData();
+		});
+	},
 	loadData : function(){
 		//load the data
 		$('#data-details').html("Loading...");
+		
 		this.query.where = "IMAGENUM='"+this.pad(this.image,5)+"' and Survey='"+this.survey+"'";
-		this.queryTask.execute(this.query, this._showData);
-		//featureLayer.queryFeatures(this.query,this._showData);
+		
+		console.log("loadData",featureLayer);
+		if(typeof featureLayer == "object" ){
+			
+	        featureLayer.selectFeatures(Viewer.query,esri.layers.FeatureLayer.SELECTION_NEW,function(features){
+	        	console.log(features[0]);
+	        	map.graphics.clear();
+	        	
+	        	
+	        	var pt = new esri.geometry.Point(features[0].geometry.x,features[0].geometry.y,map.spatialReference);
+	        	var sms =new esri.symbol.SimpleMarkerSymbol();
+	        	var infoTemplate = new esri.InfoTemplate();
+	        	
+	        	infoTemplate.setContent(function(data){
+	        		console.log(data);
+	        		var str = "";
+	        		for(var x in data){
+	        			str+="<div>"+x+":"+data[x]+"</div>";
+	        		}
+	        		return str;
+	        	}(features[0].attributes));
+
+	        	
+	        	var graphic = new esri.Graphic(pt,sms,features[0].attributes,infoTemplate);
+	        	map.graphics.add(graphic);
+	        	
+	        	var center = new esri.geometry.Point(
+	        			features[0].geometry.x+100,
+	        			features[0].geometry.y+50,
+	        			features[0].geometry.spatialReference);
+	        	map.centerAt(center);
+	        });
+			
+		}
 		
 	},
 	_showData : function(results){
@@ -112,7 +194,7 @@ var Viewer = {
         if(s == ""){
         	s = "No Data";
         } else {
-        	window.map.centerAndZoom(feature.geometry,16);
+        	
         }
         
 		$('#data-details').html(s);

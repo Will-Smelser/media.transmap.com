@@ -43,13 +43,13 @@
 
   		console.log(map);
         //create a feature layer based on the feature collection
-        var featureService = "http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/ArcGIS/rest/services/vanimg/FeatureServer/0";
-        var featureLayer = new esri.layers.FeatureLayer(featureService, {
-          mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
-          outFields: ['*']
-        });
+        //var featureService = "http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/ArcGIS/rest/services/vanimg/FeatureServer/0";
+        //var featureLayer = new esri.layers.FeatureLayer(featureService, {
+          //mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
+          //outFields: ['*']
+        //});
         //featureLayer.setDefinitionExpression("address != ''");
-        map.addLayer(featureLayer);
+        //map.addLayer(featureLayer);
         
         dojo.connect(map, 'onLoad', function(theMap) {
           //resize the map when the browser resizes

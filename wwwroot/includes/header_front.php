@@ -95,7 +95,7 @@ h3.room { padding:.9em;}
   <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
   
 
-  <link rel="stylesheet" href="/includes/front.css" type="text/css" media="screen">
+  <link rel="stylesheet" href="/includes/front.css" type="text/css" media="screen"> 	
   
   <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/dojo/dijit/themes/claro/claro.css"/>
   <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css" />
@@ -129,14 +129,56 @@ h3.room { padding:.9em;}
 		Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
 
 		//$.getJSON(Viewer.qbase.replace(/\/query/g,'')+'?f=json',init);
-		dojo.ready(function(){
-			$.getJSON(Viewer.qbase.replace(/\/0\/query/,"")+'?f=json',init);
-		});
+		//dojo.ready(function(){
+			//$.getJSON(Viewer.qbase.replace(/\/0\/query/,"")+'?f=json',init);
+		//});
 	};
   </script>
   
   
   
+     <style>
+      html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+      .esriScalebar{
+        padding: 20px 20px;
+      }
+      #map{
+        padding:0;
+      }
+      .esriPopup.myTheme .titlePane,
+      .dj_ie7 .esriPopup.myTheme .titlePane .title {
+        background-color: #899752;
+        color: #333333;
+        font-weight: bold;
+      }
+      .esriPopup.myTheme .titlePane {
+        border-bottom: 1px solid #121310;
+      }
+      .esriPopup.myTheme a {
+        color: #d6e68a;
+      }
+      .esriPopup.myTheme .titleButton,
+      .esriPopup.myTheme .pointer,
+      .esriPopup.myTheme .outerPointer,
+      .esriPopup.myTheme .esriViewPopup .gallery .mediaHandle,
+      .esriPopup.myTheme .esriViewPopup .gallery .mediaIcon {
+          background-image: url(./images/popup.png);
+      }
+      .esriPopup.myTheme .contentPane,
+      .esriPopup.myTheme .actionsPane {
+        border-color: 1px solid #121310;
+        background-color: #424242;
+        color:#ffffff;
+        max-height:150px;
+     }
+     .esriPopup.myTheme .contentPane div{
+     	display:block;
+     	position:relative;
+     	height:12px;
+     }
+ 
+
+    </style>
   
   
   
