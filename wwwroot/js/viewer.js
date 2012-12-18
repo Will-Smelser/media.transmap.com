@@ -104,10 +104,7 @@ var Viewer = {
 	},
 	_loadMap : function(data){
 				
-		var popup = new esri.dijit.Popup({
-	          fillSymbol: new esri.symbol.SimpleFillSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([255,0,0]), 2), new dojo.Color([255,255,0,0.25])),
-			  
-	        }, dojo.create("div"));
+		var popup = new esri.dijit.Popup({}, dojo.create("div"));
 
 		
 		var featureQuery = Viewer.qbase.replace(/\/query(\/.*)?/i,'');
@@ -125,8 +122,9 @@ var Viewer = {
 		var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
 		map.addLayer(basemap);
 		
+		//after the map loads we want to add the feature layer
 		dojo.connect(map, "onLoad", function() {
-			  //after map loads, connect to listen to mouse move & drag events
+			//after map is loaded zoom the map to the current point
 			map.centerAndZoom(Viewer.firstPoint.geometry, Viewer.zoom);
 			
 			//now we need to load the featureLayer
@@ -134,6 +132,34 @@ var Viewer = {
 	        	mode: esri.layers.FeatureLayer.MODE_ONDEMAND,
 	        	outFields: ['*']
 	        });
+			
+			//the feature layer point that was clicked on
+			dojo.connect(featureLayer,"onClick",function(evt){
+				console.log(evt);
+				
+				//query this point to get all the data
+				var query = new esri.tasks.Query();
+				query.geometry = evt.graphic.geometry;
+				query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_CONTAINS;
+				console.log(query);
+				featureLayer.selectFeatures(query,esri.layers.FeatureLayer.SELECTION_NEW,
+					function(features){
+						if(features.length > 0){
+							var image = features[0].attributes.IMAGENUM;
+							console.log(image);
+							Viewer.canvasClick(image);
+							Viewer.loadData();
+						}else{
+							//did not match the clicked on point
+						}
+					},
+					function(){
+						//query failed
+					}
+				);
+		    });
+
+			
 	        map.addLayer(featureLayer);
 	        
 	        Viewer.loadData();
@@ -171,8 +197,8 @@ var Viewer = {
 	        	map.graphics.add(graphic);
 	        	
 	        	var center = new esri.geometry.Point(
-	        			features[0].geometry.x+100,
-	        			features[0].geometry.y+50,
+	        			features[0].geometry.x+0,
+	        			features[0].geometry.y+0,
 	        			features[0].geometry.spatialReference);
 	        	map.centerAt(center);
 	        });
@@ -198,6 +224,10 @@ var Viewer = {
         }
         
 		$('#data-details').html(s);
+	},
+	
+	_goToImage : function(image){
+		
 	},
 	
 	_forwardClick : function(){
