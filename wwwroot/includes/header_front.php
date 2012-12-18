@@ -19,9 +19,9 @@ $session = &Session::getInstance();
 //definitions
 define('VIEW_DEFAULT','front');
 define('IMAGE_SIZE','40');
-define('IMAGE_SIZE_BR', 18);
-define('IMAGE_SIZE_RF', 27);
-define('IMAGE_SIZE_FL', 27);
+define('IMAGE_SIZE_BR', 25);
+define('IMAGE_SIZE_RF', 38);
+define('IMAGE_SIZE_FL', 38);
 
 //get everything to lowercase
 foreach($_GET as $key=>$val) $_GET[strtolower($key)] = $val;

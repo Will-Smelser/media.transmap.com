@@ -31,13 +31,16 @@
 		</ul>
 		<div style="clear:both"></div>
 	</div>
-	<div class="container" style="background:#F8F8F8;padding:6px;border-width:1px;border-style:dotted;border-color:black;">
+	<div class="container" style="background:#F8F8F8;padding:6px;border-width:1px;border-style:dotted;border-color:black;position:relative;">
 		<div id="image-nav" style="width:500px;">
-			
-			  <div data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design:'headline'" style="width: 500px; height: 370px; margin: 0; overflow:hidden;">
+			<div style="position:absolute;left:5px;top:5px;z-index:10;width:600px;height:500px;border:solid black 2px">
+			  <div data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design:'headline'" style="width: 150px; height: 100px; margin: 0; overflow:hidden;">
 				<div id="map" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'center'"></div>
 			  </div>
-				
+			</div>
+		</div>
+		
+		<div style="position:absolute;right:0px;width:300px;height:400px;border:solid black 2px;">
 			<ul>
 				<li><h4>Current Image Data</h4>
 					<div id="data-details" style="height:150px;overflow-x:hidden;overflow-y:auto;">No Data</div>
@@ -45,14 +48,12 @@
 			</ul>
 		</div>
 		
-		<div class="image-container" id="image-container">
+		<div class="image-container" id="image-container" style="z-index:1;">
 			<img id="image-main" src="<?php echo $project->getImage($camera, 0, $imageSz); ?>" />
 			<img id="image-next" src="<?php echo $project->getImage($camera, 1, $imageSz); ?>" style="display:none;" />
 			<div id="loading" >
 				<div class="inner"><img src="/images/layout/loading.gif" /><i>Loading ...</i></div>
 			</div>
-		</div>
-		
 		</div>
 	</div>
 			
