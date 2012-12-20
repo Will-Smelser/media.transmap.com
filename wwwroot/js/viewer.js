@@ -22,7 +22,7 @@ var Viewer = {
 	//max steps within vanish point
 	maxSteps : 8,
 	
-	zoom: 17,
+	zoom: 19,
 	
 	//dims of canvas...overriden onload
 	width  : 600,
@@ -66,7 +66,7 @@ var Viewer = {
 		
 		//set some attributes for containers and canvas
 		$('#image-container').css('height',this.height+'px');
-		$('#loading').css('width',this.width+'px').first().css('margin-top',(this.height/2-40)+'px');
+		$('#loading','#loading2').css('width',this.width+'px').first().css('margin-top',(this.height/2-40)+'px');
 		
 		//create preloader
 		this.preloader = new Preload('image-preloader');
@@ -99,8 +99,29 @@ var Viewer = {
     		Viewer.firstPoint = data.features[0];
     		$.getJSON(Viewer.qbase.replace(/\/0\/query/,"")+'?f=json',Viewer._loadMap);
     	});
-    	//window.geometryService = new esri.tasks.GeometryService("http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer");
 
+    	//map resize click
+    	$('#map-full').click(this._fullMap);
+    	
+    	
+	},
+	_currentPointGeometry : null,
+	
+	_fullMapState : false,
+	_fullMap : function(){
+		$('#loading2').show();
+		
+		var size = (Viewer._fullMapState) ? ['325px','210px'] : ['100%','100%'];
+		Viewer._fullMapState = (!Viewer._fullMapState);
+		var $wrapper = $('#map-wrapper');
+		$wrapper.find('#map-full').toggleClass('open','close');
+		$wrapper.animate({
+			width:size[0],
+			height:size[1]
+		},function(){
+			map.resize(true);
+			setTimeout(function(){map.centerAt(Viewer._currentPointGeometry)},500);
+		});
 	},
 	_loadMap : function(data){
 				
@@ -114,9 +135,10 @@ var Viewer = {
 		    extent: initExtent,
 		    maxRecordCount:100,
 		    infoWindow : popup,
+		    sliderStyle: "small",
 			outFields : ["*"]
 		});
-		
+		console.log("loaded map",map);
 		dojo.addClass(map.infoWindow.domNode, "myTheme");
 		
 		var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
@@ -138,6 +160,8 @@ var Viewer = {
 				console.log(evt);
 				
 				//query this point to get all the data
+				Viewer._currentPointGeometry = evt.graphic.geometry;
+				
 				var query = new esri.tasks.Query();
 				query.geometry = evt.graphic.geometry;
 				query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_CONTAINS;
@@ -162,6 +186,10 @@ var Viewer = {
 			
 	        map.addLayer(featureLayer);
 	        
+	        map.onUpdateEnd = function(){
+	        	$('#loading2').hide();
+	        }
+	        
 	        Viewer.loadData();
 		});
 	},
@@ -174,35 +202,51 @@ var Viewer = {
 		console.log("loadData",featureLayer);
 		if(typeof featureLayer == "object" ){
 			
-	        featureLayer.selectFeatures(Viewer.query,esri.layers.FeatureLayer.SELECTION_NEW,function(features){
-	        	console.log(features[0]);
-	        	map.graphics.clear();
-	        	
-	        	
-	        	var pt = new esri.geometry.Point(features[0].geometry.x,features[0].geometry.y,map.spatialReference);
-	        	var sms =new esri.symbol.SimpleMarkerSymbol();
-	        	var infoTemplate = new esri.InfoTemplate();
-	        	
-	        	infoTemplate.setContent(function(data){
-	        		console.log(data);
-	        		var str = "";
-	        		for(var x in data){
-	        			str+="<div>"+x+":"+data[x]+"</div>";
-	        		}
-	        		return str;
-	        	}(features[0].attributes));
-
-	        	
-	        	var graphic = new esri.Graphic(pt,sms,features[0].attributes,infoTemplate);
-	        	map.graphics.add(graphic);
-	        	
-	        	var center = new esri.geometry.Point(
-	        			features[0].geometry.x+0,
-	        			features[0].geometry.y+0,
-	        			features[0].geometry.spatialReference);
-	        	map.centerAt(center);
-	        });
-			
+	        featureLayer.selectFeatures(Viewer.query,esri.layers.FeatureLayer.SELECTION_NEW,
+	        	function(features){
+		        	
+		        	map.graphics.clear();
+		        	
+		        	
+		        	var pt = new esri.geometry.Point(features[0].geometry.x,features[0].geometry.y,map.spatialReference);
+		        	var sms =new esri.symbol.SimpleMarkerSymbol();
+		        	var infoTemplate = new esri.InfoTemplate();
+		        	
+		        	/*
+		        	infoTemplate.setContent(function(data){
+		        		console.log(data);
+		        		var str = "";
+		        		for(var x in data){
+		        			str+="<div>"+x+":"+data[x]+"</div>";
+		        		}
+		        		return str;
+		        	}(features[0].attributes));
+					*/
+		        	
+		        	//set the details content
+		        	var str = "";
+		        	for(var x in features[0].attributes){
+		        		var mystr = features[0].attributes[x].toString();
+		        		if(mystr.match(/http\:\/\.*/i) != null){
+		        			var link = "<a href='"+features[0].attributes[x]+"' target='_blank'>link</a>";
+		        			str += '<div><b>' + x + "</b>: " + link + '</div>';
+		        		} else {
+		        			str += '<div><b>' + x + "</b>: " + features[0].attributes[x] + '</div>';
+		        		}
+		        	}
+		        	$('#data-details').html(str);
+		        	
+		        	var graphic = new esri.Graphic(pt,sms,features[0].attributes,infoTemplate);
+		        	map.graphics.add(graphic);
+		        	
+		        	var center = new esri.geometry.Point(
+		        			features[0].geometry.x+0,
+		        			features[0].geometry.y+0,
+		        			features[0].geometry.spatialReference);
+		        	map.centerAt(center);
+		        	Viewer._currentPointGeometry = center;
+	        	}
+	        );
 		}
 		
 	},
@@ -328,20 +372,6 @@ var Viewer = {
 			this.imagePath+"/"+this.survey+"/"+this.camera+this.survey+"/"+this.camera+"_"+image+".jpg";
 	},
 	
-	goToImage : function(image, type){
-		
-		if(typeof type == "undefined" || type == null){
-			type = this.type;
-		}
-		
-		$.cookie('last-image',null);
-		var loc = this.baseref + "?Image="+
-			this.pad(image,5)+"&survey="+this.survey+"&Project="+this.project+
-			"&type="+type;
-		
-		document.location.href = loc;
-	},
-	
 	loadingShow : function(){
 		$('#loading').show();
 	},
@@ -440,6 +470,8 @@ var Viewer = {
 			this.removeImage(temp);
 			this.removeImage(temp2);
 		}
+		
+		Viewer.loadData();
 	}
     
 };
