@@ -95,7 +95,9 @@ var Preload = function(id)
 				hash = hash & hash; // Convert to 32bit integer
 			}
 
-			return hash >>> 1; //I want positive numbers
+			//FF and IE seem to fill an array with empty indexes if you use a number,
+			//so we need to force this to be seen as a string
+			return "img-"+((hash >>> 1).toString()); //I want positive numbers
 		},
 		
 		/**
@@ -141,6 +143,7 @@ var Preload = function(id)
 			//bind the onError
 			$img.attr('onError', function(_this, imgObj){
 				return function(){
+					console.log("onError triggered");
 					_this._imageLoadComplete(imgObj, true);
 				}
 			}(this, this._images[hash]));
@@ -174,6 +177,7 @@ var Preload = function(id)
 		 * @param {Integer} tryCount defaults to 0.  Used for cancelling this.
 		 */
 		waitOnImage : function(url, callback, scope, period, maxTries, tryCount){
+			
 			if(typeof period === "undefined") period = 50;
 			if(typeof maxTries === "undefined") maxTries = 100;
 			if(typeof scope === "undefined") scope = window;

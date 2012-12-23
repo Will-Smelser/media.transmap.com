@@ -20,7 +20,7 @@ var Viewer = {
 	survey: '',
 		
 	//max steps within vanish point
-	maxSteps : 1, //8
+	maxSteps : 8,
 	
 	zoom: 19,
 	
@@ -158,6 +158,7 @@ var Viewer = {
 			$('#survey-list').append($opt);
 		}
 		$('#survey-list').val(survey);
+		$.cookie("survey", survey);
 	},
 	_currentPointGeometry : null,
 	
