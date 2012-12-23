@@ -208,6 +208,29 @@ class Project{
 	public function getSurvey(){
 		return $this->survey;
 	}
+	
+/**
+	 * Get an array list of strings of surveys in this
+	 * project directory
+	 * @TODO Fix this because it doesnt work on server
+	 * @return multitype:
+	 */
+	public function getSurveys(){
+		if($this->LOCAL){
+			$result = array();
+			foreach(scandir($_SERVER['DOCUMENT_ROOT'].$this->DS.$this->getProjectPath()) as $val){
+				if(preg_match("/[\d]+\([\d]+[\)]$/",$val)){
+					array_push($result, $val);
+				}
+			}
+			if(count($result) == 0)
+				array_push($result,$this->getSurvey());
+			
+			return $result;
+		}
+		
+		return array($this->getSurvey());
+	}
 
 	public function getProjectPath(){
 		return $this->projectPath;

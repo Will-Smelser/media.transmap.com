@@ -1,4 +1,5 @@
 <?php
+
 require_once '../class/Project.php';
 require_once '../class/Session.php';
 
@@ -24,7 +25,6 @@ try{
 	echo $e->getMessage();
 	exit;
 }
-
 
 include '../includes/header.php'; 
 

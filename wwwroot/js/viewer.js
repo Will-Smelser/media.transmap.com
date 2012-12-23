@@ -20,7 +20,7 @@ var Viewer = {
 	survey: '',
 		
 	//max steps within vanish point
-	maxSteps : 8,
+	maxSteps : 1, //8
 	
 	zoom: 19,
 	
@@ -55,8 +55,8 @@ var Viewer = {
 		this.survey = survey;
 		this.camera = camera;
 		this.type = type;
-		this.firstImage = first;
-		this.lastImage  = last;
+		this.firstImage = 0;//first;
+		this.lastImage  = 99999;//last;
 		this.qbase = query;
 		
 		//get the image width/height
@@ -103,18 +103,78 @@ var Viewer = {
     	//map resize click
     	$('#map-full').click(this._fullMap);
     	
-    	
+    	//survey change
+    	$('#survey-list').change(this._surveyChange);
+	},
+	_urlRequestImageLimits:function(survey){
+		var url = localServiceUrl + "?action=getSurveyLimits";
+		url += "&project="+Viewer.imagePath.replace(/^\/images\/?/,"");
+		url += "&survey="+survey;
+		url += "&camera="+Viewer.camera;
+		return url;
+	},
+	_surveyChange : function(evt){
+		
+		//set the cookie
+		$.cookie("survey", $(this).val());
+		Viewer.survey = $(this).val();
+		
+		//get the new limits
+		/*
+		var url = Viewer._urlRequestImageLimits(Viewer.survey);
+		
+		$.getJSON(url,function(result){
+			if(!result.result){
+				Viewer.alertUser("Failed to get survey min/max image number.");
+				console.log(result);
+				return;
+			}
+			
+			Viewer.firstImage = result.data.lower;
+			Viewer.lastImage  = result.data.upper;
+		});
+		*/
+		Viewer.firstImage = 0;
+		Viewer.lastImage  = 99999;
+		Viewer.canvasClick(Viewer.image);
+		Viewer.loadData();
+	},
+	_surveyListSetVal : function(survey){
+		
+		var found = false;
+		$('#survey-list').children().each(
+			function(index){
+				if($(this).val() === survey){
+					found = true;
+					return;
+				}
+			}
+		);
+		
+		if(!found){
+			var $opt = $(document.createElement('option'));
+			$opt.attr("value",survey);
+			$opt.text(survey);
+			$('#survey-list').append($opt);
+		}
+		$('#survey-list').val(survey);
 	},
 	_currentPointGeometry : null,
 	
+	_mapLoadingShow : function(){
+		$('#loading2').show();
+	},
+	_mapLoadingHide : function(){
+		$('#loading2').hide();
+	},
 	_fullMapState : false,
 	_fullMap : function(){
-		$('#loading2').show();
+		Viewer._mapLoadingShow();
 		
 		var size = (Viewer._fullMapState) ? ['325px','210px'] : ['100%','100%'];
 		Viewer._fullMapState = (!Viewer._fullMapState);
 		var $wrapper = $('#map-wrapper');
-		$wrapper.find('#map-full').toggleClass('open','close');
+		$wrapper.find('#map-full').toggleClass('open').toggleClass('close');
 		$wrapper.animate({
 			width:size[0],
 			height:size[1]
@@ -124,10 +184,8 @@ var Viewer = {
 		});
 	},
 	_loadMap : function(data){
-				
 		var popup = new esri.dijit.Popup({}, dojo.create("div"));
 
-		
 		var featureQuery = Viewer.qbase.replace(/\/query(\/.*)?/i,'');
 		var initExtent = new esri.geometry.Extent(data.fullExtent);
 
@@ -146,18 +204,20 @@ var Viewer = {
 		
 		//after the map loads we want to add the feature layer
 		dojo.connect(map, "onLoad", function() {
+			console.log("onLoad map");
 			//after map is loaded zoom the map to the current point
 			map.centerAndZoom(Viewer.firstPoint.geometry, Viewer.zoom);
 			
 			//now we need to load the featureLayer
 			featureLayer = new esri.layers.FeatureLayer(featureQuery, {
 	        	mode: esri.layers.FeatureLayer.MODE_ONDEMAND,
+				//mode: esri.layers.FeatureLayer.MODE_SNAPSHOT, will not work
 	        	outFields: ['*']
 	        });
-			
+						
 			//the feature layer point that was clicked on
 			dojo.connect(featureLayer,"onClick",function(evt){
-				console.log(evt);
+				Viewer._mapLoadingShow();
 				
 				//query this point to get all the data
 				Viewer._currentPointGeometry = evt.graphic.geometry;
@@ -165,20 +225,64 @@ var Viewer = {
 				var query = new esri.tasks.Query();
 				query.geometry = evt.graphic.geometry;
 				query.spatialRelationship = esri.tasks.Query.SPATIAL_REL_CONTAINS;
-				console.log(query);
+				
+				//select the loaded point
 				featureLayer.selectFeatures(query,esri.layers.FeatureLayer.SELECTION_NEW,
 					function(features){
 						if(features.length > 0){
 							var image = features[0].attributes.IMAGENUM;
-							console.log(image);
-							Viewer.canvasClick(image);
-							Viewer.loadData();
+							
+							//check if we are in the same survey
+							var tempSurvey = (typeof features[0].attributes.SURVEY == "undefined") ? 
+									features[0].attributes.Survey : features[0].attributes.SURVEY;
+							
+							//changeing survey
+							if(tempSurvey !== Viewer.survey){
+								
+								var url = Viewer._urlRequestImageLimits(tempSurvey);
+								Viewer.loadingShow();
+								Viewer.survey = tempSurvey;
+								Viewer.firstImage = 0;
+								Viewer.lastImage  = 99999;
+								Viewer._surveyListSetVal(tempSurvey);
+								Viewer.canvasClick(image);
+								/*
+								$.getJSON(url,function(result){
+									if(!result.result){
+										Viewer.alertUser("Failed to get survey min/max image number for survey.");
+										
+										Viewer.firstImage = 0;
+										Viewer.lastImage  = 99999;
+										
+									} else {
+										
+										Viewer.firstImage = result.data.lower;
+										Viewer.lastImage  = result.data.upper;
+										
+									}
+									Viewer.canvasClick(image);
+								})
+								//catch the 400 errors and such
+								.error(function(err){
+									Viewer.alertUser("Failed to get survey min/max image number for survey.");
+									
+									Viewer.firstImage = 0;
+									Viewer.lastImage  = 99999;
+									Viewer.canvasClick(image);
+								});
+								*/
+							} else {
+								Viewer.canvasClick(image);
+							}
+							
 						}else{
 							//did not match the clicked on point
+							$('#data-details').html("No data.");
 						}
 					},
-					function(){
+					function(err){
 						//query failed
+						$('#data-details').html("Failed to query data.");
 					}
 				);
 		    });
@@ -187,7 +291,7 @@ var Viewer = {
 	        map.addLayer(featureLayer);
 	        
 	        map.onUpdateEnd = function(){
-	        	$('#loading2').hide();
+	        	Viewer._mapLoadingHide()
 	        }
 	        
 	        Viewer.loadData();
@@ -197,77 +301,51 @@ var Viewer = {
 		//load the data
 		$('#data-details').html("Loading...");
 		
-		this.query.where = "IMAGENUM='"+this.pad(this.image,5)+"' and Survey='"+this.survey+"'";
+		Viewer.query.where = "IMAGENUM='"+this.pad(this.image,5)+"' and Survey='"+this.survey+"'";
 		
-		console.log("loadData",featureLayer);
 		if(typeof featureLayer == "object" ){
 			
 	        featureLayer.selectFeatures(Viewer.query,esri.layers.FeatureLayer.SELECTION_NEW,
 	        	function(features){
-		        	
-		        	map.graphics.clear();
-		        	
-		        	
-		        	var pt = new esri.geometry.Point(features[0].geometry.x,features[0].geometry.y,map.spatialReference);
-		        	var sms =new esri.symbol.SimpleMarkerSymbol();
-		        	var infoTemplate = new esri.InfoTemplate();
-		        	
-		        	/*
-		        	infoTemplate.setContent(function(data){
-		        		console.log(data);
-		        		var str = "";
-		        		for(var x in data){
-		        			str+="<div>"+x+":"+data[x]+"</div>";
-		        		}
-		        		return str;
-		        	}(features[0].attributes));
-					*/
-		        	
-		        	//set the details content
-		        	var str = "";
-		        	for(var x in features[0].attributes){
-		        		var mystr = features[0].attributes[x].toString();
-		        		if(mystr.match(/http\:\/\.*/i) != null){
-		        			var link = "<a href='"+features[0].attributes[x]+"' target='_blank'>link</a>";
-		        			str += '<div><b>' + x + "</b>: " + link + '</div>';
-		        		} else {
-		        			str += '<div><b>' + x + "</b>: " + features[0].attributes[x] + '</div>';
-		        		}
+		        	if(features.length > 0){
+			        	map.graphics.clear();
+			        	
+			        	var pt = new esri.geometry.Point(features[0].geometry.x,features[0].geometry.y,map.spatialReference);
+			        	var sms =new esri.symbol.SimpleMarkerSymbol();
+			        	var infoTemplate = new esri.InfoTemplate();
+			        	
+			        	//set the details content
+			        	var str = "";
+			        	for(var x in features[0].attributes){
+			        		var mystr = features[0].attributes[x].toString();
+			        		if(mystr.match(/http\:\/\.*/i) != null){
+			        			var link = "<a href='"+features[0].attributes[x]+"' target='_blank'>link</a>";
+			        			str += '<div><b>' + x + "</b>: " + link + '</div>';
+			        		} else {
+			        			str += '<div><b>' + x + "</b>: " + features[0].attributes[x] + '</div>';
+			        		}
+			        	}
+			        	$('#data-details').html(str);
+			        	
+			        	var graphic = new esri.Graphic(pt,sms,features[0].attributes,infoTemplate);
+			        	map.graphics.add(graphic);
+			        	
+			        	var center = new esri.geometry.Point(
+			        			features[0].geometry.x+0,
+			        			features[0].geometry.y+0,
+			        			features[0].geometry.spatialReference);
+			        	map.centerAt(center);
+			        	Viewer._currentPointGeometry = center;
+		        	}else{
+		        		$('#data-details').html("No data.");
 		        	}
-		        	$('#data-details').html(str);
-		        	
-		        	var graphic = new esri.Graphic(pt,sms,features[0].attributes,infoTemplate);
-		        	map.graphics.add(graphic);
-		        	
-		        	var center = new esri.geometry.Point(
-		        			features[0].geometry.x+0,
-		        			features[0].geometry.y+0,
-		        			features[0].geometry.spatialReference);
-		        	map.centerAt(center);
-		        	Viewer._currentPointGeometry = center;
+	        	},
+	        	function(err){
+	        		$('#data-details').html("Failed to query data.");
 	        	}
 	        );
 		}
 		
-	},
-	_showData : function(results){
-		console.log(results);
-		var s = "";
-		var found = null;
-		
-		var feature = (results.features.length > 0) ?
-				results.features[0] : [];
-				
-		for(var x in feature.attributes)
-			s = s + "<b>" + x + ":</b>  " + feature.attributes[x] + "<br />";
-		        
-        if(s == ""){
-        	s = "No Data";
-        } else {
-        	
-        }
-        
-		$('#data-details').html(s);
 	},
 	
 	_goToImage : function(image){
@@ -384,7 +462,6 @@ var Viewer = {
 	waitMax : 100,
 	waiting : false,
 	waitImageReady : function(imgObj){
-		console.log("done waiting");
 		this.canvasClick(this.lastClicked);
 		this.loadingHide();
 	},
@@ -414,9 +491,10 @@ var Viewer = {
 		var url = this.getImageUrl(img);
 		var imgObj = this.preloader.getImage(url);
 		
+		//if the image isnt loading
 		if(imgObj === null || typeof imgObj === "undefined" || !imgObj.loaded){
-			//this.preloadImage(img);
 			this.loadingShow();
+			this.preloader.preload(url, this.waitImageReady, this, 5000);
 			this.preloader.waitOnImage(url, this.waitImageReady, this, 50, 200)
 			return;
 		}
@@ -426,16 +504,16 @@ var Viewer = {
 			return;
 		}
 		
+		this.loadingHide();
+		
 		$imageCounter = $('#image-counter');
 		$imageMain = $('#image-main');
 		$imageNext = $('#image-next');
 		
-		//document.location.href = getImageUrl(image);
 		this.image = img;
 
 		$.cookie("last-image",this.pad(img,5));
 		$.cookie("type",this.camera);
-		
 		
 		$imageCounter.val(this.pad(img,5));
 		
@@ -465,8 +543,6 @@ var Viewer = {
 			
 			if(temp < 0 || temp2 < 0) break;
 			
-			console.log("removing :"+temp);
-			console.log("removing :"+temp2);
 			this.removeImage(temp);
 			this.removeImage(temp2);
 		}

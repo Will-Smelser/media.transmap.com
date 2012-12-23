@@ -59,13 +59,16 @@ var Preload = function(id)
 		 * @param {Object} imageObj An _Image object
 		 * @see _Image
 		 */
-		_imageLoadComplete : function(imageObj){
+		_imageLoadComplete : function(imageObj, failed){
 			//we may have already called this.
 			if(imageObj.loaded) return;
 			
+			if(typeof failed == "undefined")
+				failed = false;
+			
 			imageObj.finish = (imageObj.finish === 0) ? new Date().getTime() : imageObj.finish;
 			imageObj.loaded = true;
-			imageObj.loadFailed = ((imageObj.finish-imageObj.start) > imageObj.timeout);
+			imageObj.loadFailed = (failed) ? true : ((imageObj.finish-imageObj.start) > imageObj.timeout);
 			
 			if(imageObj.loadFailed) console.log("Image failed to load", imageObj);
 			
@@ -135,6 +138,12 @@ var Preload = function(id)
 				.attr('id',hash);
 			this._images[hash] = new this._Image(url, callback, scope, false, $img, this);
 			
+			//bind the onError
+			$img.attr('onError', function(_this, imgObj){
+				return function(){
+					_this._imageLoadComplete(imgObj, true);
+				}
+			}(this, this._images[hash]));
 			
 			//bind the onload...pass vars using closure ;)
 			this._images[hash].$img.load(function(obj, hash){
@@ -160,7 +169,7 @@ var Preload = function(id)
 		 * @param {String} url The url of image to wait on load for
 		 * @param {Function} callback Callback function to call when loaded
 		 * @param {Object} scope The scope to call callback in.  Default to window.
-		 * @param {Integer} perdiod Time in milliseconds between recalling wait
+		 * @param {Integer} period Time in milliseconds between recalling wait
 		 * @param {Integer} maxTries max attempts to call this function
 		 * @param {Integer} tryCount defaults to 0.  Used for cancelling this.
 		 */
@@ -174,7 +183,9 @@ var Preload = function(id)
 			var imgObj = this._images[hash];
 			
 			if(typeof imgObj === "undefined"){
-				this.preload(url, null, null);
+				console.log("WARNING: waitOnImage called for image that was not in preloader.");
+				console.log("Call preload() on image url first.");
+				this.preload(url, callback, scope, (period * maxTries));
 			} else if(imgObj.loaded || tryCount > maxTries){
 				callback.call(scope, imgObj);
 				return;
@@ -199,7 +210,7 @@ var Preload = function(id)
 		 */
 		getImage : function(url){
 			var hash = this._hashCode(url);
-			return this._images[hash];
+			return (typeof this._images[hash] == "object") ? this._images[hash] : null;
 		},
 		
 		/**

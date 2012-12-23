@@ -3,16 +3,17 @@
 if(isset($_COOKIE['camera']) || isset($_COOKIE['last-image'])){
 	$cCamera = isset($_COOKIE['camera']) ? $_COOKIE['camera'] : (isset($_GET['camera'])?$_GET['camera']:"");
 	$cImage = isset($_COOKIE['last-image']) ? $_COOKIE['last-image'] : $_GET['Image'];
+	$cSurvey = isset($_COOKIE['survey']) ? $_COOKIE['survey'] : $_GET['Survey'];
 	
 	if($_GET['Image'] !== $cImage){
 		header("Location: ".basename($_SERVER['PHP_SELF']) .
-			 "?Image=$cImage&type=$cCamera&Survey={$_GET['Survey']}&Project={$_GET['Project']}");
+			 "?Image=$cImage&type=$cCamera&Survey={$cSurvey}&Project={$_GET['Project']}");
 	}
 }
 
-
 require_once '../class/Project.php';
 require_once '../class/Session.php';
+require_once '../class/Utilities.php';
 
 $session = &Session::getInstance();
 
@@ -29,7 +30,7 @@ foreach($_GET as $key=>$val) $_GET[strtolower($key)] = $val;
 //get display vars
 $version = (empty($_GET['view']))    ? VIEW_DEFAULT     : $_GET['view'];
 $project1= (isset($_GET['project'])) ? $_GET['project'] : null;
-$survey  = (isset($_GET['survey']))  ? $_GET['survey']  : null;
+$survey  = (isset($_COOKIE['survey']))  ? $_COOKIE['survey'] : (isset($_GET['Survey']) ? $_GET['Survey'] : null);
 $image   = (isset($_GET['image']))   ? $_GET['image']   : null;
 $camera  = (isset($_GET['type']))  ? $_GET['type']  : 'p';
 
@@ -61,6 +62,14 @@ try{
 }
 
 $limits = $project->findImageLimits($project1, $survey);
+
+function listSurveys($surveys, $currentSurvey){
+	foreach($surveys as $entry){
+		echo "<option value='${entry}' ";
+		echo ($entry === $currentSurvey) ? 'selected' : '';
+		echo ">$entry</option>\n";
+	}
+}
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -112,10 +121,7 @@ $limits = $project->findImageLimits($project1, $survey);
 
 	window.map;
     window.featureLayer;
-    
-	
-
-    
+   
   </script>
   
   
@@ -130,7 +136,7 @@ $limits = $project->findImageLimits($project1, $survey);
       }
       .esriPopup.myTheme .titlePane,
       .dj_ie7 .esriPopup.myTheme .titlePane .title {
-        background-color: #899752;
+        background-color: #EEA41F;
         color: #333333;
         font-weight: bold;
       }
@@ -178,14 +184,25 @@ $limits = $project->findImageLimits($project1, $survey);
      	left:5px;
      	width:20px;
      	height:20px;
-     	background-color:#333;
+     	background-color:transparent;
      	z-index:20;
+     	cursor:pointer;
      }
-     #map-full .open{
-     
+     #map-full.open:hover{
+     	border-top:solid #333 3px;
+     	border-left:solid #333 3px;
      }
-     #map-full .close{
-     
+     #map-full.open{
+     	border-top:solid #333 2px;
+     	border-left:solid #333 2px;
+     }
+     #map-full.close:hover{
+     	border-right:solid #333 3px;
+     	border-bottom:solid #333 3px;
+     }
+     #map-full.close{
+     	border-right:solid #333 2px;
+     	border-bottom:solid #333 2px;
      }
     </style>
   
@@ -199,7 +216,6 @@ $limits = $project->findImageLimits($project1, $survey);
   
   
 <div id="container" class="container">
-   
 	<!-- begin header -->
     <div id="header" class="span-24" style="margin-top:24px;">
 		 <!-- site logo -->

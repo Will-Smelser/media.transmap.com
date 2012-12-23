@@ -8,13 +8,12 @@
 	
 	<div id="viewer-navigation">
 	
-		<h3 style="display:inline-block;"><?php echo $project->getProjectName(); ?></h3>
-		<h4 style="display:inline-block;"><?php echo $project->getSurvey(); ?></h4>
-		<hr/>
-		<ul style="display:block;float:left">
-			<li>
-				<input id="image-counter" value="<?php echo $project->getImagePadded(); ?>" />
-				<input type="button" value="Go" onclick="Viewer.canvasClick($('#image-counter').val())" />
+		<ul style="display:inline-block;float:left">
+			<li style="display:inline-block"><h3 style="display:inline-block;"><?php echo $project->getProjectName(); ?></h3></li>
+			<li style="display:inline-block">
+				<select id="survey-list">
+				<?php listSurveys($project->getSurveys(),$project->getSurvey()); ?>
+				</select>
 			</li>
 		</ul>
 		<ul id="viewer-controls" style="display:inline-block;float:left">
@@ -25,6 +24,10 @@
 				<option value='f-FL-<?php echo IMAGE_SIZE_FL; ?>'>Forward</option>
 			</select>
 			</li>
+			<li>
+				<input id="image-counter" value="<?php echo $project->getImagePadded(); ?>" />
+				<input type="button" value="Go" onclick="Viewer.canvasClick($('#image-counter').val())" />
+			</li>
 			<li><a href="#" id="forward" >Move Forward</a></li>
 			<li><a href="#" id="backward" >Move Backward</a></li>
 			<li><a href="<?php echo $project->getNextImageUrl(0); ?>">Default Viewer</a></li>
@@ -34,7 +37,7 @@
 	<div id="main-container" style="background:#F8F8F8;position:relative;">
 	  <div style="margin:6px;position:relative;height:515px">
 		<div id="map-wrapper" style="position:absolute;right:0px;bottom:0px;z-index:10;width:325px;height:210px;">
-		  <div id="map-full"></div>
+		  <div id="map-full" class="open"></div>
 		  <div id="loading2" class="loading" >
 			<div class="inner"><img src="/images/layout/loading.gif" /><i>Loading ...</i></div>
 		  </div>
@@ -63,6 +66,7 @@
 	
 	<script>
 
+		var localServiceUrl = "<?php echo Utils::getServiceUrl(); ?>";
 		dojo.addOnLoad(function(){
 		//window.onload = function(){
 		//$(document).ready(function(){ //jquery load doesnt work
