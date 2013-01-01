@@ -125,6 +125,133 @@ switch($action){
 		$result->addMessage("Success");
 		$result->result = true;
 		break;
+	case SERVICE_ACTIONS::$GET_SURVEYS:
+		$result->messages = array();
+		
+		$basePath = $_SERVER['DOCUMENT_ROOT'] . SETTINGS::$DS
+		. SETTINGS::$SURVEY_IMAGE_PATH;
+		if(!is_dir($basePath)){
+			$result->addMessage("Failed to locate image path");
+			break;
+		}
+		
+		//check the path...allow for invalid case
+		foreach(scandir($basePath) as $dir){
+			if($dir[0] !== "." && preg_match("/{$dir}/i",$project))
+				$project = $dir; break;
+		}
+		
+		$project = $_GET['project'];
+		$basePath .= SETTINGS::$DS . $project;
+		
+		if(!is_dir($basePath)){
+			$result->addMessage("Failed to locate project path ($basePath)");
+			break;
+		}
+		
+		//check the path...allow for invalid case
+		$localSurveys = array();
+		foreach(scandir($basePath) as $dir){
+			if(preg_match('/[\d]+(\([\d]+\))?/',$dir)) 
+				array_push($localSurveys,$dir);
+		}
+		
+		//build the url
+		if(!isset($_GET['serviceUrl']) || empty($_GET['serviceUrl'])){
+			$result->addMessage("serviceUrl cannot be empty");
+			break;
+		}
+		$service = urldecode($_GET['serviceUrl']);
+		
+		//have to query 1 by 1, because arcgis sql doesnt not support aggregates and such
+		$validSurveys = array();
+		foreach($localSurveys as $s){
+			$url = $service . "?f=json&outputFields=Survey&returnIdsOnly=true&where=Survey='$s'";
+			
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+			$output = curl_exec($ch);
+			curl_close($ch);
+			$json = json_decode($output,true);
+			//var_dump($url);
+			if(isset($json['objectIds']) && count($json['objectIds']) > 0)
+				array_push($validSurveys,$s);
+		}
+		
+		$result->result = true;
+		$result->header_status = HTTP_STATUS::$SUCCESS;
+		$result->addMessage("Success");
+		$result->data = $validSurveys;
+		
+		break;
+	case $GET_SURVEY_FIRST:
+		$result->messages = array();
+		
+		$basePath = $_SERVER['DOCUMENT_ROOT'] . SETTINGS::$DS
+		. SETTINGS::$SURVEY_IMAGE_PATH;
+		if(!is_dir($basePath)){
+			$result->addMessage("Failed to locate image path");
+			break;
+		}
+		
+		//check the path...allow for invalid case
+		$project = $_GET['project'];
+		foreach(scandir($basePath) as $dir){
+			if($dir[0] !== "." && preg_match("/{$dir}/i",$project))
+				$project = $dir; break;
+		}
+		$basePath .= SETTINGS::$DS . $project;
+		
+		//check the path...allow for invalid case
+		$localSurveys = array();
+		foreach(scandir($basePath) as $dir){
+			if(preg_match('/[\d]+(\([\d]+\))?/',$dir))
+				array_push($localSurveys,$dir);
+		}
+		
+		//build the url
+		$service = urldecode($_GET['serviceUrl']);
+		if(empty($service)){
+			$result->addMessage("serviceUrl cannot be empty");
+		}
+		
+		//have to query 1 by 1, because arcgis sql doesnt not support aggregates and such
+		$validSurvey = null;
+		foreach($localSurveys as $s){
+			$url = $service . "?f=json&outputFields=Survey&returnIdsOnly=true&where=Survey='$s'";
+				
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+			$output = curl_exec($ch);
+			curl_close($ch);
+			$json = json_decode($output,true);
+				
+			if(isset($json['objectIds']) && count($json['objectIds']) > 0){
+				$validSurvey = $s;
+			}
+		}
+		
+		$result->result = true;
+		$result->header_status = HTTP_STATUS::$SUCCESS;
+		$result->addMessage("Success");
+		$result->data = $validSurvey;
+		break;
+		
+	case $GET_PROJECTS:
+		$result->messages = array();
+		
+		$temp = Utils::getPropfileContents();
+		if($temp === false){
+			$result->addMessage('Failed to read property file contents.');
+			break;
+		}
+		
+		$result->result = true;
+		$result->header_status = HTTP_STATUS::$SUCCESS;
+		$result->addMessage("Success");
+		$result->data = $temp;
+		
+		break;
 }
 
 $result->sendHTTPresponse();

@@ -6,6 +6,7 @@ class Project{
 	private $LOCAL = true;
 	private $projectMap =  array();
 
+	private $projectNameFS;//file system project name
 	private $projectName;
 	private $projectPath;
 	private $projectService;
@@ -234,6 +235,10 @@ class Project{
 
 	public function getProjectPath(){
 		return $this->projectPath;
+	}
+	
+	public function getProjectNameFileSystem(){
+		return preg_replace('/\/?images\/?/i','',$this->getProjectPath());
 	}
 	
 	public function getProjectServiceBaseUrl(){

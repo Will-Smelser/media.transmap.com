@@ -1,15 +1,12 @@
 <?php
-//check if we have cookie set for last direction and image
-if(isset($_COOKIE['camera']) || isset($_COOKIE['last-image'])){
-	$cCamera = isset($_COOKIE['camera']) ? $_COOKIE['camera'] : (isset($_GET['camera'])?$_GET['camera']:"");
-	$cImage = isset($_COOKIE['last-image']) ? $_COOKIE['last-image'] : $_GET['Image'];
-	$cSurvey = isset($_COOKIE['survey']) ? $_COOKIE['survey'] : $_GET['Survey'];
-	
-	if($_GET['Image'] !== $cImage){
-		header("Location: ".basename($_SERVER['PHP_SELF']) .
-			 "?Image=$cImage&type=$cCamera&Survey={$cSurvey}&Project={$_GET['Project']}");
-	}
-}
+//force all GET vars to lowercase
+foreach($_GET as $key=>$val)
+	$_GET[strtolower($key)] = $val;
+
+//check that we have a survey and project
+if(!isset($_GET['survey']) || !isset($GET['project']))
+	header('Location: findSurvey.php');
+
 
 require_once '../class/Project.php';
 require_once '../class/Session.php';
@@ -29,8 +26,8 @@ foreach($_GET as $key=>$val) $_GET[strtolower($key)] = $val;
 
 //get display vars
 $version = (empty($_GET['view']))    ? VIEW_DEFAULT     : $_GET['view'];
-$project1= (isset($_GET['project'])) ? $_GET['project'] : null;
-$survey  = (isset($_COOKIE['survey']))  ? $_COOKIE['survey'] : (isset($_GET['Survey']) ? $_GET['Survey'] : null);
+$project1= $_GET['project'];
+$survey  = $_GET['survey'];
 $image   = (isset($_GET['image']))   ? $_GET['image']   : null;
 $camera  = (isset($_GET['type']))  ? $_GET['type']  : 'p';
 
@@ -58,6 +55,7 @@ try{
 	
 }catch(Exception $e){
 	echo $e->getMessage();
+	echo "Go <a href='findSurvey.php'>here</a> to choose a valid survey.";
 	exit;
 }
 
@@ -81,7 +79,8 @@ function listSurveys($surveys, $currentSurvey){
   
 
   <link rel="stylesheet" href="/blueprint/themes/amadou/style.css" type="text/css" media="screen" />
-  <link rel="stylesheet" href="/includes/front.css" type="text/css" media="screen" /> 	
+  <link rel="stylesheet" href="/includes/front.css" type="text/css" media="screen" /> 
+  <link rel="stylesheet" href="/includes/map.css" type="text/css" media="screen" />	
   
   <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/dojo/dijit/themes/claro/claro.css"/>
   <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css" />
@@ -123,105 +122,12 @@ function listSurveys($surveys, $currentSurvey){
     window.featureLayer;
    
   </script>
-  
-  
-  
-     <style>
-      html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
-      .esriScalebar{
-        padding: 20px 20px;
-      }
-      #map{
-        padding:0;
-      }
-      .esriPopup.myTheme .titlePane,
-      .dj_ie7 .esriPopup.myTheme .titlePane .title {
-        background-color: #EEA41F;
-        color: #333333;
-        font-weight: bold;
-      }
-      .esriPopup.myTheme .titlePane {
-        border-bottom: 1px solid #121310;
-      }
-      .esriPopup.myTheme a {
-        color: #d6e68a;
-      }
-      .esriPopup.myTheme .titleButton,
-      .esriPopup.myTheme .pointer,
-      .esriPopup.myTheme .outerPointer,
-      .esriPopup.myTheme .esriViewPopup .gallery .mediaHandle,
-      .esriPopup.myTheme .esriViewPopup .gallery .mediaIcon {
-          background-image: url(./images/popup.png);
-      }
-      .esriPopup.myTheme .contentPane,
-      .esriPopup.myTheme .actionsPane {
-        border-color: 1px solid #121310;
-        background-color: #424242;
-        color:#ffffff;
-        max-height:150px;
-     }
-     .esriPopup.myTheme .contentPane div{
-     	display:block;
-     }
- 
 
-     #map_zoom_slider{
-     	right:5px;
-     	left:auto;
-     }
-     
-     #data-details {
-     	overflow:auto;
-     	max-height:100%;
-     }
-     #data-details div{
-     	
-     }
-     
-     #map-full{
-     	position:absolute;
-     	top:5px;
-     	left:5px;
-     	width:20px;
-     	height:20px;
-     	background-color:transparent;
-     	z-index:20;
-     	cursor:pointer;
-     }
-     #map-full.open:hover{
-     	border-top:solid #333 3px;
-     	border-left:solid #333 3px;
-     }
-     #map-full.open{
-     	border-top:solid #333 2px;
-     	border-left:solid #333 2px;
-     }
-     #map-full.close:hover{
-     	border-right:solid #333 3px;
-     	border-bottom:solid #333 3px;
-     }
-     #map-full.close{
-     	border-right:solid #333 2px;
-     	border-bottom:solid #333 2px;
-     }
-    </style>
   
   
   
   
 </head>
 
-<body class="caro">
-  
-  
-  
-<div id="container" class="container">
-	<!-- begin header -->
-    <div id="header" class="span-24" style="margin-top:24px;">
-		 <!-- site logo -->
-     	 <a href="http://transmap.com/" title="Home"><img class="logo" src="../blueprint/themes/amadou/logo.png" alt="Home" border="0" /></a>
-   
-		<p style="align:right;"><a href="http://www.transmap.com/?page_id=2"><span style="color:white">Help</span></a> | <a href="http://www.transmap.com/?page_id=2"><span style="color:white">Contact</span></a></p>
-	</div>
-	<!-- end header -->
+<?php include "body_start.php"; ?>
 	

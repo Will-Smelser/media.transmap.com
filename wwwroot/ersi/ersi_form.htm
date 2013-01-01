@@ -11,16 +11,18 @@ input.submit{width:50px}
 $(document).ready(function(){
 	$('#submit').click(function(){
 		var action=$('#baseUrl').val().replace(' ','').replace('\n','');
-		$('#myform').attr('action',action).submit();
 		
-		var get = action+"?"+$('#myform').serialize()+"&where="+$('#where').val();
+		
+		var get = action+"?"+$('#myform').serialize()+"&where="+encodeURIComponent($('#where').val());
 		
 		$('#url').val(get);
+		$('#myform').attr('action',get).submit();
 		
 		$.getJSON(get,function(data){
 			console.log(data);
 			
 		});
+		
 	});
 	
 });

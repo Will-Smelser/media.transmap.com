@@ -18,7 +18,10 @@ class SETTINGS {
 
 class SERVICE_ACTIONS {
 	public static
-	$GET_SURVEY_LIMITS = "getSurveyLimits";
+	$GET_SURVEY_LIMITS = "getSurveyLimits",
+	$GET_SURVEYS = "getSurveys",
+	$GET_SURVEY_FIRST = "getSurveyFirstOne",
+	$GET_PROJECTS = "getProjects";
 }
 
 class Utils {
@@ -30,6 +33,44 @@ class Utils {
 	
 	public static function getServiceUrl(){
 		return 'http://' . $_SERVER['HTTP_HOST'] . '/surveys/service.php';
+	}
+	
+	public static function getValidSurveys($project,$ersiRawService){
+		$ersiRawService = urlencode($ersiRawService);
+		$service = Utils::getServiceUrl();
+		$service.= "?action=getSurveys&project=$project&serviceUrl=$ersiRawService";
+		var_dump($service);
+		$ch = curl_init($service);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		$output = curl_exec($ch);
+		curl_close($ch);
+		$json = json_decode($output,true);
+		return ($json['result']) ? $json['data'] : array();
+		
+	}
+	
+	public static function getPropfileContents(){
+		$file = $_SERVER['DOCUMENT_ROOT'].SETTINGS::$DS.'Surveys'.SETTINGS::$DS.'projects.properties';
+		
+		$handle = null;
+		try{
+			$handle = @fopen($file, "r");
+		}catch(Exception $e){
+			return false;
+		}
+		
+		$data = array();
+		while(($buffer = fgets($handle)) !== false){
+			$parts = explode(":",trim($buffer));
+			$info = array(
+					'service'=>(isset($parts[2]) ? $parts[2] : null),
+					'name'=>(isset($parts[0]) ? $parts[0] : null),
+					'path'=>(isset($parts[1]) ? $parts[1] : null)
+			);
+			array_push($data,$info);
+		}
+		fclose($handle);
+		return $data;
 	}
 }
 

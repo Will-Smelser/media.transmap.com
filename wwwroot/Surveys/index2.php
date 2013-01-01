@@ -12,7 +12,15 @@
 			<li style="display:inline-block"><h3 style="display:inline-block;"><?php echo $project->getProjectName(); ?></h3></li>
 			<li style="display:inline-block">
 				<select id="survey-list">
-				<?php listSurveys($project->getSurveys(),$project->getSurvey()); ?>
+				<?php
+				//try and get a list of surveys
+				$surveys = Utils::getValidSurveys($project->getProjectNameFileSystem(),$project->getProjectQueryUrl());
+				if(count($surveys) > 0){
+					listSurveys($surveys, $project->getSurvey());
+				}else{ 
+					listSurveys($project->getSurveys(),$project->getSurvey()); 
+				}
+				?>
 				</select>
 			</li>
 		</ul>
