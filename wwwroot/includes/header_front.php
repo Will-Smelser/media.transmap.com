@@ -4,9 +4,11 @@ foreach($_GET as $key=>$val)
 	$_GET[strtolower($key)] = $val;
 
 //check that we have a survey and project
-if(!isset($_GET['survey']) || !isset($GET['project']))
-	header('Location: findSurvey.php');
 
+if(!isset($_GET['survey']) || !isset($_GET['project'])){
+	header('Location: findSurvey.php');
+	exit;
+}
 
 require_once '../class/Project.php';
 require_once '../class/Session.php';

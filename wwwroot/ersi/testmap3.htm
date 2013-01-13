@@ -1,0 +1,51 @@
+<html>
+  <head>
+  <title>Create a Map</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
+  <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css" />
+
+  <script type="text/javascript">djConfig = { parseOnLoad:true };</script>
+
+  <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2compact"></script>
+  <style>
+  html,body,#mapDiv,.map.container{
+    padding:0;
+    margin:0;
+    height:100%;
+  }
+  </style>
+  <script type="text/javascript">
+    
+    //dojo.require("esri.arcgis.utils");
+    dojo.require("dijit.layout.BorderContainer");
+    dojo.require("dijit.layout.ContentPane");
+    dojo.require("esri.map");
+    dojo.require("esri.layers.FeatureLayer");
+    dojo.require("esri.dijit.Popup");
+    
+
+    function init(){
+    	var webmapid = '6eff6e4eb4be46fab9393625a2678905';
+    	var service = 'http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/ArcGIS/rest/services/vanimg/FeatureServer/0';
+    	esri.config.defaults.geometryService = new esri.tasks.GeometryService(service);
+    	
+    	var popupOptions = {
+	    	'markerSymbol': new esri.symbol.SimpleMarkerSymbol('circle', 32, null, new dojo.Color([0, 0, 0, 0.25])),
+	    	'marginLeft': '20', 
+	    	'marginTop': '20'
+	    };
+    	var popup = new esri.dijit.Popup(popupOptions, dojo.create("div"));
+
+    	
+    	esri.arcgis.utils.createMap(webmapid,'mapDiv');
+    }
+
+    dojo.addOnLoad(init);
+  </script>
+
+  </head>
+  <body>
+  <div id="mapDiv"></div>
+  </body>
+  </html>

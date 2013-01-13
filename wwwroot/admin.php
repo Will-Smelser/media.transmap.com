@@ -1,5 +1,5 @@
 <?php
-include 'includes/header.php';
+
 require_once 'class/Login.php';
 require_once 'includes/admin_funcs.php';
 
@@ -32,8 +32,43 @@ try{
 	//do nothing
 }
 ?>
+<!DOCTYPE html>
+<html>
+  <head>
+  
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    
+  <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/html/css.html'; ?>
+  <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/html/js.html'; ?> 
+  
+  <style>
+  ul.ui-autocomplete{
+  	overflow-x:hidden;
+  	overflow-y:auto;
+  	max-height:200px;
+  }
+  </style>
+  
+  <script src="/js/cookie.js" ></script>
+  
+  <script>
+	$(document).ready(function(){
 
-<div class="container">
+		$('input:button').button();
+		$('input:submit').button();
+		$('select').uiselect();
+	});
+  </script>
+  
+  </head>
+  <body>
+<div class="container" id="container">
+
+<?php include 'includes/html/head.html'; ?>
+  
+
 
 <a href="login.php?action=logout" >Logout</a>
 
@@ -42,16 +77,18 @@ try{
 <h3>Add Project</h3>
 <form action="admin.php" method="POST">
 	<label for="project">
-		<span style="display:inline-block;width:200px;">Project:</span>
+		<span style="display:inline-block;width:200px;">Project:</span><br/>
 		<input id="project" name="project" type="text"/>
 			<i style="font-weight:normal">(No ":" please)</i>
 	</label><br/>
+	
 	<label for="pfolder">
 		<span  style="display:inline-block;width:200px;">Image Location:</span>
 		<select name="pfolder" id="pfolder">
 		<?php makeOptions($base); ?>
 		</select>
 	</label><br/>
+	
 	<label for="service">
 		<span style="display:inline-block;width:200px;">Service:</span>
 		<select name="service" id="service">

@@ -1,0 +1,75 @@
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-1.8.3.min.js" ></script>
+<script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script>
+<style>
+input{width:100%}
+input.submit{width:50px}
+.optional{background-color:yellow}
+</style>
+
+<script>
+
+dojo.require("esri.tasks.Query");
+dojo.require("esri.tasks.QueryTask");
+
+var callback = function(data){
+	$("#result").val(data);
+	console.log(data);
+}
+
+$(document).ready(function(){
+	$('#submit').click(function(){
+		var url = $("#baseUrl").val();
+		var queryTask = new esri.tasks.QueryTask(url);
+		
+		var query = new esri.tasks.Query();
+		query.where = $("#where").val();
+		query.outSpatialReference = {wkid:102100};
+		query.returnGeometry = true;
+		query.outFields = ["*"];
+		queryTask.execute(query, callback);
+		
+		
+	});
+	
+});
+</script>
+
+</head>
+
+<body>
+<h2>Fill out the form</h2>
+<form id="myform" target="window" method="get" action="test">
+<table>
+	<tr><td>baseUrl</td><td>
+		<textarea id="baseUrl" cols="70" rows="5">http://services.arcgis.com/Gyd9F6MUsQ0SKcSf/ArcGIS/rest/services/Milton_Vanimg/FeatureServer/0/query</textarea>
+	<tr><td>f</td><td><select name="f" id="f"><option>json</option></select>
+	<tr><td>returnGeometry<td>
+		<select id="returnGeometry" name="returnGeometry">
+			<option value="true">true</option>
+			<option value="false">false</option>
+		</select>
+	<tr class="optional"><td>spatialRel</td><td><input name="spatialRel" id="spatialRel" value="esriSpatialRelIntersects" />
+	<tr><td>GeometryType<td>
+		<input type="text" name="geometryType" id="geometryType" value="esriGeometryEnvelope" />
+	<tr><td>Geometry<td>
+		<textarea name="geometry" id="geometry" cols="60" rows="5">{"xmin":-9394105.29819863,"ymin":4038628.52496217,"xmax":-9377807.34183651,"ymax":4054613.09685883,"spatialReference":{"wkid":102100,"latestWkid":3857}}</textarea>
+	<tr class="optional"><td>inSR<td>
+		<input name="inSR" id="inSR" type="text" value="102100" />
+	<tr class="optional"><td>outSR<td>
+		<input name="outSR" id="outSR" type="text" value="102100" />
+	<tr><td>outFields<td>
+		<input name="outFields" id="outFields" value="*" />
+</table>
+</form>
+<table style="width:100%">
+<tr class="optional"><td>where<td>
+		<input name="where" id="where" value="" />
+</table>
+
+<input class="submit" id="submit" type="button" value="Query" />
+<br/>
+<textarea id="result" rows="8" cols="70" ></textarea>
+</body>
+</html>
