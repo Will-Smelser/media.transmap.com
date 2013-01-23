@@ -31,7 +31,7 @@ Login::interceptRequests();
 
 <div id="container" class="container">
 
-<?php include 'includes/html/head.html'; ?>
+<?php include 'includes/html/header.html'; ?>
 
 <?php 
 if(Login::hasMessage()){
@@ -57,5 +57,5 @@ if(Login::hasMessage()){
 
 </div>
 <?php 
-include 'includes/footer.php';
+include 'includes/html/footer.html';
 ?>

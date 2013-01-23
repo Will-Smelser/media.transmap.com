@@ -66,7 +66,7 @@ try{
   <body>
 <div class="container" id="container">
 
-<?php include 'includes/html/head.html'; ?>
+<?php include 'includes/html/header.html'; ?>
   
 
 
@@ -129,5 +129,5 @@ function openProject(){
 </script>
 
 <?php 
-include 'includes/footer.php';
+include 'includes/html/footer.html';
 ?>

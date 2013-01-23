@@ -101,7 +101,7 @@ var Viewer = {
     	});
 
     	//map resize click
-    	$('#map-full').click(this._fullMap);
+    	$('#map-full').button({text: false,label:'Max/Min Map',icons:{primary: "ui-icon-arrow-4-diag"}}).click(this._fullMap);
     	
     	//survey change
     	$('#survey-list').change(this._surveyChange);
@@ -157,7 +157,7 @@ var Viewer = {
 			$opt.text(survey);
 			$('#survey-list').append($opt);
 		}
-		$('#survey-list').val(survey);
+		$('#survey-list').val(survey).uiselect('refresh');
 		$.cookie("survey", survey);
 	},
 	_currentPointGeometry : null,
@@ -175,7 +175,7 @@ var Viewer = {
 		var size = (Viewer._fullMapState) ? ['325px','210px'] : ['100%','100%'];
 		Viewer._fullMapState = (!Viewer._fullMapState);
 		var $wrapper = $('#map-wrapper');
-		$wrapper.find('#map-full').toggleClass('open').toggleClass('close');
+		$wrapper.find('#map-full span:first').toggleClass('ui-icon-arrow-4-diag').toggleClass('ui-icon-arrow-4');
 		$wrapper.animate({
 			width:size[0],
 			height:size[1]

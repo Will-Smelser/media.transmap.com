@@ -121,11 +121,13 @@ $('#button').click(checkForm);
   </script>
   
 </head>
+<body>
 
-<?php include "../includes/body_start.php"; ?>
+<div class="container" id="container">
+		
+	<?php include '../includes/html/header.html'; ?>
 
-	<div class="container">
-		<div class="span-19 last">
+	
 		
 	<!-- Current Projects -->
 	<div id="project-wrapper">
@@ -159,9 +161,8 @@ $('#button').click(checkForm);
 		<input id="button" value="Load Project" type="button" />
 	</p>
 			
-		</div>
 	</div>	
 	
 	<div id="dialog" title="Basic dialog"></div>
 	
-<?php include "../includes/footer.php"; ?>
+<?php include "../includes/html/footer.html"; ?>
