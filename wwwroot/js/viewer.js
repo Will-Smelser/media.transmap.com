@@ -48,7 +48,7 @@ var Viewer = {
 	load : function(baseref, imageSize, image, project, imagePath, survey, camera, type, first, last, query){
 		//set values
 		this.baseref = baseref;
-		this.image = this.lastClicked = parseInt(image);
+		this.image = this.lastClicked = parseInt(image,10);
 		this.imagePath = imagePath;
 		this.imageSize = imageSize;
 		this.project = project;
@@ -97,7 +97,7 @@ var Viewer = {
     	this.queryTask = new esri.tasks.QueryTask(this.qbase);
     	this.queryTask.execute(this.query,function(data){
     		Viewer.firstPoint = data.features[0];
-    		$.getJSON(Viewer.qbase.replace(/\/0\/query/,"")+'?f=json',Viewer._loadMap);
+    		Viewer._loadMap(mapData);
     	});
 
     	//map resize click
@@ -205,7 +205,7 @@ var Viewer = {
 		
 		//after the map loads we want to add the feature layer
 		dojo.connect(map, "onLoad", function() {
-			console.log("onLoad map");
+			
 			//after map is loaded zoom the map to the current point
 			map.centerAndZoom(Viewer.firstPoint.geometry, Viewer.zoom);
 			
@@ -230,23 +230,25 @@ var Viewer = {
 				//select the loaded point
 				featureLayer.selectFeatures(query,esri.layers.FeatureLayer.SELECTION_NEW,
 					function(features){
+						
 						if(features.length > 0){
 							var image = features[0].attributes.IMAGENUM;
 							
 							//check if we are in the same survey
 							var tempSurvey = (typeof features[0].attributes.SURVEY == "undefined") ? 
 									features[0].attributes.Survey : features[0].attributes.SURVEY;
-							
+									
 							//changeing survey
 							if(tempSurvey !== Viewer.survey){
 								
-								var url = Viewer._urlRequestImageLimits(tempSurvey);
+								//var url = Viewer._urlRequestImageLimits(tempSurvey);
 								Viewer.loadingShow();
 								Viewer.survey = tempSurvey;
 								Viewer.firstImage = 0;
 								Viewer.lastImage  = 99999;
 								Viewer._surveyListSetVal(tempSurvey);
 								Viewer.canvasClick(image);
+								
 								/*
 								$.getJSON(url,function(result){
 									if(!result.result){
@@ -375,7 +377,7 @@ var Viewer = {
 	//preloaderImage function to get image
 	_imageToNumber : function(){
 		//console.log(this.url.match(/(\d+\.jpe?g)$/g)).pop().split('.');
-		return parseInt(this.url.match(/(\d+\.jpe?g)$/g).pop().split('.')[0]*1);
+		return parseInt(this.url.match(/(\d+\.jpe?g)$/g).pop().split('.')[0]*1,10);
 	},
 	
 	exponentialDecay : function exponentialDecay(x, goalMax, scaleMax, exponent){
@@ -387,8 +389,8 @@ var Viewer = {
 	},
 		
 	addSteps : function(image,steps){
-		image = parseInt(image);
-		steps = parseInt(steps);
+		image = parseInt(image,10);
+		steps = parseInt(steps,10);
 		if(this.camera.toUpperCase() == 'BR'){
 			return image - steps;
 		} 
@@ -397,8 +399,8 @@ var Viewer = {
 	},
 	
 	minusSteps : function(image,steps){
-		image = parseInt(image);
-		steps = parseInt(steps);
+		image = parseInt(image,10);
+		steps = parseInt(steps,10);
 		if(this.camera.toUpperCase() == 'BR'){
 			return image + steps;
 		} 
@@ -420,7 +422,7 @@ var Viewer = {
 	$loaderWrap : $('#image-loading'),
 	
 	preloadImage : function(image){
-		image = parseInt(image);
+		image = parseInt(image,10);
 		
 		if(image < 0) return;
 		
@@ -435,7 +437,7 @@ var Viewer = {
 	},
 	
 	removeImage : function(image){
-		image = parseInt(image);
+		image = parseInt(image,10);
 		if(image < 0) return;
 
 		//remove images
@@ -472,7 +474,7 @@ var Viewer = {
 	},
 	
 	canvasClick : function(img){
-		img = parseInt(img);
+		img = parseInt(img,10);
 		
 		//clicked image outside of range
 		if(img > this.lastImage || img < this.firstImage){
