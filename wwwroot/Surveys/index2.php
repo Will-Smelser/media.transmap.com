@@ -166,6 +166,8 @@
 		</div>
 	</div>
 	
+	<div id="dialog" title="Alert" ></div>
+	
 	<script>
 		var queryBaseUrl = '<?php echo $project->getProjectQueryUrl(); ?>';
 		var mapData = <?php echo file_get_contents(preg_replace('/\/0\/query/i','',$project->getProjectQueryUrl()).'?f=json'); ?>;

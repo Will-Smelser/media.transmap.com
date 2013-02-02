@@ -132,8 +132,6 @@ class Project{
 		$base = $_SERVER['DOCUMENT_ROOT'].$this->projectPath.$this->DS.$this->survey.$this->DS.$prefix.$this->survey;
 		
 		if(!is_dir($base)){
-			throw new Exception("Failed to locate dir: $base");
-			exit;
 			return array(0,99999);
 		}
 		

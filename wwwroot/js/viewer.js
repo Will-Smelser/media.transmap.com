@@ -470,7 +470,16 @@ var Viewer = {
 	},
 	
 	alertUser : function(message){
-		alert(message);
+		$('#dialog').html(message).dialog({
+			resizable:false,
+			title: 'Alert',
+			modal: true,
+			buttons: [
+				{
+					text: "Ok",
+					click: function() {$(this).dialog("close");}
+				}]
+		});
 	},
 	
 	canvasClick : function(img){
