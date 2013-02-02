@@ -8,8 +8,10 @@ Login::protect();
 //see includes/admin_funcs.php
 handleActions();
 
+$msg = '';
+
 if(Login::hasMessage()){
-	echo '<div class="message">'.Login::getMessage().'</div>';
+	$msg = '<div class="message">'.Login::getMessage().'</div>';
 	Login::clearMessage();
 }
 
@@ -73,6 +75,8 @@ try{
 <a href="login.php?action=logout" >Logout</a>
 
 <hr/>
+
+<?php echo $msg; ?>
 
 <h3>Add Project</h3>
 <form action="admin.php" method="POST">

@@ -35,6 +35,7 @@ var Preload = function(id)
 			this.timeout = 5000;//5 seconds
 			this.start = new Date().getTime();
 			this.finish = 0;
+			this.debug = false;
 		},
 		
 		/**
@@ -70,7 +71,7 @@ var Preload = function(id)
 			imageObj.loaded = true;
 			imageObj.loadFailed = (failed) ? true : ((imageObj.finish-imageObj.start) > imageObj.timeout);
 			
-			if(imageObj.loadFailed) console.log("Image failed to load", imageObj);
+			if(imageObj.loadFailed && imageObj.debug) console.log("Image failed to load", imageObj);
 			
 			//users callback function
 			if(typeof imageObj.callback === "function")
@@ -143,7 +144,7 @@ var Preload = function(id)
 			//bind the onError
 			$img.attr('onError', function(_this, imgObj){
 				return function(){
-					console.log("onError triggered");
+					if(imgObj.debug) console.log("onError triggered");
 					_this._imageLoadComplete(imgObj, true);
 				}
 			}(this, this._images[hash]));
@@ -187,8 +188,10 @@ var Preload = function(id)
 			var imgObj = this._images[hash];
 			
 			if(typeof imgObj === "undefined"){
-				console.log("WARNING: waitOnImage called for image that was not in preloader.");
-				console.log("Call preload() on image url first.");
+				if(imgObj.debug){
+					console.log("WARNING: waitOnImage called for image that was not in preloader.");
+					console.log("Call preload() on image url first.");
+				}
 				this.preload(url, callback, scope, (period * maxTries));
 			} else if(imgObj.loaded || tryCount > maxTries){
 				callback.call(scope, imgObj);

@@ -82,7 +82,7 @@ $project.change(function(){
 	var service = encodeURIComponent("http://")+parts[2]+encodeURIComponent('/0/query');
 	url += "&serviceUrl="+service;
 
-	$("#dialog").html("Loading...").dialog({
+	$("#dialog").html("Getting survey information.  This can take some time.<br/><br/>Loading...").dialog({
 		resizable:false,
 		title: "Contacting ArcGIS Service",
 		modal: true,
@@ -92,7 +92,7 @@ $project.change(function(){
 	$.getJSON(url,
 		function(result){
 			$("#dialog").dialog("close");
-			
+			console.log(result);
 			if(!result.result){
 				showDialog("No valid surveys were found.");
 				$survey.uiselect("refresh");
@@ -110,7 +110,10 @@ $project.change(function(){
 			$("#dialog").dialog("close");
 			showDialog("Request failed.<br/>"+result.messages[0]);
 		}
-	);
+	).error(function(){
+		$("#dialog").dialog("close");
+		showDialog("Request failed.");
+	});
 });
 
 //bind to the submit button

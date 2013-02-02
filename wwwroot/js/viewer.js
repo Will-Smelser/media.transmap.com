@@ -197,7 +197,7 @@ var Viewer = {
 		    sliderStyle: "small",
 			outFields : ["*"]
 		});
-		console.log("loaded map",map);
+		
 		dojo.addClass(map.infoWindow.domNode, "myTheme");
 		
 		var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");

@@ -1,0 +1,116 @@
+
+html,body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+.esriScalebar {
+	padding: 20px 20px;
+}
+
+.esriPopup.myTheme .titlePane,.dj_ie7 .esriPopup.myTheme .titlePane .title
+	{
+	background-color: #EEA41F;
+	color: #333333;
+	font-weight: bold;
+}
+
+.esriPopup.myTheme .titlePane {
+	border-bottom: 1px solid #121310;
+}
+
+.esriPopup.myTheme a {
+	color: #d6e68a;
+}
+
+.esriPopup.myTheme .titleButton,
+.esriPopup.myTheme .pointer,
+.esriPopup.myTheme .outerPointer,
+.esriPopup.myTheme .esriViewPopup .gallery .mediaHandle,
+.esriPopup.myTheme .esriViewPopup .gallery .mediaIcon{
+	background-image: url(./images/popup.png);
+}
+
+.esriPopup.myTheme .contentPane,.esriPopup.myTheme .actionsPane {
+	border-color: 1px solid #121310;
+	background-color: #424242;
+	color: #ffffff;
+	max-height: 150px;
+}
+
+.esriPopup.myTheme .contentPane div {
+	display: block;
+}
+
+#map_zoom_slider {
+	right: 5px;
+	left: auto;
+}
+
+#data-details {
+	overflow: auto;
+	max-height: 100%;
+}
+
+#data-details div {
+	
+}
+
+#map {
+	padding: 0;
+}
+
+#map-full {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	width: 20px;
+	height: 20px;
+	background-color: transparent;
+	z-index: 20;
+	cursor: pointer;
+}
+
+#map-full.open:hover {
+	border-top: solid #333 3px;
+	border-left: solid #333 3px;
+}
+
+#map-full.open {
+	border-top: solid #333 2px;
+	border-left: solid #333 2px;
+}
+
+#map-full.close:hover {
+	border-right: solid #333 3px;
+	border-bottom: solid #333 3px;
+}
+
+#map-full.close {
+	border-right: solid #333 2px;
+	border-bottom: solid #333 2px;
+}
+
+#map-top-nav {
+	display: inline-block;
+	float: left;
+	margin: 0px;
+	padding: 0px;
+	border-collapse: collapse;
+}
+
+#map-top-nav td {
+	padding: 0px 10px 5px 0px;
+	margin: 0px;
+}
+
+#toolbar {
+	padding: 0px;
+}
+
+#map-top-nav h4 {
+	font-size: 16px;
+	font-weight: bolder;
+}

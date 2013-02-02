@@ -9,45 +9,18 @@
     
   <?php include '../includes/html/css.html'; ?>
   <?php include '../includes/html/js.html'; ?> 
-  
-  <script src="/js/cookie.js" ></script>
 
-  <link rel="stylesheet" href="/includes/map.css" type="text/css" media="screen" />	
+  <link rel="stylesheet" href="/css/map.css" type="text/css" media="screen" />	
   
   <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/dojo/dijit/themes/claro/claro.css"/>
   <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css" />
-
-  <style>
-      html, body {} 
-      .esriScalebar{
-      	padding: 20px 20px; 
-      } 
-      #map{ padding:0;}
-      #map-top-nav{
-      	display:inline-block;
-      	float:left;
-      	margin:0px;
-      	padding:0px;
-      	border-collapse:collapse;
-      }
-      #map-top-nav td{
-      	padding:0px 10px 5px 0px;
-      	margin:0px;
-      }
-      #toolbar {
-      	padding: 0px;
-  	  }
-  	  #map-top-nav h4{
-  	  	font-size:16px;
-  	  	font-weight:bolder;
-  	  }
-  	  
-  </style>
   
-  <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script>  
+  <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script> 
+   
   <script src="/js/cookie.js" ></script>
   <script src="/js/viewer.js" ></script>
   <script src="/js/preload.js" ></script>
+  <script src="/js/image.js" ></script>
   
   <script>
 	  var dojoConfig = {
@@ -97,48 +70,7 @@
           }
         });
 
-    	 var $img = $('#image-show-img');
     	 
-         //image previewer
-         $("#image-show").dialog({
-			modal:true,
-			buttons:[],
-			resizable:false,
-			show:"fade",
-			draggable:false,
-			width:($(window).width()-40),
-			height:($(window).height()-40),
-			autoOpen:false,
-			close:function(){$('body').css('overflow','auto');}
-         });
-
-         $('#image-container').click(function(){
-        	 $('body').css('overflow','hidden');
-        	 $("#image-show").dialog('open');
-        	 $img.attr('width','100%').css({'top':'0px','left':'0px'}).attr('src',$(this).find('img').attr('src').replace(/percent=[\d]+/i,'percent=100')).draggable();
-         });
-
-
-         $("#zoom-in").button({icons:{primary:'ui-icon-circle-plus'}})
-         	.click(function(){
-             	var inc = 10;
-				var width = parseInt($img.attr('width').replace('%',''))+inc;
-				
-				if(width === inc){
-					width = 100 + inc;
-				}
-				$img.attr('width',width+'%');
-          	});
-     	 $('#zoom-out').button({icons:{primary:'ui-icon-circle-minus'}})
-     	 	.click(function(){
-     	 		var inc = -10;
-				var width = parseInt($img.attr('width').replace('%',''))+inc;
-				
-				if(width === inc){
-					width = 100 + inc;
-				}
-				$img.attr('width',width+'%');
-     	 	});
     });
    
   </script>
