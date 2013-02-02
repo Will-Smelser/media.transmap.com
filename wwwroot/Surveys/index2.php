@@ -74,10 +74,10 @@
 
     $(document).ready(function(){
     	$('select').uiselect().each(function(){
-        	$(this).('autocompleteopen',
+        	$(this).uiselect('autocompleteopen',
                 function(){
-            		$(this).autocomplete('widget').css('z-index',99);	
-               });
+            		$(this).autocomplete('widget').css('z-index',99);
+            });
         });
     	$('input:button').button();
     	$('#forward,#backward').button();
@@ -178,7 +178,7 @@
 			</td>
 			<td> | </td>
 			<td>
-				<input id="image-counter" value="<?php echo $project->getImagePadded(); ?>" />
+				<input class="ui-state-default ui-widget" style="background-color:#FFF;background-image:none;" id="image-counter" value="<?php echo $project->getImagePadded(); ?>" />
 			</td>
 			<td>
 				<input type="button" value="Go" onclick="Viewer.canvasClick($('#image-counter').val())" />
@@ -235,12 +235,10 @@
 	</div>
 	
 	<script>
-
+		var queryBaseUrl = '<?php echo $project->getProjectQueryUrl(); ?>';
+		var mapData = <?php echo file_get_contents(preg_replace('/\/0\/query/i','',$project->getProjectQueryUrl()).'?f=json'); ?>;
 		var localServiceUrl = "<?php echo Utils::getServiceUrl(); ?>";
 		dojo.addOnLoad(function(){
-		//window.onload = function(){
-		//$(document).ready(function(){ //jquery load doesnt work
-			var queryBaseUrl = '<?php echo $project->getProjectQueryUrl(); ?>';
 			Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
 		});
 	
