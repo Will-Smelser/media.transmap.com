@@ -45,6 +45,17 @@ var Viewer = {
 	//preloader
 	preloader : null,
 	
+	refreshDims : function(){
+		//get the image width/height
+		this.width = $('#image-main').width(); 
+		this.height = $('#image-main').height();
+		
+		$('#loading','#loading2').css('width',this.width+'px').first().css('margin-top',(this.height/2-40)+'px');
+		$('#map-wrapper').css('height',this.height+'px');
+		$('#image-next').width(this.width+'px').height(this.height+'px');
+		
+	},
+	
 	load : function(baseref, imageSize, image, project, imagePath, survey, camera, type, first, last, query){
 		//set values
 		this.baseref = baseref;
@@ -59,14 +70,7 @@ var Viewer = {
 		this.lastImage  = 99999;//last;
 		this.qbase = query;
 		
-		//get the image width/height
-		this.width = $('#image-main').width(); 
-		this.height = $('#image-main').height();
-		
-		
-		//set some attributes for containers and canvas
-		$('#image-container').css('height',this.height+'px');
-		$('#loading','#loading2').css('width',this.width+'px').first().css('margin-top',(this.height/2-40)+'px');
+		this.refreshDims();
 		
 		//create preloader
 		this.preloader = new Preload('image-preloader');
@@ -176,6 +180,7 @@ var Viewer = {
 		Viewer._fullMapState = (!Viewer._fullMapState);
 		var $wrapper = $('#map-wrapper');
 		$wrapper.find('#map-full span:first').toggleClass('ui-icon-arrow-4-diag').toggleClass('ui-icon-arrow-4');
+		
 		$wrapper.animate({
 			width:size[0],
 			height:size[1]
@@ -372,6 +377,13 @@ var Viewer = {
 		this.imageSize = val[2];
 		
 		this.canvasClick(this.lastClicked);
+		
+		setTimeout(function(){
+			Viewer.refreshDims();
+			map.centerAt(Viewer._currentPointGeometry);
+			map.resize(true);
+		},500);
+		
 	},
 	
 	//preloaderImage function to get image

@@ -79,7 +79,7 @@
   </head>
   <body class="caro">
 	
-	<div id="container">	
+	<div id="container" style="<?php if(isset($_COOKIE['page-width'])) echo "width:{$_COOKIE['page-width']}" ?>">	
 	
 	<?php include '../includes/html/header.html'; ?>
 	
@@ -128,31 +128,36 @@
 		<div style="clear:both"></div>
 	</div>
 	<div id="main-container" style="background:#F8F8F8;position:relative;">
-	  <div style="margin:6px;position:relative;height:515px">
-		<div id="map-wrapper" style="position:absolute;right:0px;bottom:0px;z-index:10;width:325px;height:210px;">
-		  <button id="map-full" ></button>
-		  <div id="loading2" class="loading" >
-			<div class="inner"><img src="/images/layout/loading.gif" /><i>Loading ...</i></div>
-		  </div>
-		  <div data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design:'headline'" style="width:100%;height:100%; margin: 0; overflow:hidden;">
-			<div id="map" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'center'" style="width:100%;height:100%"></div>
-		  </div>
+	  <div style="margin:6px;position:relative;">
+			<div id="map-wrapper" class="map-relative" style="z-index:10;height:210px;float:right;width:50%;">
+			  <button id="map-full" ></button>
+			  <div id="loading2" class="loading" >
+				<div class="inner"><img src="/images/layout/loading.gif" /><i>Loading ...</i></div>
+			  </div>
+			  <div data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design:'headline'" style="width:100%;height:100%; margin: 0; overflow:hidden;">
+				<div id="map" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region:'center'" style="width:100%;height:100%"></div>
+			  </div>
 		</div>
-		
-		<div id="data-details-wrapper" style="position:absolute;right:0px;width:325px;">
-			<h4>Current Image Data</h4>
-			<div style="width:325px;height:275px;">
-				<div id="data-details">No Data</div>
-			</div>
-		</div>
-		<div class="image-container" id="image-container" style="z-index:1;">
-			<img id="image-main" src="<?php echo $project->getImage($camera, 0, $imageSz); ?>" />
-			<img id="image-next" src="<?php echo $project->getImage($camera, 1, $imageSz); ?>" style="display:none;" />
+			
+		<div class="image-container" id="image-container" style="z-index:1;width:49%;float:left;">
+			<img id="image-main" src="<?php echo $project->getImage($camera, 0, $imageSz); ?>" style="width:100%" />
+			<img id="image-next" src="<?php echo $project->getImage($camera, 1, $imageSz); ?>" style="position:absolute;display:none;top:0px;" />
 			<div id="loading" class="loading">
 				<div class="inner"><img src="/images/layout/loading.gif" /><i>Loading ...</i></div>
 			</div>
 		</div>
+		<div style="clear:both;height:10px"></div>
+		
+		<div id="data-details-wrapper" style="">
+			<h4>Current Image Data</h4>
+			<div style="">
+				<div id="data-details">No Data</div>
+			</div>
+		</div>
+		
 	  </div>
+	  
+	  <div style="position:absolute;top:49%;right:-5px;" class="ui-icon ui-icon-grip-solid-vertical"></div>
 	</div>
 			
 	<div id="image-loading" style="display:none"></div>
@@ -174,6 +179,24 @@
 		var localServiceUrl = "<?php echo Utils::getServiceUrl(); ?>";
 		dojo.addOnLoad(function(){
 			Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
+			$( "#container" ).resizable({ 
+				handles: "e",
+				stop: function(evt, ui){
+					Viewer.refreshDims();
+					map.resize(true);
+					setTimeout(function(){map.centerAt(Viewer._currentPointGeometry)},500);
+					$.cookie("page-width",ui.size.width+'px');
+				} 
+			});
+
+			//bind up down arrows for map
+			$(document).keydown(function(evt){
+				if(evt.keyCode == 38){
+					$('#forward').trigger('click');
+				}else if(evt.keyCode == 40){
+					$('#backward').trigger('click');
+				}
+			});
 		});
 	
 	</script>
