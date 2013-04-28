@@ -81,7 +81,7 @@
 	
 	<div id="container" style="<?php if(isset($_COOKIE['page-width'])) echo "width:{$_COOKIE['page-width']}" ?>">	
 	
-	<?php include '../includes/html/header.html'; ?>
+	<?php include '../includes/html/header-small.html'; ?>
 	
 	<div id="viewer-navigation" style="z-index:20">
 	
