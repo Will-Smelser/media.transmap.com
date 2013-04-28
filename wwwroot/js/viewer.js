@@ -175,19 +175,22 @@ var Viewer = {
 	_fullMapState : false,
 	_fullMap : function(){
 		Viewer._mapLoadingShow();
+		var size = (Viewer._fullMapState) ? ['50%','auto'] : ['100%','100%'];
 		
-		var size = (Viewer._fullMapState) ? ['325px','210px'] : ['100%','100%'];
+		$('#map-wrapper')
+				.toggleClass('map-relative map-absolute')
+				
+				.animate({
+					width:size[0],
+					height:size[1]
+				},function(){
+					map.resize(true);
+					setTimeout(function(){map.centerAt(Viewer._currentPointGeometry)},500);
+				})
+				
+				.find('#map-full span:first').toggleClass('ui-icon-arrow-4-diag').toggleClass('ui-icon-arrow-4');
+		
 		Viewer._fullMapState = (!Viewer._fullMapState);
-		var $wrapper = $('#map-wrapper');
-		$wrapper.find('#map-full span:first').toggleClass('ui-icon-arrow-4-diag').toggleClass('ui-icon-arrow-4');
-		
-		$wrapper.animate({
-			width:size[0],
-			height:size[1]
-		},function(){
-			map.resize(true);
-			setTimeout(function(){map.centerAt(Viewer._currentPointGeometry)},500);
-		});
 	},
 	_loadMap : function(data){
 		var popup = new esri.dijit.Popup({}, dojo.create("div"));
