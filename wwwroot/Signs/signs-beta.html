@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Data Collection</title>
+
+    <link rel="stylesheet" href="/theme-jquery/jquery-ui-1.9.2.custom/css/custom-theme/jquery-ui-1.9.2.custom.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="/css/jqpagination.css" />
+
+    <script src="http://code.jquery.com/jquery-1.8.1.min.js" ></script>
+    <script src="/theme-jquery/jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js" ></script>
+    <script type="text/javascript"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRaB8SQtxaNa909sDMK8Py1etA6m1RSYg&sensor=true">
+    </script>
+    <script src="/js/cookie.js" ></script>
+    <script src="/js/jquery.jqpagination.min.js" ></script>
+
+    <style type="text/css">
+        html { height: 100% }
+        body { height: 100%; margin: 0; padding: 0 }
+        #map-canvas { height: 100%; margin-right:300px; }
+        #sign-results-wrapper{
+            position:absolute;
+            right:0px;
+            top:0px;
+            height:100%;
+            width:300px;
+            background-color: #EFEFEF;
+            z-index: 1000;
+        }
+    </style>
+
+</head>
+<body>
+
+<div id="sign-results-wrapper">
+    <div><h2>Sign Data</h2></div>
+    <ul id="sign-data" class="content"></ul>
+    <div class="pagination">
+        <a href="#" class="first" data-action="first">&laquo;</a>
+        <a href="#" class="previous" data-action="previous">&lsaquo;</a>
+        <input type="text" readonly="readonly" data-max-page="40" />
+        <a href="#" class="next" data-action="next">&rsaquo;</a>
+        <a href="#" class="last" data-action="last">&raquo;</a>
+    </div>
+</div>
+
+<div id="map-canvas"/>
+
+
+</body>
+
+
+<script>
+    /**
+     * Expects fusion table data to have the following fields:
+     * name, checked
+     *
+     */
+    var store = {
+        storage : localStorage,
+        $display : $('#sign-data'),
+        _check : function(){
+            try {
+                return 'localStorage' in window && window['localStorage'] !== null;
+            } catch (e) {
+                return false;
+            }
+        },
+        jsonToStr : function(obj){
+            return JSON.stringify(obj);
+        },
+        /* set entry in localStorage */
+        setItem : function(key,obj,checked){
+            obj.checked = checked;
+            return this.storage.setItem(key,this.jsonToStr(obj));
+        },
+        /* update the attribute of an item in localStorage */
+        setAttribute : function(key, attr, value){
+            var obj = this.getItem(key);
+            obj[attr] = value;
+            this.setItem(key, obj, obj.checked);
+        },
+        /* get an item */
+        getItem : function(key){
+            return JSON.parse(this.storage.getItem(key));
+        },
+        removeItem : function(key){
+            this.storage.removeItem(key);
+        },
+        //pagination
+        pageSize : 20,
+        pageinate : null,
+        init : function(){
+            var scope = this;
+
+            scope.redraw(1);
+            this.pageinate = $('.pagination').jqPagination({
+                current_page:1,
+                max_page:Math.ceil(scope.storage.length/scope.pageSize),
+                paged: function(page){scope.redraw(page);}
+            });
+        },
+        /* iterrates in reverse order */
+        iterate : function(func, start, stop){
+            if(typeof start == 'undefined')
+                start = 0;
+            if(typeof stop == 'undefined' || stop == 0)
+                stop = this.storage.length;
+            if(stop > this.storage.length)
+                stop = this.storage.length;
+
+            for(var i=start; i < stop; i++){
+                var key = this.storage.key(i);
+                func(key,this.getItem(key));
+            }
+        },
+        _createRow : function(key, name, checked){
+            var $cbox = $(document.createElement('input')).attr('type','checkbox').attr('id','key-'+key);
+            var $label = $(document.createElement('label')).attr('for','key-'+key).addClass('name');
+            var $li = $(document.createElement('li')).attr('data-key',key);
+
+            var imgClass = checked ? 'good' : 'bad';
+            var $img = $(document.createElement('span')).addClass('img-base').addClass(imgClass);
+            $label.append($cbox).append(name).append($img);
+            $li.append($label);
+
+            return $li;
+        },
+        redraw : function(page){
+            this.$display.empty();
+
+            var obj = this;
+            var start = obj.pageSize * (page-1);
+            var stop = start + obj.pageSize;
+            this.iterate(function(key,row){
+                var div = obj._createRow.call(obj, key, row.name, row.checked);
+                obj.$display.append(div);
+            },start,stop);
+        }
+    }
+
+
+
+    var chicago = new google.maps.LatLng(41.850033, -87.6500523);
+    function initialize() {
+        var mapOptions = {
+            center: chicago,
+            zoom: 16
+        };
+
+        window.map = new google.maps.Map(document.getElementById("map-canvas"),
+                mapOptions);
+
+        layer = new google.maps.FusionTablesLayer({
+            query: {
+                select: '\'Geocodable address\'',
+                from: '1mZ53Z70NsChnBMm-qEYmSDOvLXgrreLTkQUvvg'
+            }
+        });
+        layer.addListener('click', function(evt){
+            var latLng = evt.latLng;
+
+            //just accessing the row content
+            var name = evt.row.Name.value;
+
+            store.setItem(name,{"name":name,"checked":true});
+            store.redraw();
+        });
+        layer.setMap(map);
+    }
+    google.maps.event.addDomListener(window, 'load', initialize);
+
+
+    $(document).ready(function(){
+        store.init();
+
+        //setup pane
+        var width = $.cookie('column-width');
+        $('#map-canvas').css('margin-right',width);
+        $('#sign-results-wrapper').css('width',width);
+
+        //resize pane
+        $('#sign-results-wrapper').resizable({
+            handles: "w",
+            stop: function(evt, ui){
+                $('#map-canvas').css('margin-right',ui.size.width+'px');
+                $.cookie("column-width",ui.size.width+'px');
+                google.maps.event.trigger(map,'resize')
+            }
+        });
+    });
+
+</script>
+
+
+</html>
