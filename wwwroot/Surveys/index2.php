@@ -81,7 +81,7 @@
 	
 	<div id="container" style="<?php if(isset($_COOKIE['page-width'])) echo "width:{$_COOKIE['page-width']}" ?>">	
 	
-	<?php include '../includes/html/header-small.html'; ?>
+	<?php include '../includes/html/header.html'; ?>
 	
 	<div id="viewer-navigation" style="z-index:20">
 	
@@ -178,25 +178,29 @@
 		var mapData = <?php echo file_get_contents(preg_replace('/\/0\/query/i','',$project->getProjectQueryUrl()).'?f=json'); ?>;
 		var localServiceUrl = "<?php echo Utils::getServiceUrl(); ?>";
 		dojo.addOnLoad(function(){
-			Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
-			$( "#container" ).resizable({ 
-				handles: "e",
-				stop: function(evt, ui){
-					Viewer.refreshDims();
-					map.resize(true);
-					setTimeout(function(){map.centerAt(Viewer._currentPointGeometry)},500);
-					$.cookie("page-width",ui.size.width+'px');
-				} 
-			});
+            $(document).ready(function(){
+                Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
+                $( "#container" ).resizable({
+                    handles: "e",
+                    stop: function(evt, ui){
+                        Viewer.refreshDims();
+                        if(map !== null){
+                            map.resize(true);
+                            setTimeout(function(){map.centerAt(Viewer._currentPointGeometry)},500);
+                        }
+                        $.cookie("page-width",ui.size.width+'px');
+                    }
+                });
 
-			//bind up down arrows for map
-			$(document).keydown(function(evt){
-				if(evt.keyCode == 38){
-					$('#forward').trigger('click');
-				}else if(evt.keyCode == 40){
-					$('#backward').trigger('click');
-				}
-			});
+                //bind up down arrows for map
+                $(document).keydown(function(evt){
+                    if(evt.keyCode == 38){
+                        $('#forward').trigger('click');
+                    }else if(evt.keyCode == 40){
+                        $('#backward').trigger('click');
+                    }
+                });
+            });
 		});
 	
 	</script>

@@ -47,12 +47,12 @@ var Viewer = {
 	
 	refreshDims : function(){
 		//get the image width/height
-		this.width = $('#image-main').width(); 
-		this.height = $('#image-main').height();
+		Viewer.width = $('#image-main').width();
+		Viewer.height = $('#image-main').height();
 		
-		$('#loading','#loading2').css('width',this.width+'px').first().css('margin-top',(this.height/2-40)+'px');
-		$('#map-wrapper').css('height',this.height+'px');
-		$('#image-next').width(this.width+'px').height(this.height+'px');
+		$('#loading','#loading2').css('width',Viewer.width+'px').first().css('margin-top',(Viewer.height/2-40)+'px');
+		$('#map-wrapper').css('height',Viewer.height+'px');
+		$('#image-next').width(Viewer.width+'px').height(Viewer.height+'px');
 		
 	},
 	
@@ -182,7 +182,8 @@ var Viewer = {
 		//map is opening
 		if(!Viewer._fullMapState)
 			$mapWrapper.toggleClass('map-relative map-absolute');
-		
+
+
 		$mapWrapper
 				.animate({
 					width:size[0],
