@@ -135,36 +135,23 @@
 
             scope.map = map;
             scope.marker = marker;
+
+            var size = Math.ceil(scope.storage.length/scope.pageSize);
+            $('.pagination').jqPagination({
+                current_page:scope.curPage,
+                max_page:Math.max(1,size),
+                paged: function(page){
+                    store.curPage=page;
+                    store.redraw(page);
+                }
+            });
+
             scope.redraw(1);
-            scope.paginate.init(scope);
 
             scope.startGeoTracking();
             $('#gpsOn').change(function(){
                 scope.startGeoTracking();
             });
-        },
-        paginate : {
-            $jq : null,
-            store : null,
-            init : function(store){
-                this.store = store;
-                this.$jq = $('.pagination');
-
-                this.$jq.jqPagination({
-                    current_page:store.curPage,
-                    max_page:Math.max(1,store.paginate._getSize(store)),
-                    paged: function(page){
-                        store.curPage=page;
-                        store.redraw(page);
-                    }
-                });
-            },
-            updateSize : function(){
-                this.$jq.jqPagination('option', 'max_page', this._getSize());
-            },
-            _getSize : function(){
-                return Math.ceil(this.store.storage.length/this.store.pageSize);
-            }
         },
         geoInterval : null,
         startGeoTracking : function(){
@@ -245,12 +232,16 @@
             this.$display.empty();
 
             var obj = this;
+
             var start = obj.pageSize * (page-1);
             var stop = start + obj.pageSize;
             this.iterate(function(key,row){
                 var div = obj._createRow.call(obj, key, row.name, row.checked);
                 obj.$display.append(div);
             },start,stop);
+
+            var size = Math.ceil(obj.storage.length/obj.pageSize);
+            $('.pagination').jqPagination.call(window,'option', 'max_page', size);
         },
         locMarker : null,
         marker : null,
@@ -286,7 +277,6 @@
 
             store.deleteIfExists('name',name);
             store.setItem(--store.index,{"name":name},true);
-
             store.redraw();
 
             store.marker.setPosition(latLng);

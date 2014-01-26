@@ -5,6 +5,9 @@ include 'class/Project.php';
 //definitions
 define('VIEW_DEFAULT','front');
 
+if(!isset($_GET['Survey']) || !isset($_GET['Survey']) && !isset($_GET['Survey'])){
+    //TODO: forward to error page
+}
 $Survey  = $_GET['Survey'];
 $Image   = $_GET['Image'];
 $Project = $_GET['Project'];
