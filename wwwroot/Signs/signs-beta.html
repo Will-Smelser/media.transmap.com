@@ -52,6 +52,9 @@
         .bad{
             background-image:url("/images/layout/icons/cancel.png");
         }
+        .ui-resizable-w{
+            background-color:#DDD;
+        }
     </style>
 
 </head>
@@ -70,6 +73,7 @@
             <a href="#" class="last" data-action="last">&raquo;</a>
         </div>
     </div>
+
 </div>
 
 <div id="map-canvas"/>
@@ -121,7 +125,8 @@
         //pagination
         curPage : 1,
         pageSize : 5,
-        pageinate : null,
+
+        //initialize
         init : function(map, marker){
             var scope = this;
 
@@ -131,16 +136,35 @@
             scope.map = map;
             scope.marker = marker;
             scope.redraw(1);
-            this.pageinate = $('.pagination').jqPagination({
-                current_page:scope.curPage,
-                max_page:Math.max(1,Math.ceil(scope.storage.length/scope.pageSize)),
-                paged: function(page){scope.redraw(page);}
-            });
+            scope.paginate.init(scope);
 
             scope.startGeoTracking();
             $('#gpsOn').change(function(){
                 scope.startGeoTracking();
             });
+        },
+        paginate : {
+            $jq : null,
+            store : null,
+            init : function(store){
+                this.store = store;
+                this.$jq = $('.pagination');
+
+                this.$jq.jqPagination({
+                    current_page:store.curPage,
+                    max_page:Math.max(1,store.paginate._getSize(store)),
+                    paged: function(page){
+                        store.curPage=page;
+                        store.redraw(page);
+                    }
+                });
+            },
+            updateSize : function(){
+                this.$jq.jqPagination('option', 'max_page', this._getSize());
+            },
+            _getSize : function(){
+                return Math.ceil(this.store.storage.length/this.store.pageSize);
+            }
         },
         geoInterval : null,
         startGeoTracking : function(){
@@ -227,12 +251,6 @@
                 var div = obj._createRow.call(obj, key, row.name, row.checked);
                 obj.$display.append(div);
             },start,stop);
-
-            obj.pageinate = $('.pagination').jqPagination({
-                current_page:obj.curPage,
-                max_page:Math.max(1,Math.ceil(obj.storage.length/obj.pageSize)),
-                paged: function(page){obj.redraw(page);}
-            });
         },
         locMarker : null,
         marker : null,
@@ -268,6 +286,7 @@
 
             store.deleteIfExists('name',name);
             store.setItem(--store.index,{"name":name},true);
+
             store.redraw();
 
             store.marker.setPosition(latLng);
