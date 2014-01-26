@@ -3,6 +3,7 @@
 <head>
     <title>Sign Data Collection</title>
 
+    <link rel="stylesheet" href="http://www.w3.org/StyleSheets/Core/Swiss" type="text/css">
     <link rel="stylesheet" href="/theme-jquery/jquery-ui-1.9.2.custom/css/custom-theme/jquery-ui-1.9.2.custom.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="/css/jqpagination.css" />
 
@@ -16,8 +17,16 @@
 
     <style type="text/css">
         html { height: 100% }
-        body { height: 100%; margin: 0; padding: 0 }
+        body { height: 100%; margin: 0; padding: 0; line-height: normal; }
         #map-canvas { height: 100%; margin-right:300px; }
+        li{
+            margin:0px;
+            padding:0px;
+            list-style: none;
+        }
+        h2{
+            margin-top:1em;
+        }
         #sign-results-wrapper{
             position:absolute;
             right:0px;
@@ -27,20 +36,39 @@
             background-color: #EFEFEF;
             z-index: 1000;
         }
+        label{cursor:pointer;}
+        .img-base{
+            display:inline-block;
+            width:18px;
+            height:18px;
+            background-repeat: no-repeat;
+            float:right;
+            margin-right:10px;
+            cursor:pointer;
+        }
+        .good{
+            background-image:url("/images/layout/icons/accept.png");
+        }
+        .bad{
+            background-image:url("/images/layout/icons/cancel.png");
+        }
     </style>
 
 </head>
 <body>
 
 <div id="sign-results-wrapper">
-    <div><h2>Sign Data</h2></div>
-    <ul id="sign-data" class="content"></ul>
-    <div class="pagination">
-        <a href="#" class="first" data-action="first">&laquo;</a>
-        <a href="#" class="previous" data-action="previous">&lsaquo;</a>
-        <input type="text" readonly="readonly" data-max-page="40" />
-        <a href="#" class="next" data-action="next">&rsaquo;</a>
-        <a href="#" class="last" data-action="last">&raquo;</a>
+    <div style="padding:10px">
+        <div><input type="checkbox" id="gpsOn"><label for="gpsOn"> GPS on?</label> </div>
+        <div><h2>Sign Data</h2></div>
+        <ul id="sign-data" class="content"></ul>
+        <div class="pagination">
+            <a href="#" class="first" data-action="first">&laquo;</a>
+            <a href="#" class="previous" data-action="previous">&lsaquo;</a>
+            <input type="text" readonly="readonly" data-max-page="40" />
+            <a href="#" class="next" data-action="next">&rsaquo;</a>
+            <a href="#" class="last" data-action="last">&raquo;</a>
+        </div>
     </div>
 </div>
 
@@ -78,7 +106,7 @@
         setAttribute : function(key, attr, value){
             var obj = this.getItem(key);
             obj[attr] = value;
-            this.setItem(key, obj, obj.checked);
+            this.storage.setItem(key,this.jsonToStr(obj));
         },
         /* get an item */
         getItem : function(key){
@@ -87,18 +115,57 @@
         removeItem : function(key){
             this.storage.removeItem(key);
         },
+        //track click index
+        index : 99999999999,
+
         //pagination
-        pageSize : 20,
+        curPage : 1,
+        pageSize : 5,
         pageinate : null,
-        init : function(){
+        init : function(map, marker){
             var scope = this;
 
+            if(this.storage.length > 0)
+                scope.index = this.storage.key(0);
+
+            scope.map = map;
+            scope.marker = marker;
             scope.redraw(1);
             this.pageinate = $('.pagination').jqPagination({
-                current_page:1,
-                max_page:Math.ceil(scope.storage.length/scope.pageSize),
+                current_page:scope.curPage,
+                max_page:Math.max(1,Math.ceil(scope.storage.length/scope.pageSize)),
                 paged: function(page){scope.redraw(page);}
             });
+
+            scope.startGeoTracking();
+            $('#gpsOn').change(function(){
+                scope.startGeoTracking();
+            });
+        },
+        geoInterval : null,
+        startGeoTracking : function(){
+            if($('#gpsOn:checked').length > 0){
+                if(navigator.geolocation) {
+                    var scope = this;
+
+                    scope.stopGeoTracking();
+                    scope.geoInterval = setInterval(function(){
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            var pos = new google.maps.LatLng(position.coords.latitude,
+                                    position.coords.longitude);
+                            scope.map.setCenter(pos);
+
+                        }, function() {
+                            alert('Failed to geolocate.');
+                        });
+                    },500);
+                }else{
+                    alert('Device does not support geolocation.');
+                }
+            }
+        },
+        stopGeoTracking : function(){
+            clearInterval(this.geoInterval);
         },
         /* iterrates in reverse order */
         iterate : function(func, start, stop){
@@ -115,18 +182,42 @@
             }
         },
         _createRow : function(key, name, checked){
+            var scope = this;
+
             var $cbox = $(document.createElement('input')).attr('type','checkbox').attr('id','key-'+key);
+            var $div = $(document.createElement('div'));
+
             var $label = $(document.createElement('label')).attr('for','key-'+key).addClass('name');
             var $li = $(document.createElement('li')).attr('data-key',key);
 
             var imgClass = checked ? 'good' : 'bad';
             var $img = $(document.createElement('span')).addClass('img-base').addClass(imgClass);
-            $label.append($cbox).append(name).append($img);
-            $li.append($label);
+
+
+            $label.append($cbox).append(name);
+            $div.append($label).append($img);
+            $li.append($div);
+
+            //add img event
+            $img.click(function(){
+                var key = $(this).parent().parent().attr('data-key');
+                scope.setAttribute(key,'checked',!checked);
+                scope.redraw();
+            });
 
             return $li;
         },
+        deleteIfExists : function(attr,value){
+            var scope = this;
+            this.iterate(function(key,row){
+                if(row != null && typeof row[attr] != "undefined" && value === row[attr])
+                    scope.removeItem(key);
+            });
+        },
         redraw : function(page){
+            if(typeof page == "undefined")
+                page = this.curPage;
+
             this.$display.empty();
 
             var obj = this;
@@ -136,7 +227,16 @@
                 var div = obj._createRow.call(obj, key, row.name, row.checked);
                 obj.$display.append(div);
             },start,stop);
-        }
+
+            obj.pageinate = $('.pagination').jqPagination({
+                current_page:obj.curPage,
+                max_page:Math.max(1,Math.ceil(obj.storage.length/obj.pageSize)),
+                paged: function(page){obj.redraw(page);}
+            });
+        },
+        locMarker : null,
+        marker : null,
+        map : null
     }
 
 
@@ -155,25 +255,39 @@
             query: {
                 select: '\'Geocodable address\'',
                 from: '1mZ53Z70NsChnBMm-qEYmSDOvLXgrreLTkQUvvg'
-            }
+            },
+            suppressInfoWindows : true
         });
+
         layer.addListener('click', function(evt){
             var latLng = evt.latLng;
 
             //just accessing the row content
             var name = evt.row.Name.value;
 
-            store.setItem(name,{"name":name,"checked":true});
+
+            store.deleteIfExists('name',name);
+            store.setItem(--store.index,{"name":name},true);
             store.redraw();
+
+            store.marker.setPosition(latLng);
         });
         layer.setMap(map);
+
+        window.marker = new google.maps.Marker({
+            position: chicago,
+            map: map,
+            title: 'Current Sign'
+        });
+
+        store.init(map, marker);
+
+
     }
     google.maps.event.addDomListener(window, 'load', initialize);
 
 
     $(document).ready(function(){
-        store.init();
-
         //setup pane
         var width = $.cookie('column-width');
         $('#map-canvas').css('margin-right',width);
