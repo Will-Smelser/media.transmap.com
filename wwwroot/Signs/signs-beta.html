@@ -72,8 +72,21 @@
             <a href="#" class="next" data-action="next">&rsaquo;</a>
             <a href="#" class="last" data-action="last">&raquo;</a>
         </div>
+        <hr>
+        <input type="button" id="export-btn" value="Export Local Data" />
     </div>
 
+</div>
+
+<div id="dialog">
+    <input type="hidden" id="row-key" />
+    <input type="hidden" id="row-checked" />
+    <form id="row-data" style="font-size:12px"></form>
+    <input type="button" id="row-data-btn" value="Save Locally" />
+</div>
+
+<div id="export">
+    <textarea id="export-data" style="width:100%;height:100%"></textarea>
 </div>
 
 <div id="map-canvas"/>
@@ -89,6 +102,8 @@
      *
      */
     var store = {
+        nameUnique : 'OBJECTID_1',
+        nameColumns : ['Label','POST_TYPE'],
         storage : localStorage,
         $display : $('#sign-data'),
         _check : function(){
@@ -119,6 +134,93 @@
         removeItem : function(key){
             this.storage.removeItem(key);
         },
+
+        showDialog : function(key){
+            row = this.getItem(key);
+
+            $('#row-key').val(key);
+            $('#row-checked').val(row.checked);
+
+            var $table = $(document.createElement('table'));
+            var $tr = $(document.createElement('tr'))
+                        .append($(document.createElement('th')).html('Field'))
+                        .append($(document.createElement('th')).html('Value'));
+            $table.append($tr);
+
+            for(var x in row){
+                if(x === 'checked') continue;
+
+                var key = row[x].columnName;
+                var val = row[x].value;
+                var $input = $(document.createElement('input')).attr('id',key).val(val).attr('name',key);
+                var $tr = $(document.createElement('tr'))
+                        .append($(document.createElement('td')).html(key))
+                        .append($(document.createElement('td')).html($input));
+                $table.append($tr);
+            }
+
+            $('#row-data').empty().html($table);
+
+            var ht = ($(window).height()-50);
+            $('#dialog').dialog("option","height",ht).dialog('open');
+
+        },
+        saveDialog : function(){
+            var result = {};
+            var data = $('#row-data').serializeArray();
+            for(var x in data){
+                var name = data[x].name;
+                var value= data[x].value;
+                result[name] = {columnName:name,"value":value};
+            }
+
+            var key = $('#row-key').val();
+            result.checked = ($('#row-checked').val()==='true')?true:false;
+
+            try{
+                this.setItem(key,result,result.checked);
+                this.redraw();
+                $('#dialog').dialog('close');
+            }catch(e){
+                alert('Save failed!\n'+ e);
+            }
+        },
+        export : function(){
+            var $text = $('#export-data').empty();
+            var str = "{\"DATA\":[";
+            var comma = "";
+            this.iterate(function(key, row){
+                //str += "\nrow : {\n\t";
+                var temp = {};
+                for(var x in row){
+                    var output = {};
+                    if(typeof row[x] === "object"){
+                        var field = row[x].columnName;
+                        var value = row[x].value;
+                        /*
+                        output = {
+                            "field":field,"value":value
+                        };*/
+                        temp[field] = value;
+                    }else{
+                        /*
+                        output = {
+                            "field":x,"value":row[x]
+                        }*/
+                        temp[x] = row[x];
+                    }
+                    //temp.push(output);
+                }
+                str += comma+"\n\t"+JSON.stringify(temp);
+                comma = ",";
+                //str += "\n}";
+            });
+            str+="\n]\n}";
+
+            $text.val(str);
+            $('#export').dialog('open');
+        },
+
         //track click index
         index : 99999999999,
 
@@ -152,6 +254,20 @@
             $('#gpsOn').change(function(){
                 scope.startGeoTracking();
             });
+
+            //set the dialog
+            var ht = ($(window).height()-50);
+            $('#dialog').dialog({
+                title:'Point Data',autoOpen:false,
+                width:400,height:ht
+            });
+            $('#row-data-btn').button().click(function(){scope.saveDialog.call(scope);});
+
+            $('#export').dialog({
+                title:'Result Data',autoOpen:false,
+                width:'90%',height:ht
+            });
+            $('#export-btn').button().click(function(){scope.export.call(scope);});
         },
         geoInterval : null,
         startGeoTracking : function(){
@@ -192,7 +308,7 @@
                 func(key,this.getItem(key));
             }
         },
-        _createRow : function(key, name, checked){
+        _createRow : function(key, name, checked, row){
             var scope = this;
 
             var $cbox = $(document.createElement('input')).attr('type','checkbox').attr('id','key-'+key);
@@ -200,6 +316,8 @@
 
             var $label = $(document.createElement('label')).attr('for','key-'+key).addClass('name');
             var $li = $(document.createElement('li')).attr('data-key',key);
+
+            $label.click(function(){scope.showDialog(key,row);})
 
             var imgClass = checked ? 'good' : 'bad';
             var $img = $(document.createElement('span')).addClass('img-base').addClass(imgClass);
@@ -236,12 +354,17 @@
             var start = obj.pageSize * (page-1);
             var stop = start + obj.pageSize;
             this.iterate(function(key,row){
-                var div = obj._createRow.call(obj, key, row.name, row.checked);
+                var str = "";
+                for(var i in obj.nameColumns)
+                    str += row[obj.nameColumns[i]].value + "&nbsp;&nbsp;";
+
+                var div = obj._createRow.call(obj, key, str, row.checked, row);
                 obj.$display.append(div);
             },start,stop);
 
-            var size = Math.ceil(obj.storage.length/obj.pageSize);
-            $('.pagination').jqPagination.call(window,'option', 'max_page', size);
+            //var size = Math.ceil(obj.storage.length/obj.pageSize);
+            //$('.pagination').jqPagination.call(window,'option', 'max_page', size);
+            //console.log(size);
         },
         locMarker : null,
         marker : null,
@@ -250,10 +373,10 @@
 
 
 
-    var chicago = new google.maps.LatLng(41.850033, -87.6500523);
+    var startloc = new google.maps.LatLng(34.409191, -119.692953);
     function initialize() {
         var mapOptions = {
-            center: chicago,
+            center: startloc,
             zoom: 16
         };
 
@@ -262,8 +385,9 @@
 
         layer = new google.maps.FusionTablesLayer({
             query: {
-                select: '\'Geocodable address\'',
-                from: '1mZ53Z70NsChnBMm-qEYmSDOvLXgrreLTkQUvvg'
+                select: 'Y',
+                //from: '1mZ53Z70NsChnBMm-qEYmSDOvLXgrreLTkQUvvg'
+                from: '1AX2G1_UCWwnbuNNBfzAhwfD0VptlKHPXvMVC3o4'
             },
             suppressInfoWindows : true
         });
@@ -272,19 +396,20 @@
             var latLng = evt.latLng;
 
             //just accessing the row content
-            var name = evt.row.Name.value;
-
-
-            store.deleteIfExists('name',name);
-            store.setItem(--store.index,{"name":name},true);
+            var id = evt.row[store.nameUnique].value;
+            store.deleteIfExists(store.nameUnique,id);
+            store.setItem(--store.index,evt.row,true);
             store.redraw();
+
+            var size = Math.ceil(store.storage.length/store.pageSize);
+            $('.pagination').jqPagination('option', 'max_page', size);
 
             store.marker.setPosition(latLng);
         });
         layer.setMap(map);
 
         window.marker = new google.maps.Marker({
-            position: chicago,
+            position: startloc,
             map: map,
             title: 'Current Sign'
         });
@@ -311,6 +436,7 @@
                 google.maps.event.trigger(map,'resize')
             }
         });
+
     });
 
 </script>
