@@ -70,7 +70,11 @@
 
 <div id="sign-results-wrapper">
     <div style="padding:10px">
-        <div><input type="checkbox" id="gpsOn"><label for="gpsOn"> GPS on?</label> </div>
+        <div>
+            <input type="checkbox" id="gpsOn"><label for="gpsOn"> GPS on?</label>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span  style="font-size:12px;cursor:pointer">[ <a id="delete-local">Delete LocalStorage</a> ]</span>
+        </div>
         <div><h2>Sign Data</h2></div>
         <ul id="sign-data" class="content"></ul>
         <div class="pagination">
@@ -88,7 +92,6 @@
 
 <div id="dialog">
     <input type="hidden" id="row-key" />
-    <input type="hidden" id="row-checked" />
     <form id="row-data" style="font-size:12px"></form>
     <input type="button" id="row-data-btn" value="Save Locally" />
 </div>
@@ -104,17 +107,15 @@
 
 
 <script>
-    /**
-     * Expects fusion table data to have the following fields:
-     * name, checked
-     *
-     */
+
     var store = {
         nameUnique : 'SignID',
         nameColumns : ['MUTCD','SIGN_FACE_'],
-        conditionField : 'CONDITION',
+        conditionField : 'Night_Insp',
         conditionToggle : ['GOOD','POOR'],
         conditionClass : ['good','bad'],
+        conditionColor : ['green','red'],
+        exportFields : ['SignID','Insp_Comment','Night_Insp','timestamp'],
         storage : localStorage,
         $display : $('#sign-data'),
         _check : function(){
@@ -128,8 +129,7 @@
             return JSON.stringify(obj);
         },
         /* set entry in localStorage */
-        setItem : function(key,obj,checked){
-            obj.checked = checked;
+        setItem : function(key,obj){
             return this.storage.setItem(key,this.jsonToStr(obj));
         },
         /* update the attribute of an item in localStorage */
@@ -150,7 +150,6 @@
             row = this.getItem(key);
 
             $('#row-key').val(key);
-            $('#row-checked').val(row.checked);
 
             var $table = $(document.createElement('table'));
             var $tr = $(document.createElement('tr'))
@@ -159,8 +158,6 @@
             $table.append($tr);
 
             for(var x in row){
-                if(x === 'checked') continue;
-
                 var key = row[x].columnName;
                 var val = row[x].value;
                 var $input = $(document.createElement('input')).attr('id',key).val(val).attr('name',key);
@@ -186,10 +183,9 @@
             }
 
             var key = $('#row-key').val();
-            result.checked = ($('#row-checked').val()==='true')?true:false;
 
             try{
-                this.setItem(key,result,result.checked);
+                this.setItem(key,result);
                 this.redraw();
                 $('#dialog').dialog('close');
             }catch(e){
@@ -198,35 +194,39 @@
         },
         export : function(){
             var $text = $('#export-data').empty();
-            var str = "{\"DATA\":[";
+            var str = "";
+            var obj = this;
+
             var comma = "";
+            for(var x in obj.exportFields){
+                str += comma + obj.exportFields[x];
+                comma = ", ";
+            }
+            str += "\n";
+
             this.iterate(function(key, row){
-                //str += "\nrow : {\n\t";
-                var temp = {};
-                for(var x in row){
-                    var output = {};
-                    if(typeof row[x] === "object"){
-                        var field = row[x].columnName;
-                        var value = row[x].value;
-                        /*
-                        output = {
-                            "field":field,"value":value
-                        };*/
-                        temp[field] = value;
+                var comma = "";
+                for(var x in obj.exportFields){
+                    var name = obj.exportFields[x];
+                    if(typeof row[name] == "undefined"){
+                        str += comma+"Undefined Field";
+                    }else if(typeof row[name] === "object"){
+                        var field = row[name].columnName;
+                        var value = row[name].value;
+                        if(value === ""){
+                            str += comma+"No Data";
+                        }else{
+
+                            str += comma+value;
+                        }
                     }else{
-                        /*
-                        output = {
-                            "field":x,"value":row[x]
-                        }*/
-                        temp[x] = row[x];
+                        str += row[name]+", ";
                     }
-                    //temp.push(output);
+                    comma = ", ";
                 }
-                str += comma+"\n\t"+JSON.stringify(temp);
-                comma = ",";
-                //str += "\n}";
+
+                str += "\n";
             });
-            str+="\n]\n}";
 
             $text.val(str);
             $('#export').dialog('open');
@@ -237,7 +237,7 @@
 
         //pagination
         curPage : 1,
-        pageSize : 5,
+        pageSize : 10,
 
         //initialize
         init : function(map, marker){
@@ -285,12 +285,12 @@
                 '#ffff00'
             ];
             var path = {
-                path: 'M-7 -7 L-7 8 L8 8 L8 -7 Z',
+                path: 'M-10 -10 L-10 10 L10 10 L10 -10 Z',
                 fillColor: 'yellow',
-                fillOpacity: 0.5,
+                fillOpacity: 0.7,
                 scale: 1,
                 strokeColor: '#333',
-                strokeWeight: 1
+                strokeWeight: 4
             };
 
             for(var i= 0,c=0; i< scope.pageSize; i++, c++){
@@ -302,16 +302,34 @@
                     title: 'Visited Sign',
                     icon:lpath
                 });
+                google.maps.event.addListener(marker, 'click', function(e) {
+                    //alert('clicked');
+                });
                 scope.markerVisited.push(marker);
             }
 
+            scope.geoMarker = cityCircle = new google.maps.Circle(
+                    {
+                        strokeColor: 'blue',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: 'blue',
+                        fillOpacity: 0.35,
+                        map: map,
+                        //center: citymap[city].center,
+                        radius: 20
+                    }
+            );
             scope.redraw(1);
         },
+        geoMarker : null,
         geoInterval : null,
         startGeoTracking : function(){
             if($('#gpsOn:checked').length > 0){
                 if(navigator.geolocation) {
                     var scope = this;
+
+                    scope.geoMarker.setVisible(true);
 
                     scope.stopGeoTracking();
                     scope.geoInterval = setInterval(function(){
@@ -319,12 +337,14 @@
                             var pos = new google.maps.LatLng(position.coords.latitude,
                                     position.coords.longitude);
                             scope.map.setCenter(pos);
+                            scope.geoMarker.setCenter(pos);
 
                         }, function() {
                             alert('Failed to geolocate.');
                         });
                     },500);
                 }else{
+                    scope.geoMarker.setVisible(false);
                     alert('Device does not support geolocation.');
                 }
             }
@@ -346,7 +366,7 @@
                 func(key,this.getItem(key));
             }
         },
-        _createRow : function(key, name, checked, row){
+        _createRow : function(key, name, row){
             var scope = this;
 
             var $cbox = $(document.createElement('input')).attr('type','checkbox').attr('id','key-'+key);
@@ -408,6 +428,9 @@
         _getNextCondition:function(currentCondition){
             return this.conditionToggle[this._getNextConditionIndex(currentCondition)];
         },
+        _getConditionColor : function(currentCondition){
+            return this.conditionColor[this._getCurrentConditionIndex(currentCondition)];
+        },
         deleteIfExists : function(attr,value){
             var scope = this;
             this.iterate(function(key,row){
@@ -415,11 +438,26 @@
                     scope.removeItem(key);
             });
         },
+        checkIfExists : function(attr,value){
+            var scope = this;
+            var result = false;
+            this.iterate(function(key,row){
+                if(row != null && typeof row[attr] != "undefined" && value === row[attr].value){
+                    result = true;
+                    return;
+                }
+            });
+            return result;
+        },
         redraw : function(page){
             if(typeof page == "undefined")
                 page = this.curPage;
 
             this.$display.empty();
+
+            //hide all markers
+            for(var x in this.markerVisited)
+                this.markerVisited[x].setVisible(false);
 
             var obj = this;
 
@@ -431,11 +469,15 @@
                 for(var i in obj.nameColumns)
                     str += row[obj.nameColumns[i]].value + "&nbsp;&nbsp;";
 
-                var div = obj._createRow.call(obj, key, str, row.checked, row);
+                var div = obj._createRow.call(obj, key, str, row);
                 obj.$display.append(div);
 
                 var pos = new google.maps.LatLng(row.Y.value,row.X.value);
                 obj.markerVisited[counter].setPosition(pos);
+                obj.markerVisited[counter].setVisible(true);
+                var icon = obj.markerVisited[counter].getIcon();
+                icon.strokeColor = obj._getConditionColor(row[obj.conditionField].value);
+                obj.markerVisited[counter].setIcon(icon);
 
                 var color = obj.markerVisited[counter].getIcon().fillColor;
                 div.find('.color-key').attr('style','background-color:'+color);
@@ -468,17 +510,36 @@
                 //from: '1AX2G1_UCWwnbuNNBfzAhwfD0VptlKHPXvMVC3o4'//origional
                 from: '1j0WCPS_KacasKJiCSsB2hqpfXO5ouldt_X0Om-Q'//new entire SB dataset
             },
+            styles : [
+                {
+                    markerOptions : {
+                        iconName : "placemark_circle_highlight"
+                    }
+                }
+            ],
             suppressInfoWindows : false
         });
 
         layer.addListener('click', function(evt){
             var latLng = evt.latLng;
 
+            var d = new Date();
+
             //just accessing the row content
             var id = evt.row[store.nameUnique].value;
-            store.deleteIfExists(store.nameUnique,id);
-            store.setItem(--store.index,evt.row,true);
-            store.redraw();
+            evt.row['timestamp'] = {
+                'columnName':'timestamp',
+                'value': d.toString()
+            };
+            evt.row[store.conditionField] = {
+                'columnName':store.conditionField,
+                'value':store.conditionToggle[0]
+            };
+
+            if(!store.checkIfExists(store.nameUnique,id)){
+                store.setItem(--store.index,evt.row);
+                store.redraw();
+            }
 
             var size = Math.ceil(store.storage.length/store.pageSize);
             $('.pagination').jqPagination('option', 'max_page', size);
@@ -516,6 +577,13 @@
             }
         });
 
+        $('#delete-local').click(function(){
+            var r=confirm("Are you sure want to clear your local storage?");
+            if (r==true){
+                localStorage.clear();
+                store.redraw();
+            }
+        })
     });
 
 </script>
