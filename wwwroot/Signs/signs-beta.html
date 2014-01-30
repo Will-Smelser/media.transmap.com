@@ -321,7 +321,7 @@
                         fillOpacity: 0.35,
                         map: map,
                         //center: citymap[city].center,
-                        radius: 20
+                        radius: 10
                     }
             );
             scope.redraw(1);
@@ -389,13 +389,13 @@
             var $nameWrap = $(document.createElement('span')).html(name);
             $nameWrap.click(function(){scope.showDialog(key,row);});
 
-            $label.append($cbox).append($box).append($nameWrap);
-            $div.append($label).append($img);
+            $label.append($cbox).append($box).append($nameWrap).append($img);
+            $div.append($label);
             $li.append($div);
 
             //add img event
             $img.click(function(){
-                var key = $(this).parent().parent().attr('data-key');
+                var key = $(this).parent().parent().parent().attr('data-key');
                 var obj = {
                     columnName:scope.conditionField,
                     "value":scope._getNextCondition.call(scope, condition)
@@ -502,7 +502,7 @@
     function initialize() {
         var mapOptions = {
             center: startloc,
-            zoom: 16
+            zoom: 18
         };
 
         window.map = new google.maps.Map(document.getElementById("map-canvas"),
