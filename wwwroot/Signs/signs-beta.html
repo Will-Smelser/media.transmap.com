@@ -586,7 +586,9 @@
             var r=confirm("Are you sure want to clear your local storage?");
             if (r==true){
                 localStorage.clear();
-                store.redraw();
+                var size = Math.ceil(store.storage.length/store.pageSize);
+                $('.pagination').jqPagination('option', 'max_page', size);
+                store.redraw(0);
             }
         })
 
@@ -594,6 +596,10 @@
             $('#sign-data input:checked').each(function(){
                 var id = $(this).attr('id').split('-');
                 store.removeItem((id[1]));
+
+                var size = Math.ceil(store.storage.length/store.pageSize);
+                $('.pagination').jqPagination('option', 'max_page', size);
+
                 store.redraw();
             });
         });
