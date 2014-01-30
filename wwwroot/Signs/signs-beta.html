@@ -63,6 +63,9 @@
             display:inline-block;
             margin: 0px 5px;
         }
+        .name span{
+            cursor: pointer;
+        }
     </style>
 
 </head>
@@ -73,9 +76,10 @@
         <div>
             <input type="checkbox" id="gpsOn"><label for="gpsOn"> GPS on?</label>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <span  style="font-size:12px;cursor:pointer">[ <a id="delete-local">Delete LocalStorage</a> ]</span>
+            <span  style="font-size:12px;cursor:pointer">[ <a id="delete-local">Empty LocalStore</a> ]</span>
         </div>
         <div><h2>Sign Data</h2></div>
+        <div>[ <a id="delete-checked" style="cursor:pointer">Delete Checked</a> ]</div>
         <ul id="sign-data" class="content"></ul>
         <div class="pagination">
             <a href="#" class="first" data-action="first">&laquo;</a>
@@ -374,17 +378,18 @@
 
             var $box = $(document.createElement('div')).addClass('color-key');
 
-            var $label = $(document.createElement('label')).addClass('name');//.attr('for','key-'+key)
+            var $label = $(document.createElement('div')).addClass('name');//.attr('for','key-'+key)
             var $li = $(document.createElement('li')).attr('data-key',key);
-
-            $label.click(function(){scope.showDialog(key,row);})
 
             var condition = row[this.conditionField].value;
             var imgClass = scope._getCurrentConditionClass(condition);
             var $img = $(document.createElement('span')).addClass('img-base').addClass(imgClass);
 
 
-            $label.append($cbox).append($box).append(name);
+            var $nameWrap = $(document.createElement('span')).html(name);
+            $nameWrap.click(function(){scope.showDialog(key,row);});
+
+            $label.append($cbox).append($box).append($nameWrap);
             $div.append($label).append($img);
             $li.append($div);
 
@@ -584,6 +589,14 @@
                 store.redraw();
             }
         })
+
+        $('#delete-checked').click(function(){
+            $('#sign-data input:checked').each(function(){
+                var id = $(this).attr('id').split('-');
+                store.removeItem((id[1]));
+                store.redraw();
+            });
+        });
     });
 
 </script>
