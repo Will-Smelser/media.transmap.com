@@ -112,6 +112,9 @@
     var store = {
         nameUnique : 'SignID',
         nameColumns : ['MUTCD','SIGN_FACE_'],
+        conditionField : 'CONDITION',
+        conditionToggle : ['GOOD','POOR'],
+        conditionClass : ['good','bad'],
         storage : localStorage,
         $display : $('#sign-data'),
         _check : function(){
@@ -351,12 +354,13 @@
 
             var $box = $(document.createElement('div')).addClass('color-key');
 
-            var $label = $(document.createElement('label')).attr('for','key-'+key).addClass('name');
+            var $label = $(document.createElement('label')).addClass('name');//.attr('for','key-'+key)
             var $li = $(document.createElement('li')).attr('data-key',key);
 
             $label.click(function(){scope.showDialog(key,row);})
 
-            var imgClass = checked ? 'good' : 'bad';
+            var condition = row[this.conditionField].value;
+            var imgClass = scope._getCurrentConditionClass(condition);
             var $img = $(document.createElement('span')).addClass('img-base').addClass(imgClass);
 
 
@@ -367,11 +371,42 @@
             //add img event
             $img.click(function(){
                 var key = $(this).parent().parent().attr('data-key');
-                scope.setAttribute(key,'checked',!checked);
+                var obj = {
+                    columnName:scope.conditionField,
+                    "value":scope._getNextCondition.call(scope, condition)
+                };
+                scope.setAttribute(key,scope.conditionField,obj);
                 scope.redraw();
             });
 
             return $li;
+        },
+        _getNextConditionIndex:function(currentCondition){
+            var next = 0;
+            for(var x in this.conditionToggle){
+                if(this.conditionToggle[x] == currentCondition){
+                    var temp = parseInt(x);
+                    next = (temp+1 >= this.conditionToggle.length) ? 0 : temp+1;
+                    break;
+                }
+            }
+            console.log("got index:",next,currentCondition);
+            return next;
+        },
+        _getCurrentConditionIndex : function(currentCondition){
+            for(var x in this.conditionToggle)
+                if(this.conditionToggle[x] == currentCondition)
+                    return x;
+            return 0;
+        },
+        _getCurrentConditionClass : function(currentCondition){
+            return this.conditionClass[this._getCurrentConditionIndex(currentCondition)];
+        },
+        _getNextConditionClass : function(currentCondition){
+            return this.conditionClass[this._getNextConditionIndex(currentCondition)];
+        },
+        _getNextCondition:function(currentCondition){
+            return this.conditionToggle[this._getNextConditionIndex(currentCondition)];
         },
         deleteIfExists : function(attr,value){
             var scope = this;
