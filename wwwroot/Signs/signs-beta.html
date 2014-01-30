@@ -55,6 +55,14 @@
         .ui-resizable-w{
             background-color:#DDD;
         }
+        .color-key{
+            opacity:.5;
+            width:10px;
+            height:10px;
+            border:solid #333 2px;
+            display:inline-block;
+            margin: 0px 5px;
+        }
     </style>
 
 </head>
@@ -102,8 +110,8 @@
      *
      */
     var store = {
-        nameUnique : 'OBJECTID_1',
-        nameColumns : ['Label','POST_TYPE'],
+        nameUnique : 'SignID',
+        nameColumns : ['MUTCD','SIGN_FACE_'],
         storage : localStorage,
         $display : $('#sign-data'),
         _check : function(){
@@ -248,8 +256,6 @@
                 }
             });
 
-            scope.redraw(1);
-
             scope.startGeoTracking();
             $('#gpsOn').change(function(){
                 scope.startGeoTracking();
@@ -268,6 +274,35 @@
                 width:'90%',height:ht
             });
             $('#export-btn').button().click(function(){scope.export.call(scope);});
+
+            //precreate the markers
+            var colors = [
+                '#00ffff','#000000','#0000ff','#ff00ff','#008000','#00ff00','#800000',
+                '#000080','#808000','#ffa500','#800080','#ff0000','#c0c0c0','#008080',
+                '#ffff00'
+            ];
+            var path = {
+                path: 'M-7 -7 L-7 8 L8 8 L8 -7 Z',
+                fillColor: 'yellow',
+                fillOpacity: 0.5,
+                scale: 1,
+                strokeColor: '#333',
+                strokeWeight: 1
+            };
+
+            for(var i= 0,c=0; i< scope.pageSize; i++, c++){
+                if(c > colors.length) c = 0;
+                var lpath = $.extend(null,path);
+                lpath.fillColor = colors[c];
+                var marker = new google.maps.Marker({
+                    map: map,
+                    title: 'Visited Sign',
+                    icon:lpath
+                });
+                scope.markerVisited.push(marker);
+            }
+
+            scope.redraw(1);
         },
         geoInterval : null,
         startGeoTracking : function(){
@@ -314,6 +349,8 @@
             var $cbox = $(document.createElement('input')).attr('type','checkbox').attr('id','key-'+key);
             var $div = $(document.createElement('div'));
 
+            var $box = $(document.createElement('div')).addClass('color-key');
+
             var $label = $(document.createElement('label')).attr('for','key-'+key).addClass('name');
             var $li = $(document.createElement('li')).attr('data-key',key);
 
@@ -323,7 +360,7 @@
             var $img = $(document.createElement('span')).addClass('img-base').addClass(imgClass);
 
 
-            $label.append($cbox).append(name);
+            $label.append($cbox).append($box).append(name);
             $div.append($label).append($img);
             $li.append($div);
 
@@ -351,6 +388,7 @@
 
             var obj = this;
 
+            var counter = 0;
             var start = obj.pageSize * (page-1);
             var stop = start + obj.pageSize;
             this.iterate(function(key,row){
@@ -360,14 +398,19 @@
 
                 var div = obj._createRow.call(obj, key, str, row.checked, row);
                 obj.$display.append(div);
-            },start,stop);
 
-            //var size = Math.ceil(obj.storage.length/obj.pageSize);
-            //$('.pagination').jqPagination.call(window,'option', 'max_page', size);
-            //console.log(size);
+                var pos = new google.maps.LatLng(row.Y.value,row.X.value);
+                obj.markerVisited[counter].setPosition(pos);
+
+                var color = obj.markerVisited[counter].getIcon().fillColor;
+                div.find('.color-key').attr('style','background-color:'+color);
+
+                counter++;
+            },start,stop);
         },
         locMarker : null,
         marker : null,
+        markerVisited : [],
         map : null
     }
 
@@ -386,10 +429,11 @@
         layer = new google.maps.FusionTablesLayer({
             query: {
                 select: 'Y',
-                //from: '1mZ53Z70NsChnBMm-qEYmSDOvLXgrreLTkQUvvg'
-                from: '1AX2G1_UCWwnbuNNBfzAhwfD0VptlKHPXvMVC3o4'
+                //from: '1mZ53Z70NsChnBMm-qEYmSDOvLXgrreLTkQUvvg'//google example
+                //from: '1AX2G1_UCWwnbuNNBfzAhwfD0VptlKHPXvMVC3o4'//origional
+                from: '1j0WCPS_KacasKJiCSsB2hqpfXO5ouldt_X0Om-Q'//new entire SB dataset
             },
-            suppressInfoWindows : true
+            suppressInfoWindows : false
         });
 
         layer.addListener('click', function(evt){
@@ -408,7 +452,7 @@
         });
         layer.setMap(map);
 
-        window.marker = new google.maps.Marker({
+        var marker = new google.maps.Marker({
             position: startloc,
             map: map,
             title: 'Current Sign'
