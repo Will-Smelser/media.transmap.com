@@ -24,8 +24,18 @@
             padding:0px;
             list-style: none;
         }
-        h2{
-            margin-top:1em;
+        #savingMsg li{
+            list-style:disc;
+        }
+        #savingMsg{
+            padding-left: 30px;
+        }
+        h2,h3{
+            margin-top:.2em;
+        }
+        hr{
+            line-height: 3px;
+            background-color: #FFF;
         }
         #sign-results-wrapper{
             position:absolute;
@@ -63,6 +73,7 @@
             display:inline-block;
             margin: 0px 5px;
         }
+        .center{margin:0px auto;text-align:center;}
         .name span{
             cursor: pointer;
         }
@@ -74,22 +85,30 @@
 <div id="sign-results-wrapper">
     <div style="padding:10px">
         <div>
-            <input type="checkbox" id="gpsOn"><label for="gpsOn"> GPS on?</label>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <span  style="font-size:12px;cursor:pointer">[ <a id="delete-local">Empty LocalStore</a> ]</span>
+            <label><input type="checkbox" id="gpsOn"> GPS on?</label><br>
+            <label><input type="checkbox" id="saveFusion"> Save to Fusion?</label>
         </div>
         <div><h2>Sign Data</h2></div>
-        <div>[ <a id="delete-checked" style="cursor:pointer">Delete Checked</a> ]</div>
+        <div style="font-size:12px">
+            <div style="float:left" >[ <a id="delete-checked" style="cursor:pointer;" >Delete Checked</a> ]</div>
+            <div style="float:right">[ <a id="delete-local"   style="cursor:pointer;">Empty LocalStore</a>]</div>
+            <div style="clear:both"></div>
+        </div>
         <ul id="sign-data" class="content"></ul>
-        <div class="pagination">
-            <a href="#" class="first" data-action="first">&laquo;</a>
-            <a href="#" class="previous" data-action="previous">&lsaquo;</a>
-            <input type="text" readonly="readonly" data-max-page="40" />
-            <a href="#" class="next" data-action="next">&rsaquo;</a>
-            <a href="#" class="last" data-action="last">&raquo;</a>
+
+        <div style="margin:0px auto;display: table">
+            <div style="display:table-cell">
+                <div class="pagination">
+                    <a href="#" class="first" data-action="first">&laquo;</a>
+                    <a href="#" class="previous" data-action="previous">&lsaquo;</a>
+                    <input type="text" readonly="readonly" data-max-page="40" />
+                    <a href="#" class="next" data-action="next">&rsaquo;</a>
+                    <a href="#" class="last" data-action="last">&raquo;</a>
+                </div>
+            </div>
         </div>
         <hr>
-        <input type="button" id="export-btn" value="Export Local Data" />
+        <div class="center"><input type="button" id="export-btn" value="Export Local Data" /></div>
     </div>
 
 </div>
@@ -97,11 +116,16 @@
 <div id="dialog">
     <input type="hidden" id="row-key" />
     <form id="row-data" style="font-size:12px"></form>
-    <input type="button" id="row-data-btn" value="Save Locally" />
+    <div class="center"><input type="button" id="row-data-btn" value="Save Locally" /></div>
 </div>
 
 <div id="export">
     <textarea id="export-data" style="width:100%;height:100%"></textarea>
+</div>
+
+<div id="saving">
+    <h3>Currently...</h3>
+    <ol id="savingMsg"></ol>
 </div>
 
 <div id="map-canvas"/>
@@ -111,8 +135,68 @@
 
 
 <script>
+    /**
+     * The gapi from google can do all this, but it is a little more complicated and requires the
+     * apiKey, which seems like a bad idea.
+     */
+    var oAuth = {
+        client_id : '16942626072-oqu5fdjnaed93hua437avv7k5skb5jgl.apps.googleusercontent.com',
+        redirect_uri : 'http://media.transmap.us/oauth2/client.php',
+        scope : 'https://www.googleapis.com/auth/fusiontables',
+        token : null, expires : null, win : null,
+        winHeight : 300, winWidth : 500,
+        setToken : function(token, expires){
+            this.token = token;
+            this.expires = expires;
+        },
+        getToken : function(callback){
+            var now = new Date();
+            if(this.token !== null && now < this.expires){
+                callback(this.token);
+                return;
+            }
+
+            var obj = this;
+            this.makeRequest(this.client_id,this.redirect_uri,this.scope);
+            this.onLoad(function(parsedUrl){
+                obj.token = parsedUrl['access_token'];
+                obj.expires = new Date(now.getTime() + parsedUrl['expires_in']*60000);
+                callback(obj.token,obj.expires);
+            });
+        },
+        getUrl : function(){
+            return this.win.document.location.href;
+        },
+        parseUrl : function(url){
+            var result = {}, queryString = this.win.location.hash.substring(1),
+                regex = /([^&=]+)=([^&]*)/g, m;
+            while (m = regex.exec(queryString)) {
+                result[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+            }
+            return result;
+        },
+        checkForToken : function(){
+            return (this.getUrl().indexOf('#access_token=')<0)?false:true;
+        },
+        makeRequest : function(client_id, redirect, scope){
+            var request = 'https://accounts.google.com/o/oauth2/auth?'+
+            'client_id='+client_id+'&'+'redirect_uri='+redirect+'&'+
+            'scope='+scope+'&'+'response_type=token';
+            this.win = window.open(request,"",'left=100,top=100,width='+this.winWidth+",height="+this.winHeight);
+        },
+        onLoad : function(callback){
+           if(this.getUrl().indexOf(this.redirect_uri)<0){
+               var obj = this;
+               setTimeout(function(){obj.onLoad.call(obj,callback);},1500);
+               return;
+           }
+           callback(this.parseUrl(this.getUrl()));
+           this.win.close();
+        }
+    };
 
     var store = {
+        fusionSave : false,
         fusionTableId : null,
         nameUnique : 'SignID',
         nameUpdateColumns : ["Roadname","MUTCD","SIGN_FACE_","CONDITION","POST_TYPE","X","Y","Night_Insp","IMAGE_LINK","Inspection_Flag","Label","Insp_Comment"],
@@ -136,31 +220,74 @@
         },
         /* set entry in localStorage */
         setItem : function(key,obj){
-            console.log(obj);
-            var result = this.storage.setItem(key,this.jsonToStr(obj));
 
-            var update = "sql=UDPATE "+this.fusionTableId;
+            //dont save
+            if(this.fusionSave){
 
-            var comma = "";
-            for(var x in this.nameUpdateColumns){
-                var fname = this.nameUpdateColumns[x];
-                update += comma+" SET "+obj[fname].columnName+" = "+obj[fname].value;
-                comma = ",";
+                //do the update for fusion table
+                var scope = this;
+
+                scope.fusionDialog('Authentication token','open');
+                oAuth.getToken(function(token){
+                    scope.fusionDialog('Row identifier','open');
+
+                    //first we need the unique row
+                    var base = "https://www.googleapis.com/fusiontables/v1/query";
+                    var qGet = "?sql=SELECT ROWID FROM "+fusionTableId+" WHERE "+
+                                scope.nameUnique+"="+obj[scope.nameUnique].value+
+                                "&access_token="+token;
+                    $.ajax({
+                        type: "GET",
+                        url : base + qGet,
+                        beforeSend : function(request){
+                            request.setRequestHeader("Authorization", 'Bearer ' + token);
+                        }
+                    })
+                    .done(function(data){
+                        scope.fusionDialog('Update request','open');
+                        var update = "sql=UPDATE "+scope.fusionTableId+" SET ";
+
+                        var comma = "";
+                        for(var x in scope.nameUpdateColumns){
+                            var fname = scope.nameUpdateColumns[x];
+                            update += comma+obj[fname].columnName+" = '"+obj[fname].value.replace(/\&/g,'%26')+"'";
+                            comma = " , ";
+                        }
+
+                        update+=" WHERE ROWID = '"+data.rows[0][0]+"'";
+                        $.ajax({
+                            type: 'POST',
+                            url: base,
+                            beforeSend: function (request){
+                                request.setRequestHeader("Authorization", 'Bearer ' + token);
+                            },
+                            data : update
+                        }).done(function(data) {
+                            scope.fusionDialog('Save success','open');
+                            setTimeout(function(){scope.fusionDialog('','close');},1000);
+
+                            //save locally
+                            scope.storage.setItem(key,scope.jsonToStr(obj));
+                        }).fail(function(){
+                           scope.fusionDialog('Save failed','open');
+                           scioe.fusionDialog('Update query failed');
+                        });
+                    })
+                    .fail(function(){
+                            scope.fusionDialog('Save failed','open');
+                            scope.fusionDialog('Could not get ROWID from fusion table','open');
+                    });
+                });
+            }else{
+                //store locally
+                return this.storage.setItem(key,this.jsonToStr(obj));
             }
-            update += " WHERE "+this.nameUnique+" = "+obj[this.nameUnique].value;
-
-            console.log("About to do update");
-            $.post("https://www.googleapis.com/fusiontables/v1/query",update,function(data){
-                console.log("SUCCESS UPDATE",data);
-            });
-
-            return result;
         },
         /* update the attribute of an item in localStorage */
         setAttribute : function(key, attr, value){
             var obj = this.getItem(key);
             obj[attr] = value;
-            this.storage.setItem(key,this.jsonToStr(obj));
+            this.setItem(key,obj);
         },
         /* get an item */
         getItem : function(key){
@@ -347,6 +474,22 @@
                     }
             );
             scope.redraw(1);
+
+            //save dialog
+            $('#saving').dialog({
+                title:'Saving to Fusion Tables',
+                autoOpen:false,
+                width:500,height:300
+            });
+        },
+        fusionDialog : function(msg,status){
+            var $msg = $('#savingMsg');
+            if(status === "close"){
+                $msg.empty();
+            }else{
+                $msg.append($(document.createElement('li')).html(msg));
+            }
+            $('#saving').dialog(status);
         },
         geoMarker : null,
         geoInterval : null,
@@ -569,7 +712,7 @@
                 store.redraw();
             }
 
-            var size = Math.ceil(store.storage.length/store.pageSize);
+            var size = Math.max(1,Math.ceil(store.storage.length/store.pageSize));
             $('.pagination').jqPagination('option', 'max_page', size);
 
             store.marker.setPosition(latLng);
@@ -620,11 +763,39 @@
                 var id = $(this).attr('id').split('-');
                 store.removeItem((id[1]));
 
-                var size = Math.ceil(store.storage.length/store.pageSize);
+                var size = Math.max(1,Math.ceil(store.storage.length/store.pageSize));
                 $('.pagination').jqPagination('option', 'max_page', size);
 
                 store.redraw();
             });
+        });
+
+        $('#saveFusion').change(function(){
+            if($(this).is(':checked')){
+                store.fusionSave = true;
+                if(oAuth.token == null && $.cookie('gtoken') === null){
+                    oAuth.getToken(function(token,expire){
+                        $.cookie('gtoken',token);
+                        $.cookie('gexpire',expire.toISOString());
+                    });
+                }else if(oAuth.token == null && $.cookie('gtoken') !== null){
+                    var token = $.cookie('gtoken');
+                    var expire = new Date($.cookie('gexpire'));
+                    var now = new Date();
+                    if(expire < now){
+                        oAuth.getToken(function(token,expire){
+                            $.cookie('gtoken',token);
+                            $.cookie('gexpire',expire.toISOString());
+                        })
+                    }else{
+                        oAuth.setToken(token,expire);
+                    }
+                }else{
+                    //do nothing
+                }
+            }else{
+                store.fusionSave = false;
+            }
         });
     });
 

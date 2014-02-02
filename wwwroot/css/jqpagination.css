@@ -128,8 +128,8 @@
 	margin-left: 0;
 	list-style: none;
 	padding: 10px;
-	li {
-		margin-top: 0;
-		margin-bottom: 5px;
-	}
+}
+.log li {
+    margin-top: 0;
+    margin-bottom: 5px;
 }
