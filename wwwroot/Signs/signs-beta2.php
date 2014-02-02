@@ -71,7 +71,8 @@
             height:10px;
             border:solid #333 2px;
             display:inline-block;
-            margin: 0px 5px;
+            margin: 0px 10px;
+            cursor: pointer;
         }
         .center{margin:0px auto;text-align:center;}
         .name span{
@@ -113,10 +114,11 @@
 
 </div>
 
+<!-- All the dialogs -->
 <div id="dialog">
     <input type="hidden" id="row-key" />
     <form id="row-data" style="font-size:12px"></form>
-    <div class="center"><input type="button" id="row-data-btn" value="Save Locally" /></div>
+    <div class="center"><input type="button" id="row-data-btn" value="Save" /></div>
 </div>
 
 <div id="export">
@@ -124,10 +126,11 @@
 </div>
 
 <div id="saving">
-    <h3>Currently...</h3>
+    <h3>Performing Update...</h3>
     <ol id="savingMsg"></ol>
 </div>
 
+<!-- the map -->
 <div id="map-canvas"/>
 
 
@@ -141,7 +144,7 @@
      */
     var oAuth = {
         client_id : '16942626072-oqu5fdjnaed93hua437avv7k5skb5jgl.apps.googleusercontent.com',
-        redirect_uri : 'http://media.transmap.us/oauth2/client.php',
+        redirect_uri : 'http://media.transmap.com/oauth2/client.php',
         scope : 'https://www.googleapis.com/auth/fusiontables',
         token : null, expires : null, win : null,
         winHeight : 300, winWidth : 500,
@@ -199,7 +202,7 @@
         fusionSave : false,
         fusionTableId : null,
         nameUnique : 'SignID',
-        nameUpdateColumns : ["Roadname","MUTCD","SIGN_FACE_","CONDITION","POST_TYPE","X","Y","Night_Insp","IMAGE_LINK","Inspection_Flag","Label","Insp_Comment"],
+        nameUpdateColumns : ["Roadname","MUTCD","SIGN_FACE_","CONDITION","POST_TYPE","X","Y","Night_Insp","IMAGE_LINK","Inspection_Flag","Label","Insp_Comment","timestamp"],
         nameColumns : ['MUTCD','SIGN_FACE_'],
         conditionField : 'Night_Insp',
         conditionToggle : ['GOOD','POOR'],
@@ -268,6 +271,7 @@
 
                             //save locally
                             scope.storage.setItem(key,scope.jsonToStr(obj));
+                            scope.redraw();
                         }).fail(function(){
                            scope.fusionDialog('Save failed','open');
                            scioe.fusionDialog('Update query failed');
@@ -558,6 +562,15 @@
             $div.append($label);
             $li.append($div);
 
+            //add color key event
+            $box.click(function(){
+                var key = $(this).parent().parent().parent().attr('data-key');
+                var row = scope.getItem(key);
+                var pos = new google.maps.LatLng(row.Y.value,row.X.value);
+                scope.map.setCenter(pos);
+                scope.marker.setPosition(pos);
+            });
+
             //add img event
             $img.click(function(){
                 var key = $(this).parent().parent().parent().attr('data-key');
@@ -700,7 +713,7 @@
             var id = evt.row[store.nameUnique].value;
             evt.row['timestamp'] = {
                 'columnName':'timestamp',
-                'value': d.toString()
+                'value': d.toISOString()
             };
             evt.row[store.conditionField] = {
                 'columnName':store.conditionField,

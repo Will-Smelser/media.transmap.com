@@ -1,0 +1,3 @@
+<FilesMatch "^(serverside|\.secret)\.php$">
+deny from all
+</FilesMatch>
