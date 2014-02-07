@@ -26,7 +26,7 @@ var oAuth = {
         this.makeRequest(this.client_id,this.redirect_uri,this.scope);
         this.onLoad(function(parsedUrl){
             obj.token = parsedUrl['access_token'];
-            obj.expires = new Date(now.getTime() + parsedUrl['expires_in']*60000);
+            obj.expires = new Date(now.getTime() + parseInt(parsedUrl['expires_in'])*1000);
             callback(obj.token,obj.expires);
         });
     },

@@ -326,8 +326,6 @@
             this.display.clickName = this._clickName;
             this.display.clickPaginate = this._clickPaginate;
 
-            this.store.setItemHook(this._itemUpdate,this);
-
             //generic marker
             this.marker = new google.maps.Marker({
                 position:new google.maps.LatLng(34.409191, -119.692953),
@@ -388,7 +386,7 @@
             //save dialog
             $('#saving').dialog({
                 title:'Saving to Fusion Tables',
-                autoOpen:false,
+                autoOpen:false, modal:true,
                 width:500,height:300
             });
         },
@@ -408,7 +406,6 @@
         },
         _clickCond : function(key,$el){
             var row = this.store.getItem(key);
-            console.log(this,this.conditionField,key,row);
             var cond = (row[this.conditionField].value === "POOR")?"GOOD":"POOR";
             var obj = {
                 columnName:this.conditionField,
@@ -416,7 +413,7 @@
             };
 
             row[this.conditionField] = obj;
-            this.store.setItem(key,row);
+            this.setItemAdapter(key,row);
             this.redraw();
         },
         _clickName : function(key,$el){
@@ -464,7 +461,7 @@
             var key = $('#row-key').val();
 
             try{
-                this.store.setItem(key,result);
+                this.setItemAdapter(key,result);
                 this.redraw();
                 $('#dialog').dialog('close');
             }catch(e){
@@ -480,10 +477,14 @@
             }
             $('#saving').dialog(status);
         },
-        _itemUpdate : function(key,obj){
-            this.redraw();
+        setItemAdapter : function(key,obj){
+            if(this.fusionSave)
+                return this._fusionUpdate(key,obj);
 
-            if(!this.fusionSave) return;
+            return this.store.setItem(key,obj);
+        },
+        _fusionUpdate : function(key,obj){
+            this.redraw();
 
             //do the update for fusion table
             var scope = this;
@@ -504,41 +505,41 @@
                         request.setRequestHeader("Authorization", 'Bearer ' + token);
                     }
                 })
-                    .done(function(data){
-                        scope.fusionDialog('Update request','open');
-                        var update = "sql=UPDATE "+scope.fusionTableId+" SET ";
+                .done(function(data){
+                    scope.fusionDialog('Update request','open');
+                    var update = "sql=UPDATE "+scope.fusionTableId+" SET ";
 
-                        var comma = "";
-                        for(var x in scope.nameUpdateColumns){
-                            var fname = scope.nameUpdateColumns[x];
-                            update += comma+obj[fname].columnName+" = '"+obj[fname].value.replace(/\&/g,'%26')+"'";
-                            comma = " , ";
-                        }
+                    var comma = "";
+                    for(var x in scope.nameUpdateColumns){
+                        var fname = scope.nameUpdateColumns[x];
+                        update += comma+obj[fname].columnName+" = '"+obj[fname].value.replace(/\&/g,'%26')+"'";
+                        comma = " , ";
+                    }
 
-                        update+=" WHERE ROWID = '"+data.rows[0][0]+"'";
-                        $.ajax({
-                            type: 'POST',
-                            url: base,
-                            beforeSend: function (request){
-                                request.setRequestHeader("Authorization", 'Bearer ' + token);
-                            },
-                            data : update
-                        }).done(function(data) {
-                            scope.fusionDialog('Save success','open');
-                            setTimeout(function(){scope.fusionDialog('','close');},1000);
+                    update+=" WHERE ROWID = '"+data.rows[0][0]+"'";
+                    $.ajax({
+                        type: 'POST',
+                        url: base,
+                        beforeSend: function (request){
+                            request.setRequestHeader("Authorization", 'Bearer ' + token);
+                        },
+                        data : update
+                    }).done(function(data) {
+                        scope.fusionDialog('Save success','open');
+                        setTimeout(function(){scope.fusionDialog('','close');},1000);
 
-                            //save locally
-                            scope.store.setItem(key,obj);
-                            scope.redraw();
-                        }).fail(function(){
-                            scope.fusionDialog('Save failed','open');
-                            scioe.fusionDialog('Update query failed');
-                        });
-                    })
-                    .fail(function(){
+                        //save locally
+                        scope.store.setItem(key,obj);
+                        scope.redraw();
+                    }).fail(function(){
                         scope.fusionDialog('Save failed','open');
-                        scope.fusionDialog('Could not get ROWID from fusion table','open');
+                        scioe.fusionDialog('Update query failed');
                     });
+                })
+                .fail(function(){
+                    scope.fusionDialog('Save failed','open');
+                    scope.fusionDialog('Could not get ROWID from fusion table','open');
+                });
             });
         },
         export : function(){
@@ -662,7 +663,7 @@
             for(var x in remove) store.removeItem(remove[x]);
 
             //store item and redraw
-            store.setItem(App.index--,evt.row);
+            App.setItemAdapter(App.index--,evt.row);
             App.redraw();
         });
         layer.setMap(map);

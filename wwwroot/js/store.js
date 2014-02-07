@@ -45,21 +45,12 @@ var Store = function(prefix){
                 }
             }
         },
-        _setItemHookScope : this,
-        _setItemHook : function(key,obj){},
-        setItemHook : function(func,scope){
-            this._setItemHook = func;
-            this._setItemHookScope = scope;
-        },
         setItem : function(key, obj){
             var key2 = this._key(key);
             if(localStorage.getItem(key2) == null)
                 this.length++;
             try{
                 localStorage.setItem(key2,this.jsonToStr(obj));
-                try{
-                    this._setItemHook.call(this._setItemHookScope,key,obj);
-                }catch(e){this._log("setItemHook: "+e);}
             }catch(e){
                 this._log(e);
                 this.length--;
