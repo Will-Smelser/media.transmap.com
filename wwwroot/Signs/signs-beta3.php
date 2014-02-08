@@ -145,7 +145,7 @@
 
         //pagination
         curPage : 1,
-        pageSize : 3,
+        pageSize : 10,
 
         rectColors : [
             '#00ffff','#000000','#0000ff','#ff00ff','#008000','#00ff00','#800000',
