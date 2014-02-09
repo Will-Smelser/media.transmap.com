@@ -31,7 +31,8 @@
             list-style: none;
         }
         #savingMsg li{
-            list-style:disc;
+            list-style: none;
+            list-style-type: none;
         }
         #savingMsg{
             padding-left: 30px;
@@ -84,8 +85,9 @@
         .name span{
             cursor: pointer;
         }
-        #savingMsg li{
+        #testingMsg li{
             list-style: none;
+            list-style-type: none;
         }
         .diag-img-base{
             display:inline-block;
@@ -329,7 +331,7 @@
         fusionSave : false,
         fusionTableId : null,
         nameUnique : 'SignID',
-        nameUpdateColumns : ["Roadname","MUTCD","SIGN_FACE_","CONDITION","POST_TYPE","X","Y","Night_Insp","IMAGE_LINK","Inspection_Flag","Label","Insp_Comment","timestamp"],
+        //nameUpdateColumns : ["Roadname","MUTCD","SIGN_FACE_","CONDITION","POST_TYPE","X","Y","Night_Insp","IMAGE_LINK","Inspection_Flag","Label","Insp_Comment","timestamp"],
         nameColumns : ['MUTCD','SIGN_FACE_'],
         conditionField : 'Night_Insp',
         exportFields : ['SignID','Night_Insp','Insp_Comment','timestamp'],
@@ -401,6 +403,7 @@
             });
         },
         initDialogs : function(){
+            var scope = this;
             //SOME DIALOGS
             //edit dialog
             var ht = ($(window).height()-50);
@@ -452,11 +455,14 @@
                 .fail(function(data){
                     for(var x in data.msg)
                         scope.fusionTestDialog(data.msg[x],'open',false);
+                    $('#fusionId').val($.cookie('lastFusionId'));
                 });
         },
         validateFusionId : function(id){
             var $def = new $.Deferred();
             var scope = this;
+
+            $('#testingMsg').empty();
 
             //get a center point
             var queryText = encodeURIComponent(
@@ -479,10 +485,10 @@
                         fieldNames[json.cols[x].label]=null;
 
                     //USING exception for flow control, a no no!
-                    //test update columns
-                    for(var x in scope.nameUpdateColumns){
-                        var name = scope.nameUpdateColumns[x];
-                        if(typeof fieldNames[scope.nameUpdateColumns[x]] == "undefined") throw "Missing field: "+name;
+                    //test display name columns
+                    for(var x in scope.nameColumns){
+                        var name = scope.nameColumns[x];
+                        if(typeof fieldNames[name] == "undefined") throw "Missing field: "+name;
                     }
 
                     //test unique column
@@ -500,7 +506,7 @@
 
                     //TODO: test lat/lng aka Y and X
                 }catch(e){console.log(e);
-                    $def.reject({result:false,msg: [e.message]});
+                    $def.reject({result:false,msg: [e]});
                 }
             });
             return $def.promise();
