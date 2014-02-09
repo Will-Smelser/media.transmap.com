@@ -741,9 +741,9 @@
         }
     }
 
-
+    oAuth.redirect_uri = "<?php echo (get_current_user () === 'Will') ? 'http://media.transmap.us/oauth2/client.php' : 'http://media.transmap.com/oauth2/client.php';?>";
     var fusionTableId = (!$.cookie('lastFusionId'))?
-            "<?php echo (isset($_GET['fusionId'])?$_GET['fusionId']:"1xPEsfqQOgx8Cne-u2QQ1evWonVCmgvVY0LDcG3k"); ?>"
+            "<?php echo (isset($_GET['fusionId'])?$_GET['fusionId']:"1mcwt8ZibQwrWzPQXi5Sjnd5jDKQT8Im4pChholE"); ?>"
             :$.cookie('lastFusionId');
     var store = new Store(fusionTableId);
     var fusion = new Fusion("https://www.googleapis.com/fusiontables/v1/query",fusionTableId,oAuth);
@@ -752,7 +752,7 @@
         App.initDialogs();
 
         //test the fusion table
-        App.fusionTestDialog("Validation fusion table","open",null);
+        App.fusionTestDialog("Validating fusion table","open",null);
         App.validateFusionId(fusionTableId)
             .fail(function(data){
                 $("#map-canvas").html("<h1>Application failed to load</h1><h2>Errors:</h2>");
