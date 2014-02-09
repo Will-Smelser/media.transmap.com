@@ -35,7 +35,7 @@ var Fusion = function(gApiUri, fusionId){
             oAuth.getToken(function(token){
                 args.push(token)
                 func.apply(scope,args)
-                    .fail(function(data){$def.fail(data)})
+                    .fail(function(data){$def.reject(data)})
                     .done(function(data){$def.resolve(data)});
             });
             return $def.promise();
@@ -66,9 +66,9 @@ var Fusion = function(gApiUri, fusionId){
                 //make request and notify deffered of completion
                 scope.doUpdate(id, row, token)
                     .success(function(data){def.resolve(data);})
-                    .fail(function(){def.fail();})
+                    .fail(function(){def.reject();})
 
-            }).fail(function(){def.fail();})
+            }).fail(function(){def.reject();})
 
             return ajax;
         },
