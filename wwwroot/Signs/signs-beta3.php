@@ -9,6 +9,7 @@
 
     <script src="http://code.jquery.com/jquery-1.8.1.min.js" ></script>
     <script src="/theme-jquery/jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js" ></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript"
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRaB8SQtxaNa909sDMK8Py1etA6m1RSYg&sensor=true">
     </script>
@@ -16,6 +17,9 @@
     <script src="/js/jquery.jqpagination.min.js" ></script>
     <script src="/js/oAuth.js"></script>
     <script src="/js/store.js"></script>
+    <script src="/js/fusion.js"></script>
+
+    <script>google.load('visualization', '1');</script>
 
     <style type="text/css">
         html { height: 100% }
@@ -79,6 +83,18 @@
         .center{margin:0px auto;text-align:center;}
         .name span{
             cursor: pointer;
+        }
+        #savingMsg li{
+            list-style: none;
+        }
+        .diag-img-base{
+            display:inline-block;
+            width:18px;
+            height:18px;
+            background-repeat: no-repeat;
+            margin-right:10px;
+            margin-top: 5px;
+            background-position: bottom center;
         }
     </style>
 
@@ -168,6 +184,7 @@
             this.$wrapper = $wrapper;
             this.store = store;
             this.map = map;
+            this.fusion = fusion;
             this._initMarkers();
         },
         _initMarkers : function(){
@@ -313,13 +330,16 @@
         display : null,
         store : null,
         map : null,
+        fusion : null,
 
         marker : null,
 
-        init : function(display,store,map){
+        init : function(display,store,map,fusion){
             this.display = display;
             this.store = store;
             this.map = map;
+            this.fusion = fusion;
+            this.fusionTableId = fusion.id;
 
             this.display.clickColor = this._clickColor;
             this.display.clickCond = this._clickCond;
@@ -389,6 +409,21 @@
                 autoOpen:false, modal:true,
                 width:500,height:300
             });
+        },
+
+        getFusionId : function(){
+            return this.fusionTableId;
+        },
+        setFusionId : function(id){
+            var test = this.validateFusionId(id);
+            if(test.result){
+                alert("Invalid Fusion Id")
+            }
+            this.fusionTableId = id;
+            this.fusion.id = id;
+        },
+        validateFusionId : function(id){
+            return {result: true};
         },
 
         redraw : function(page){
@@ -465,15 +500,18 @@
                 this.redraw();
                 $('#dialog').dialog('close');
             }catch(e){
-                alert('Save failed!\n'+ e);
+                $('#dialog').dialog('close');
+                alert('Save failed!\n\nERROR:\n'+ e);
             }
         },
-        fusionDialog : function(msg,status){
+        fusionDialog : function(msg,status,good){
             var $msg = $('#savingMsg');
             if(status === "close"){
                 $msg.empty();
             }else{
-                $msg.append($(document.createElement('li')).html(msg));
+                $span = $(document.createElement("span")).addClass("diag-img-base");
+                $span.addClass((good?'GOOD':'POOR'));
+                $msg.append($(document.createElement('li')).append($span).append(msg));
             }
             $('#saving').dialog(status);
         },
@@ -483,63 +521,55 @@
 
             return this.store.setItem(key,obj);
         },
+        _fusionErrUpdate : function(){
+            this.fusionDialog('Update query failed',false);
+            this.fusionDialog('Save failed','open',false);
+        },
+        _fusionErrRowId : function(){
+            this.fusionDialog('Could not get ROWID from fusion table','open');
+            this.fusionDialog('Save failed','open',false);
+        },
+        _fusionUpdateFinal : function(id, key, obj, token){
+            var scope = this;
+            var q = this.fusion.qUpdate(id,obj);
+            this.fusion.doUpdate(id,obj,token)
+                .done(function(data){
+                    scope.fusionDialog('Save success','open',true);
+                    setTimeout(function(){scope.fusionDialog('','close',true);},1000);
+
+                    //save locally
+                    scope.store.setItem(key,obj);
+                    scope.redraw();
+                })
+                .fail(function(){scope._fusionErrUpdate.call(scope);});
+        },
         _fusionUpdate : function(key,obj){
             this.redraw();
 
-            //do the update for fusion table
+            $('#savingMsg').empty();//empty the dialog contents
+
+
+
             var scope = this;
-
-            scope.fusionDialog('Authentication token','open');
             oAuth.getToken(function(token){
-                scope.fusionDialog('Row identifier','open');
+                scope.fusionDialog('Got token','open',true);
+                var temp = scope.fusion.update(obj,scope.nameUnique,token)
+                    //gets the row
+                    .fail(function(){scope._fusionErrRowId.call(scope);})
+                    .done(function(){scope.fusionDialog('Got unique Fusion ROWID','open',true);})
 
-                //first we need the unique row
-                var base = "https://www.googleapis.com/fusiontables/v1/query";
-                var qGet = "?sql=SELECT ROWID FROM "+scope.fusionTableId+" WHERE "+
-                    scope.nameUnique+"="+obj[scope.nameUnique].value+
-                    "&access_token="+token;
-                $.ajax({
-                    type: "GET",
-                    url : base + qGet,
-                    beforeSend : function(request){
-                        request.setRequestHeader("Authorization", 'Bearer ' + token);
-                    }
-                })
-                .done(function(data){
-                    scope.fusionDialog('Update request','open');
-                    var update = "sql=UPDATE "+scope.fusionTableId+" SET ";
-
-                    var comma = "";
-                    for(var x in scope.nameUpdateColumns){
-                        var fname = scope.nameUpdateColumns[x];
-                        update += comma+obj[fname].columnName+" = '"+obj[fname].value.replace(/\&/g,'%26')+"'";
-                        comma = " , ";
-                    }
-
-                    update+=" WHERE ROWID = '"+data.rows[0][0]+"'";
-                    $.ajax({
-                        type: 'POST',
-                        url: base,
-                        beforeSend: function (request){
-                            request.setRequestHeader("Authorization", 'Bearer ' + token);
-                        },
-                        data : update
-                    }).done(function(data) {
-                        scope.fusionDialog('Save success','open');
-                        setTimeout(function(){scope.fusionDialog('','close');},1000);
+                    //does the actual update
+                    .fusionNext()
+                    .fail(function(){scope._fusionErrUpdate.call(scope);})
+                    .done(function(data){
+                        scope.fusionDialog('Save success','open',true);
+                        setTimeout(function(){scope.fusionDialog('','close',true);},1000);
 
                         //save locally
                         scope.store.setItem(key,obj);
                         scope.redraw();
-                    }).fail(function(){
-                        scope.fusionDialog('Save failed','open');
-                        scioe.fusionDialog('Update query failed');
                     });
-                })
-                .fail(function(){
-                    scope.fusionDialog('Save failed','open');
-                    scope.fusionDialog('Could not get ROWID from fusion table','open');
-                });
+
             });
         },
         export : function(){
@@ -616,60 +646,77 @@
     }
 
     var store = new Store('beta3');
-
     var fusionTableId = "1xPEsfqQOgx8Cne-u2QQ1evWonVCmgvVY0LDcG3k";
-    var startloc = new google.maps.LatLng(34.409191, -119.692953);
+    var fusion = new Fusion("https://www.googleapis.com/fusiontables/v1/query",fusionTableId,oAuth);
+
     function initialize() {
-        var map = new google.maps.Map(document.getElementById("map-canvas"),
-            {center: startloc,zoom: 18});
+        //get a center point
+        var queryText = encodeURIComponent(
+            "SELECT X , Y FROM "+fusionTableId+" limit 1");
+        var query = new google.visualization.Query(
+            'https://www.google.com/fusiontables/gvizdata?tq='+queryText);
 
-        oAuth.scope = 'https://www.googleapis.com/auth/fusiontables';
-        oAuth.redirect_uri = 'http://media.transmap.us/oauth2/client.php';
-        Display.init($('#sign-data'),store, map);
-        App.fusionTableId = fusionTableId;
-        App.init(Display,store,map);
-        App.redraw();
+        query.send(function(response) {
 
-        layer = new google.maps.FusionTablesLayer({
-            query: {select: 'Y',from: fusionTableId},
-            styles : [{markerOptions : {iconName : "placemark_circle_highlight"}}],
-            suppressInfoWindows : false
-        });
+            //create the list of lat/long coordinates
+            var lat = response.getDataTable().getValue(0, 1);
+            var lng = response.getDataTable().getValue(0, 0);
+            var pos = new google.maps.LatLng(lat, lng);
 
-        //handle map click
-        layer.addListener('click', function(evt){
-
-            var latLng = evt.latLng;
-            var d = new Date();
-
-            //just accessing the row content
-            var id = evt.row[App.nameUnique].value;
-            evt.row['timestamp'] = {
-                'columnName':'timestamp',
-                'value': d.toISOString()
-            };
-            evt.row[App.conditionField] = {
-                'columnName':App.conditionField,
-                'value':'GOOD'
-            };
-
-            //remove item if it exists
-            var remove = [];
-            store.iterate(function(key,obj){
-                if(obj[App.nameUnique].value == id){
-                    remove.push(key);
-                }
+            var map = new google.maps.Map(document.getElementById('map-canvas'), {
+                        center: pos,zoom: 18
             });
-            for(var x in remove) store.removeItem(remove[x]);
 
-            //store item and redraw
-            App.setItemAdapter(App.index--,evt.row);
+            //setup oAuth
+            oAuth.scope = 'https://www.googleapis.com/auth/fusiontables';
+            oAuth.redirect_uri = 'http://media.transmap.us/oauth2/client.php';
+
+            //setup display
+            Display.init($('#sign-data'),store, map);
+
+            //setup the application
+            App.init(Display,store,map,fusion);
             App.redraw();
+
+            layer = new google.maps.FusionTablesLayer({
+                query: {select: 'Y',from: fusionTableId},
+                styles : [{markerOptions : {iconName : "placemark_circle_highlight"}}],
+                suppressInfoWindows : false
+            });
+
+            //handle map click
+            layer.addListener('click', function(evt){
+
+                var latLng = evt.latLng;
+                var d = new Date();
+
+                //just accessing the row content
+                var id = evt.row[App.nameUnique].value;
+                evt.row['timestamp'] = {
+                    'columnName':'timestamp',
+                    'value': d.toISOString()
+                };
+                evt.row[App.conditionField] = {
+                    'columnName':App.conditionField,
+                    'value':'GOOD'
+                };
+
+                //remove item if it exists
+                var remove = [];
+                store.iterate(function(key,obj){
+                    if(obj[App.nameUnique].value == id){
+                        remove.push(key);
+                    }
+                });
+                for(var x in remove) store.removeItem(remove[x]);
+
+                //store item and redraw
+                App.setItemAdapter(App.index--,evt.row);
+                App.redraw();
+            });
+            layer.setMap(map);
         });
-        layer.setMap(map);
-
-
-    }
+    };
     google.maps.event.addDomListener(window, 'load', initialize);
 
 
@@ -715,6 +762,7 @@
                 App.fusionSave = true;
                 if(oAuth.token == null && $.cookie('gtoken') === null){
                     oAuth.getToken(function(token,expire){
+                        console.log(token,expire);
                         $.cookie('gtoken',token);
                         $.cookie('gexpire',expire.toISOString());
                     });
