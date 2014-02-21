@@ -317,7 +317,9 @@ class Project{
 		$pos = $this->imagePos + intval($offset);
 		$str = str_pad(strval($pos),5,'0',STR_PAD_LEFT);
 
-		return "/Surveys/index.php?Image={$str}&Project={$this->projectName}&Survey={$this->survey}";
+        $path = str_replace($_SERVER['DOCUMENT_ROOT'],'',$_SERVER['PHP_SELF']);//__DIR__;
+
+		return "$path?Image={$str}&Project={$this->projectName}&Survey={$this->survey}";
 	}
 	
 	public function hasProjectImages($projectLink){
