@@ -7,7 +7,7 @@
  */
 var oAuth = {
     client_id : '16942626072-oqu5fdjnaed93hua437avv7k5skb5jgl.apps.googleusercontent.com',
-    redirect_uri : 'http://media.transmap.us/oauth2/client.php',
+    redirect_uri : 'http://media.transmap.com/oauth2/client.php',
     scope : 'https://www.googleapis.com/auth/fusiontables',
     token : null, expires : null, win : null,
     winHeight : 300, winWidth : 500,

@@ -783,10 +783,6 @@
                             center: pos,zoom: 18
                 });
 
-                //setup oAuth
-                oAuth.scope = 'https://www.googleapis.com/auth/fusiontables';
-                oAuth.redirect_uri = 'http://media.transmap.us/oauth2/client.php';
-
                 //setup display
                 Display.init($('#sign-data'),store, map);
 
