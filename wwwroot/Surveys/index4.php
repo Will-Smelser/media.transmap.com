@@ -62,21 +62,49 @@ try{
 
 
         <script src="http://code.jquery.com/jquery-1.8.1.min.js" ></script>
+        <script src="/js/preload.js"></script>
 
         <script>
-            function resetCont(){
+            function resetContainer(){
                 $('#container').width($(window).width());
-               while($(document).height() > $(window).height()){
+                while($(document).height() > $(window).height()){
                    var width = $('#container').width();
                    $('#container').width(width-10);
-               }
+                }
             }
             $(document).ready(function(){
-                resetCont();
-                $(window).resize(function(){
-                    resetCont();
-                });
+                resetContainer();
+                $(window).resize(resetContainer);
+                $('#img-br').load(resetContainer);
+                $('#img-fl').load(resetContainer);
+                $('#img-fr').load(resetContainer);
+
+                //start loading images so they will already be in the cache
+                //we will load 2 in each direction
+                var loader = new Preload();
+
+                <?php for($i=1; $i <= 2; $i++) { ?>
+
+                loader.preload("<?php echo $project->getImageFr($i); ?>");
+                loader.preload("<?php echo $project->getImageFl($i); ?>");
+                loader.preload("<?php echo $project->getImageBr($i); ?>");
+
+                loader.preload("<?php echo $project->getImageFr($i*5); ?>");
+                loader.preload("<?php echo $project->getImageFl($i*5); ?>");
+                loader.preload("<?php echo $project->getImageBr($i*5); ?>");
+
+                loader.preload("<?php echo $project->getImageFr(-$i); ?>");
+                loader.preload("<?php echo $project->getImageFl(-$i); ?>");
+                loader.preload("<?php echo $project->getImageBr(-$i); ?>");
+
+                loader.preload("<?php echo $project->getImageFr(-$i*5); ?>");
+                loader.preload("<?php echo $project->getImageFl(-$i*5); ?>");
+                loader.preload("<?php echo $project->getImageBr(-$i*5); ?>");
+
+                <?php } ?>
+
             });
+
 
         </script>
 
@@ -103,19 +131,85 @@ try{
                 padding:0px;
             }
             .left-nav{
-                width:25%;
+                width:20%;
                 float:left;
             }
             .right-nav{
-                width:25%;
+                width:20%;
                 float:right;
             }
+            .left-nav img, .right-nav img{
+                width:95px;
+                padding:10px 0px;
+                margin:0px;
+            }
             .middle{
-                width:50%;
+                width:60%;
                 float:left;
             }
             .middle img{
                 width:100%;
+            }
+            #logo{
+                position:fixed;
+                bottom:5px;
+                right:5px;
+
+                width:130px;
+                display:block;
+                border:solid #EFEFEF 1px;
+            }
+            #logo img{width:120px}
+
+
+            .drop-shadow {
+                position:relative;
+                float:left;
+
+                padding:3px;
+
+                background:#fff;
+            }
+
+            .drop-shadow:before,
+            .drop-shadow:after {
+                content:"";
+                position:absolute;
+                z-index:-2;
+            }
+
+
+            .lifted {
+                -moz-border-radius:4px;
+                border-radius:4px;
+            }
+
+            .lifted:before,
+            .lifted:after {
+                bottom:15px;
+                left:10px;
+                width:50%;
+                height:20%;
+                max-width:300px;
+                max-height:100px;
+                -webkit-box-shadow:0 15px 10px rgba(0, 0, 0, 0.7);
+                -moz-box-shadow:0 15px 10px rgba(0, 0, 0, 0.7);
+                box-shadow:0 15px 10px rgba(0, 0, 0, 0.7);
+                -webkit-transform:rotate(-3deg);
+                -moz-transform:rotate(-3deg);
+                -ms-transform:rotate(-3deg);
+                -o-transform:rotate(-3deg);
+                transform:rotate(-3deg);
+            }
+
+            .lifted:after {
+                right:10px;
+                left:auto;
+                -webkit-transform:rotate(3deg);
+                -moz-transform:rotate(3deg);
+                -ms-transform:rotate(3deg);
+                -o-transform:rotate(3deg);
+                transform:rotate(3deg);
             }
         </style>
     </head>
@@ -134,13 +228,13 @@ try{
 	
 		<div class="left">
 			<a href="<?php echo $project->getImageLinkFl(); ?>" border="0" target="new">
-				<img  src="<?php echo $project->getImageFl(); ?>" />
+				<img id="img-fl"  src="<?php echo $project->getImageFl(); ?>" />
 			</a>
 		</div>
 	    
 		<div class="right">
 			<a href="<?php echo $project->getImageLinkFr(); ?>" border="0" target="new">
-				<img src="<?php echo $project->getImageFr() ?>" />
+				<img id="img-fr" src="<?php echo $project->getImageFr() ?>" />
 			</a>
 	     </div>
 
@@ -154,7 +248,7 @@ try{
                 $img = $project->getNextImageUrl(1);
                 if($project->hasProjectImages($img)){
                     ?>
-                    <a href="<?php echo $img ?>"><img src="images/f.gif" alt="forward" width="120" height="44" border="0" align="left"/></a>
+                    <a href="<?php echo $img ?>"><img src="images/f.gif" alt="forward" border="0" align="left"/></a>
                 <?php } ?>
             </p>
 
@@ -164,7 +258,7 @@ try{
 
                 if($project->hasProjectImages($img)){
                     ?>
-                    <a href="<?php echo $project->getNextImageUrl(-1) ?>"><img src="images/b.gif" alt="backward" width="120" height="44" border="0" align="left"/></a>
+                    <a href="<?php echo $project->getNextImageUrl(-1) ?>"><img src="images/b.gif" alt="backward" border="0" align="left"/></a>
                 <?php } ?>
             </p>
 
@@ -173,7 +267,7 @@ try{
 	
 		<div class="middle">
 			<a href="<?php echo $project->getImageLinkBr(); ?>" border="0" target="new">
-				<img src="<?php echo $project->getImageBr() ?>" />
+				<img id"img-br" src="<?php echo $project->getImageBr() ?>" />
 			</a>
 		</div>
 
@@ -188,7 +282,7 @@ try{
 				if($project->hasProjectImages($img)){
 				?>
 					<a href="<?php echo $img; ?>">
-						<img src="images/f.gif" alt="backward" width="120" height="44" border="0" align="left"/>
+						<img src="images/f.gif" alt="backward" border="0" align="left"/>
 					</a>
 				<?php } ?>
 			</p>
@@ -199,12 +293,17 @@ try{
 				if($project->hasProjectImages($img)){
 				?>
 					<a href="<?php echo $img ?>">
-						<img src="images/b.gif" alt="backward" width="120" height="44" border="0" align="left"/>
+						<img src="images/b.gif" alt="backward" border="0" align="left"/>
 					</a>
 				<?php } ?>
 			</p>
             </div>
 		</div>
 	</div>
+</div>
+<div id="logo">
+    <div class="drop-shadow lifted">
+        <img src="/images/logo.jpg" />
+    </div>
 </div>
 <?php include "../includes/footer.php"; ?>

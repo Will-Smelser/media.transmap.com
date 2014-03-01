@@ -29,6 +29,36 @@ try{
 include '../includes/header.php'; 
 
 ?>
+    <script src="/js/preload.js"></script>
+    <script>
+        $(document).ready(function(){
+
+            //start loading images so they will already be in the cache
+            //we will load 2 in each direction
+            var loader = new Preload();
+
+            <?php for($i=1; $i <= 2; $i++) { ?>
+
+            loader.preload("<?php echo $project->getImageFr($i); ?>");
+            loader.preload("<?php echo $project->getImageFl($i); ?>");
+            loader.preload("<?php echo $project->getImageBr($i); ?>");
+
+            loader.preload("<?php echo $project->getImageFr($i*5); ?>");
+            loader.preload("<?php echo $project->getImageFl($i*5); ?>");
+            loader.preload("<?php echo $project->getImageBr($i*5); ?>");
+
+            loader.preload("<?php echo $project->getImageFr(-$i); ?>");
+            loader.preload("<?php echo $project->getImageFl(-$i); ?>");
+            loader.preload("<?php echo $project->getImageBr(-$i); ?>");
+
+            loader.preload("<?php echo $project->getImageFr(-$i*5); ?>");
+            loader.preload("<?php echo $project->getImageFl(-$i*5); ?>");
+            loader.preload("<?php echo $project->getImageBr(-$i*5); ?>");
+
+            <?php } ?>
+
+        });
+    </script>
 
 	<div class="container">
 		<div class="span-19 last">
