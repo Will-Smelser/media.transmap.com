@@ -3,6 +3,7 @@
 $base = $_SERVER['DOCUMENT_ROOT'].'/images';
 $maxDepth = 1;
 $fs = '/';
+$dil = '|';
 
 $file = $_SERVER['DOCUMENT_ROOT'].$fs.'Surveys'.$fs.'projects.properties';
 
@@ -22,13 +23,13 @@ function makeOptions($dir){
 }
 
 function listProjects(){
-	global $file;
+	global $file,$dil;
 	$handle = @fopen($file, "r");
 
 	$count = 0;
 
 	while(($buffer = fgets($handle)) !== false){
-		$parts = explode(":",trim($buffer));
+		$parts = explode($dil,trim($buffer));
 		echo "<option value='{$parts[0]}'>{$parts[0]}</option>\n";
 		$count++;
 	}
@@ -39,7 +40,7 @@ function listProjects(){
 }
 
 function handleActions(){
-	global $file;
+	global $file,$dil;
 	
 	if(isset($_POST['action']) && $_POST['action'] == 'addProject'){
 		$found = false;
@@ -54,7 +55,7 @@ function handleActions(){
 		$handle = @fopen($file, "r");
 	
 		while(($buffer = fgets($handle)) !== false){
-			$parts = explode(":",trim($buffer));
+			$parts = explode($dil,trim($buffer));
 	
 			if($parts[0] === $_POST['project']){
 				$found = true;
@@ -66,7 +67,11 @@ function handleActions(){
 		fclose($handle);
 	
 		if(!$found)
-			if(file_put_contents($file,$_POST['project'].':'.$_POST['pfolder'].':'.$_POST['service']."\n",FILE_APPEND))
+			if(file_put_contents($file,$_POST['project'].
+                $dil.$_POST['pfolder'].
+                $dil.$_POST['service'].
+                $dil.$_POST['imageServer'].
+                "\n",FILE_APPEND))
 				Login::setMessage("Successfully added.");
 			else
 				Login::setMessage("Failed to add project.");
@@ -80,7 +85,7 @@ function handleActions(){
 		$found = false;
 	
 		while(($buffer = fgets($handle)) !== false){
-			$parts = explode(":",trim($buffer));
+			$parts = explode($dil,trim($buffer));
 	
 			if($parts[0] !== $_POST['project']){
 				$output .= $buffer;

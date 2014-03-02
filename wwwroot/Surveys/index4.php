@@ -1,9 +1,6 @@
 <?php
 
 require_once '../class/Project.php';
-require_once '../class/Session.php';
-
-$session = &Session::getInstance();
 
 //definitions
 define('VIEW_DEFAULT','front');
@@ -16,10 +13,10 @@ $version = (empty($_GET['view']))    ? VIEW_DEFAULT     : $_GET['view'];
 $project = (isset($_GET['project'])) ? $_GET['project'] : null;
 $survey  = (isset($_GET['survey']))  ? $_GET['survey']  : null;
 $image   = (isset($_GET['image']))   ? $_GET['image']   : null;
-
+$host = null;
 try{
 	
-	$project = new Project($project, $survey, $image, $session, null, true);
+	$project = new Project($project, $survey, $image, $host);
 	
 }catch(Exception $e){
 	echo $e->getMessage();
@@ -78,6 +75,10 @@ try{
                 $('#img-br').load(resetContainer);
                 $('#img-fl').load(resetContainer);
                 $('#img-fr').load(resetContainer);
+
+                //not sure why, but if images fail, then
+                //container does not resize correctly
+                setTimeout(resetContainer,1500);
 
                 //start loading images so they will already be in the cache
                 //we will load 2 in each direction
@@ -246,7 +247,7 @@ try{
             <p class="span-2 last">
                 <?php
                 $img = $project->getNextImageUrl(1);
-                if($project->hasProjectImages($img)){
+                if($project->hasProjectImages($image+1)){
                     ?>
                     <a href="<?php echo $img ?>"><img src="images/f.gif" alt="forward" border="0" align="left"/></a>
                 <?php } ?>
@@ -255,10 +256,9 @@ try{
             <p class="span-2">
                 <?php
                 $img = $project->getNextImageUrl(-1);
-
-                if($project->hasProjectImages($img)){
+                if($project->hasProjectImages($image-1)){
                     ?>
-                    <a href="<?php echo $project->getNextImageUrl(-1) ?>"><img src="images/b.gif" alt="backward" border="0" align="left"/></a>
+                    <a href="<?php echo $img ?>"><img src="images/b.gif" alt="backward" border="0" align="left"/></a>
                 <?php } ?>
             </p>
 
@@ -267,7 +267,7 @@ try{
 	
 		<div class="middle">
 			<a href="<?php echo $project->getImageLinkBr(); ?>" border="0" target="new">
-				<img id"img-br" src="<?php echo $project->getImageBr() ?>" />
+				<img id="img-br" src="<?php echo $project->getImageBr() ?>" />
 			</a>
 		</div>
 
@@ -276,10 +276,9 @@ try{
             <div style="margin-left:auto;margin-right: auto;width:100px">
 			<h3>Images x 5</h3>
 			<p class="span-2">
-				<?php 
-				$img = $project->getNextImageUrl(5); 
-				
-				if($project->hasProjectImages($img)){
+				<?php
+                $img = $project->getNextImageUrl(5);
+				if($project->hasProjectImages($image+5)){
 				?>
 					<a href="<?php echo $img; ?>">
 						<img src="images/f.gif" alt="backward" border="0" align="left"/>
@@ -287,10 +286,9 @@ try{
 				<?php } ?>
 			</p>
 			<p class="span-2">
-				<?php 
-				$img = $project->getNextImageUrl(-5);
-				
-				if($project->hasProjectImages($img)){
+				<?php
+                $img = $project->getNextImageUrl(-5);
+				if($project->hasProjectImages($image-5)){
 				?>
 					<a href="<?php echo $img ?>">
 						<img src="images/b.gif" alt="backward" border="0" align="left"/>

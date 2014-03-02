@@ -18,6 +18,7 @@ var Viewer = {
 	imageSize : 0,
 	project: '',
 	survey: '',
+    imgserver: '/images',
 		
 	//max steps within vanish point
 	maxSteps : 8,
@@ -56,18 +57,19 @@ var Viewer = {
 		
 	},
 	
-	load : function(baseref, imageSize, image, project, imagePath, survey, camera, type, first, last, query){
+	load : function(baseref, imageSize, image, project, imgserver, imagePath, survey, camera, type, first, last, query){
 		//set values
 		this.baseref = baseref;
 		this.image = this.lastClicked = parseInt(image,10);
+        this.imgserver = imgserver;
 		this.imagePath = imagePath;
 		this.imageSize = imageSize;
 		this.project = project;
 		this.survey = survey;
 		this.camera = camera;
 		this.type = type;
-		this.firstImage = 0;//first;
-		this.lastImage  = 99999;//last;
+		this.firstImage = first;
+		this.lastImage  = last;
 		this.qbase = query;
 		
 		this.refreshDims();
@@ -112,7 +114,7 @@ var Viewer = {
 	},
 	_urlRequestImageLimits:function(survey){
 		var url = localServiceUrl + "?action=getSurveyLimits";
-		url += "&project="+Viewer.imagePath.replace(/^\/images\/?/,"");
+		url += "&project="+Viewer.project;
 		url += "&survey="+survey;
 		url += "&camera="+Viewer.camera;
 		return url;
@@ -124,7 +126,7 @@ var Viewer = {
 		Viewer.survey = $(this).val();
 		
 		//get the new limits
-		/*
+
 		var url = Viewer._urlRequestImageLimits(Viewer.survey);
 		
 		$.getJSON(url,function(result){
@@ -137,9 +139,8 @@ var Viewer = {
 			Viewer.firstImage = result.data.lower;
 			Viewer.lastImage  = result.data.upper;
 		});
-		*/
-		Viewer.firstImage = 0;
-		Viewer.lastImage  = 99999;
+
+
 		Viewer.canvasClick(Viewer.image);
 		Viewer.loadData();
 	},
@@ -258,7 +259,7 @@ var Viewer = {
 							//changeing survey
 							if(tempSurvey !== Viewer.survey){
 								
-								//var url = Viewer._urlRequestImageLimits(tempSurvey);
+								var url = Viewer._urlRequestImageLimits(tempSurvey);
 								Viewer.loadingShow();
 								Viewer.survey = tempSurvey;
 								Viewer.firstImage = 0;
@@ -266,7 +267,7 @@ var Viewer = {
 								Viewer._surveyListSetVal(tempSurvey);
 								Viewer.canvasClick(image);
 								
-								/*
+
 								$.getJSON(url,function(result){
 									if(!result.result){
 										Viewer.alertUser("Failed to get survey min/max image number for survey.");
@@ -290,7 +291,7 @@ var Viewer = {
 									Viewer.lastImage  = 99999;
 									Viewer.canvasClick(image);
 								});
-								*/
+
 							} else {
 								Viewer.canvasClick(image);
 							}
@@ -473,7 +474,7 @@ var Viewer = {
 	getImageUrl : function(image){
 		image = this.pad(image,5);
 		
-		return "/imgsize.php?percent="+this.imageSize+"&img="+
+		return "/imgsize.php?percent="+this.imageSize+"&img="+this.imgserver+
 			this.imagePath+"/"+this.survey+"/"+this.camera+this.survey+"/"+this.camera+"_"+image+".jpg";
 	},
 	

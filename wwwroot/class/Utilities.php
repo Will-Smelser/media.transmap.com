@@ -85,7 +85,7 @@ class Utils {
 		
 		$data = array();
 		while(($buffer = fgets($handle)) !== false){
-			$parts = explode(":",trim($buffer));
+			$parts = explode("|",trim($buffer));
 			$info = array(
 					'service'=>(isset($parts[2]) ? $parts[2] : null),
 					'name'=>(isset($parts[0]) ? $parts[0] : null),

@@ -39,8 +39,9 @@
 	var image = <?php echo intval($image); ?>;
 	var project = "<?php echo $project1; ?>";
 	var survey = "<?php echo $survey; ?>";
-	var first = <?php echo intval($limits[0]); ?>;
-	var last = <?php echo intval($limits[1]); ?>;
+	var first = <?php echo intval($project->firstImage); ?>;
+	var last = <?php echo intval($project->lastImage); ?>;
+    var imgserver = "<?php echo $project->getImgServer(); ?>";
 
 	window.map;
     window.featureLayer;
@@ -53,7 +54,7 @@
             });
         });
     	$('input:button').button();
-    	$('#forward,#backward').button();
+    	//$('#forward,#backward').button();
     	$('#image-close').button({icons:{primary:'ui-icon-circle-close'}})
     		.click(function(){$('#image-show').dialog('close')});
     	
@@ -92,7 +93,7 @@
 				<select id="survey-list">
 				<?php
 				//try and get a list of surveys
-				$surveys = Utils::getValidSurveys($project->getProjectNameFileSystem(),$project->getProjectQueryUrl());
+				$surveys = Utils::getValidSurveys($project->getProjectName(),$project->getProjectQueryUrl());
 				if(count($surveys) > 0){
 					listSurveys($surveys, $project->getSurvey());
 				}else{ 
@@ -179,7 +180,7 @@
 		var localServiceUrl = "<?php echo Utils::getServiceUrl(); ?>";
 		dojo.addOnLoad(function(){
             $(document).ready(function(){
-                Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1','{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
+                Viewer.load(<?php echo "'{$_SERVER['PHP_SELF']}',".$imageSz.",".intval($image).", '$project1', imgserver, '{$project->getProjectPath()}','$survey', '$camera','$type', first, last"; ?>,queryBaseUrl);
                 $( "#container" ).resizable({
                     handles: "e",
                     stop: function(evt, ui){

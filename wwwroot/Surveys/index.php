@@ -1,9 +1,6 @@
 <?php
 
 require_once '../class/Project.php';
-require_once '../class/Session.php';
-
-$session = &Session::getInstance();
 
 //definitions
 define('VIEW_DEFAULT','front');
@@ -19,7 +16,7 @@ $image   = (isset($_GET['image']))   ? $_GET['image']   : null;
 
 try{
 	
-	$project = new Project($project, $survey, $image, $session, null, true);
+	$project = new Project($project, $survey, $image);
 	
 }catch(Exception $e){
 	echo $e->getMessage();
@@ -97,7 +94,7 @@ include '../includes/header.php';
 			<p class="span-2 last">
 				<?php 
 				$img = $project->getNextImageUrl(1);
-				if($project->hasProjectImages($img)){
+				if($project->hasProjectImages($image+1)){
 				?>
 				<a href="<?php echo $img ?>"><img src="images/f.gif" alt="forward" width="120" height="44" border="0" align="left"/></a>
 				<?php } ?> 
@@ -107,9 +104,9 @@ include '../includes/header.php';
 				<?php 
 				$img = $project->getNextImageUrl(-1);
 				
-				if($project->hasProjectImages($img)){
+				if($project->hasProjectImages($image-1)){
 				?>
-				<a href="<?php echo $project->getNextImageUrl(-1) ?>"><img src="images/b.gif" alt="backward" width="120" height="44" border="0" align="left"/></a>
+				<a href="<?php echo $img ?>"><img src="images/b.gif" alt="backward" width="120" height="44" border="0" align="left"/></a>
 				<?php } ?>
 			</p>
 		</div>
@@ -121,7 +118,7 @@ include '../includes/header.php';
 				<?php 
 				$img = $project->getNextImageUrl(5); 
 				
-				if($project->hasProjectImages($img)){
+				if($project->hasProjectImages($image+5)){
 				?>
 					<a href="<?php echo $img; ?>">
 						<img src="images/f.gif" alt="backward" width="120" height="44" border="0" align="left"/>
@@ -132,7 +129,7 @@ include '../includes/header.php';
 				<?php 
 				$img = $project->getNextImageUrl(-5);
 				
-				if($project->hasProjectImages($img)){
+				if($project->hasProjectImages($image-5)){
 				?>
 					<a href="<?php echo $img ?>">
 						<img src="images/b.gif" alt="backward" width="120" height="44" border="0" align="left"/>

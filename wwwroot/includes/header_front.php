@@ -53,15 +53,13 @@ switch($camera){
 
 try{
 	
-	$project = new Project($project1, $survey, $image, $session, null,true);
+	$project = new Project($project1, $survey, $image, null, $session);
 	
 }catch(Exception $e){
 	echo $e->getMessage();
 	echo "Go <a href='findSurvey.php'>here</a> to choose a valid survey.";
 	exit;
 }
-
-$limits = $project->findImageLimits($project1, $survey);
 
 function listSurveys($surveys, $currentSurvey){
 	foreach($surveys as $entry){

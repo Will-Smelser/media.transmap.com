@@ -31,7 +31,7 @@ $json = array();
 try{
 	$json = json_decode($output,true);
 }catch(Exception $e){
-	//do nothing
+    $msg = '<div class="message">Failed to load arcgis services list.<br/>ERROR: '.$e->getMessage().'</div>';
 }
 ?>
 <!DOCTYPE html>
@@ -87,10 +87,8 @@ try{
 	</label><br/>
 	
 	<label for="pfolder">
-		<span  style="display:inline-block;width:200px;">Image Location:</span>
-		<select name="pfolder" id="pfolder">
-		<?php makeOptions($base); ?>
-		</select>
+		<span  style="display:inline-block;width:200px;">Image Folder Name:</span><br/>
+        <input type="text" name="pfolder" id="pfolder" />
 	</label><br/>
 	
 	<label for="service">
@@ -104,6 +102,14 @@ try{
 		?>
 		</select>
 	</label><br/>
+
+    <label for="imageServer">
+        <span style="display:inline-block;width:200px;">Image Server:</span>
+        <select name="imageServer" id="imageServer">
+            <option value="http://tmapmedia.s3.amazonaws.com/" selected>Amazon S3</option>
+            <option value="/images/">CeraNet</option>
+        </select>
+    </label><br/>
 	
 	<input type="hidden" value="addProject" name="action" />
 	<input type="submit" value="Add Project" />

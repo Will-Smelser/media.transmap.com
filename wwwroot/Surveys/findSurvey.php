@@ -77,7 +77,7 @@ $project.change(function(){
 
 	//lookup the surveys
 	var url = "<?php echo Utils::getServiceUrl(); ?>?action=getSurveys";
-	url += "&project="+parts[1].replace(/\/images?\/?/i,'');
+	url += "&project="+parts[0];
 
 	var service = encodeURIComponent("http://")+parts[2]+encodeURIComponent('/0/query');
 	url += "&serviceUrl="+service;
@@ -98,7 +98,8 @@ $project.change(function(){
 				$survey.uiselect("refresh");
 				return;
 			}
-	
+
+            console.log(result.data);
 			for(var x in result.data){
 				var $el = $(document.createElement('option')).attr('value',result.data[x]).html(result.data[x]);
 				$survey.append($el);
