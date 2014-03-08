@@ -9,9 +9,15 @@ header("Pragma: private");
 header("Expires: " . date('D, d M Y H:i:s',time()+360*60*60*24)); //a little less than 1 day into the future
 header("Content-type: image/jpeg");
 
-$modtime = filemtime($img);
+$modtime = @filemtime($img);
 
-if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])
+//always force a cache time for an image
+if(!$modtime){
+    $modtime = (isset($_SESSION['img-modtime'])) ? $_SESSION['img-modtime'] : time();
+    $_SESSION['img-modtime'] = $modtime;
+}
+
+if ($modtime && isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])
 		&&
 		(strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) == $modtime)
 	) {
