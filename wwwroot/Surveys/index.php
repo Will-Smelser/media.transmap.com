@@ -14,6 +14,11 @@ $project = (isset($_GET['project'])) ? $_GET['project'] : null;
 $survey  = (isset($_GET['survey']))  ? $_GET['survey']  : null;
 $image   = (isset($_GET['image']))   ? $_GET['image']   : null;
 
+if(empty($survey)){
+    header('Location: findSurvey.php');
+    exit;
+}
+
 try{
 	
 	$project = new Project($project, $survey, $image);
@@ -34,7 +39,7 @@ include '../includes/header.php';
             //we will load 2 in each direction
             var loader = new Preload();
 
-            <?php for($i=1; $i <= 2; $i++) { ?>
+            <?php for($i=1; $i <= 1; $i++) { ?>
 
             loader.preload("<?php echo $project->getImageFr($i); ?>");
             loader.preload("<?php echo $project->getImageFl($i); ?>");

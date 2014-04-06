@@ -1,0 +1,9 @@
+#RewriteEngine on
+
+# Maintenance Redirection
+# Replace 555\.555\.555\.555 with your own IP address
+# Uncomment first conditional to turn off the redirection
+# RewriteCond %{REQUEST_URI} ^$a
+#RewriteCond %{REQUEST_URI} !maintenance.php
+#RewriteCond %{REQUEST_FILENAME} !(css|image|blueprint).+$
+#RewriteRule (.*) /maintenance.php [R,L]

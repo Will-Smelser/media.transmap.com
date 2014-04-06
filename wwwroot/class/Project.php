@@ -15,7 +15,7 @@ class Project{
 	private $imagePos;
 
 	private $properties = '/Surveys/projects.properties';
-	private $noImage = '/default/no-survey-image.jpg';
+	private $noImage = '/images/no-image.jpg';
 	
 	public $firstImage= '';
 	public $lastImage = '';
@@ -24,7 +24,7 @@ class Project{
 
 	function Project($projectName, $survey, $image, $host=null, Session &$session=null){
 		$this->HOST = (empty($host)) ? '' : $host;
-		$this->HOST = rtrim($this->HOST,'/\\');
+        $this->HOST = rtrim($this->HOST,'/\\\/');
 
         $this->projectName = $projectName;
         $this->survey = $survey;
@@ -54,7 +54,7 @@ class Project{
                 $this->projectPath = preg_replace('@^/images@i','',$parts[1]);
                 $this->projectService = $parts[2];
 
-                $this->IMGHOST = $imgsvr;
+                $this->IMGHOST = rtrim($imgsvr,'\/\\');
 
                 $limits = $this->getLimits();
 

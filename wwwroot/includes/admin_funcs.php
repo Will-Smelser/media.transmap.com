@@ -66,16 +66,17 @@ function handleActions(){
 	
 		fclose($handle);
 	
-		if(!$found)
-			if(file_put_contents($file,$_POST['project'].
+		if(!$found){
+            $line = $_POST['project'].
                 $dil.$_POST['pfolder'].
                 $dil.$_POST['service'].
                 $dil.$_POST['imageServer'].
-                "\n",FILE_APPEND))
+                "\n";
+			if(file_put_contents($file,$line,FILE_APPEND))
 				Login::setMessage("Successfully added.");
 			else
-				Login::setMessage("Failed to add project.");
-	
+				Login::setMessage("Failed to add project.<br/><span style=\"font-size:10px\">info: $line</span>");
+        }
 	}elseif(isset($_POST['action']) && $_POST['action'] == 'removeProject'){
 		//check if this alread exists
 		$handle = @fopen($file, "r");

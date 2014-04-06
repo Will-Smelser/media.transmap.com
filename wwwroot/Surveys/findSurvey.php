@@ -50,7 +50,9 @@ var checkForm = function(){
 	var project = $project.val().split(":")[0];
 	var survey  = $survey.val();
 
-	var url = '/Surveys/index2.php?Survey=';
+    var page = $('#viewer :selected').val();
+
+	var url = '/Surveys/'+page+'?Survey=';
 	url += survey + '&' + 'Project=' + project;
 
 	document.location.href = url;
@@ -160,6 +162,18 @@ $('#button').click(checkForm);
 		</select>
 		</p>
 	</div>
+
+    <div>
+        <h4>Select Viewer: </h4>
+        <p>
+            <select name="viewer" id="viewer">
+                <option value="index.php" selected>Default</option>
+                <option value="index2.php">Advanced</option>
+                <option value="index4.php">Basic</option>
+            </select>
+        </p>
+    </div>
+
 	<hr/>
 	<p>
 		<input id="button" value="Load Project" type="button" />

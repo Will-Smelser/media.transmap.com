@@ -51,6 +51,14 @@ try{
   	overflow-y:auto;
   	max-height:200px;
   }
+  .message{
+      font-weight:bold;
+      font-size:24px;
+      margin:3px;
+      padding:10px;
+      background-color:#EFEFEF;
+      border:inset #CCC 2px;
+  }
   </style>
   
   <script src="/js/cookie.js" ></script>
@@ -106,7 +114,7 @@ try{
     <label for="imageServer">
         <span style="display:inline-block;width:200px;">Image Server:</span>
         <select name="imageServer" id="imageServer">
-            <option value="http://tmapmedia.s3.amazonaws.com/" selected>Amazon S3</option>
+            <option value="http://s3.amazonaws.com/tmapmedia/" selected>Amazon S3</option>
             <option value="/images/">CeraNet</option>
         </select>
     </label><br/>

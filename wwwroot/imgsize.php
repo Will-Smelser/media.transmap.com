@@ -60,6 +60,14 @@ $h = (isset($_GET['h'])) ? $_GET['h'] : null;
 
 // get image size of img
 $x = @getimagesize($img);
+
+//image didnt exist
+if(!$x){
+    $img = $_SERVER['DOCUMENT_ROOT'] . '/images/no-image.jpg';
+    $x = @getimagesize($img);
+    $percent = 100;
+}
+
 // image width
 $sw = $x[0];
 // image height
