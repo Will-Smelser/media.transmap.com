@@ -28,9 +28,20 @@ class Result {
 			"data"=>$this->data		
 		));
 	}
+
+    public function toHTML(){
+        if($this->header_status !== 200){
+            echo '<!DOCTYPE html><h1>Error</h1><p>';
+            foreach($this->messages as $msg)
+                echo "<div><b>Message: </b>$msg</div>";
+            echo '</p><h2>Information:</h2><p>'.$this->data.'</p>';
+        }else{
+            echo $this->data;
+        }
+    }
 	
 	public function sendHTTPresponse(){
-		error_reporting(E_ALL);
+		//error_reporting(E_ALL);
 		http_response_code($this->header_status);
 	}
 }
@@ -77,7 +88,7 @@ switch($action){
         $result->result = true;
         break;
 
-	case $GET_PROJECTS:
+	case SERVICE_ACTIONS::$GET_PROJECTS:
 		$result->messages = array();
 		
 		$temp = Utils::getPropfileContents();
@@ -92,6 +103,34 @@ switch($action){
 		$result->data = $temp;
 		
 		break;
+
+    //this does not fall through to default JSON response
+    case SERVICE_ACTIONS::$GET_ARCDATA:
+        require_once '../class/ServiceData.php';
+
+        $result->messages = array();
+
+        $fields = array('Survey','ArcService','uniqueField','uniqueValue');
+        foreach($fields as $f){
+            if(!isset($_GET[$f])){
+                $result->data = "Missing \"$f\" field in request.";
+                $result->sendHTTPresponse();
+                $result->toHTML();
+                exit;
+            }
+        }
+
+        try{
+            $service = new ServiceData($_GET['ArcService']);
+            $result->data = $service->getDataHTML($_GET['Survey'],$_GET['uniqueField'],$_GET['uniqueValue']);
+            $result->header_status = HTTP_STATUS::$SUCCESS;
+        }catch(Exception $e){
+            $result->addMessage($service->getLastQuery());
+            $result->data = $e->getMessage();
+        }
+
+        $result->toHTML();
+        exit;
 }
 
 $result->sendHTTPresponse();

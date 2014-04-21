@@ -21,12 +21,13 @@ class SERVICE_ACTIONS {
 	$GET_SURVEY_LIMITS = "getSurveyLimits",
 	$GET_SURVEYS = "getSurveys",
 	//$GET_SURVEY_FIRST = "getSurveyFirstOne",
-	$GET_PROJECTS = "getProjects";
+	$GET_PROJECTS = "getProjects",
+    $GET_ARCDATA = "getArcData";
 }
 
 class Utils {
 	public static function getImageFromFile($filename){
-		$matches;
+        $matches = null;
 		preg_match("/[\w]{2}(?P<number>[\d]+)\.[[jpe?g]|[png]|[gif]]/i",$filename,$matches);
 		return (isset($matches['number'])) ? $matches['number'] : null;
 	}

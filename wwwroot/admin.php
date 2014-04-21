@@ -68,8 +68,22 @@ try{
 
 		$('input:button').button();
 		$('input:submit').button();
-		$('select').uiselect();
+		$('select').not('select[multiple]').uiselect();
+
+        $('#addServerDataLink').click(function(){
+            $('#addMoreServiceData').slideDown();
+        });
+        $('#addMoreServiceBtn').click(function(){
+            var service = $('#otherService').val();
+            var unique = $('#serviceField').val();
+            var name = $('#serviceTabName').val();
+            var $opt = $(document.createElement('option'))
+                .val(unique+'!'+name+'!http://'+service).attr('selected','true')
+                .html(unique+'!'+name+'!'+service);
+            $('#addedServices').append($opt);
+        });
 	});
+
   </script>
   
   </head>
@@ -118,7 +132,35 @@ try{
             <option value="/images/">CeraNet</option>
         </select>
     </label><br/>
-	
+
+
+    <a href="#" id="addServerDataLink">Add Service Data (Advanced Viewer)</a><br/>
+    <div style="display:none;padding: 10px;border:dotted #000 1px" id="addMoreServiceData">
+
+        <label>
+            <span style="display:inline-block;width:200px;">Add additional Service:</span><br/>
+            <select id="otherService">
+                <?php
+                foreach($json['services'] as $val){
+                    $url = preg_replace('/https?\:\/\//i', '', $val['url']);
+                    echo "<option value='$url'>{$val['name']}</option>";
+                }
+                ?>
+            </select><br/>
+
+            <span style="display:inline-block;width:200px;">Image Field Name:</span><br/>
+            <input id="serviceField" type="text" value="Image_" /><br/>
+            <input id="serviceTabName" type="text" value="Enter UI Tab Name"/><br/>
+            <input type="button" id="addMoreServiceBtn" value="Add" />
+            <br/>
+
+            <select name="addedServices[]" id="addedServices" multiple style="width:400px;background-color:#efefef"></select>
+            <br/>
+
+        </label>
+
+    </div><br/>
+
 	<input type="hidden" value="addProject" name="action" />
 	<input type="submit" value="Add Project" />
 </form>

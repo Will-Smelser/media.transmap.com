@@ -319,6 +319,9 @@ var Viewer = {
 		});
 	},
 	loadData : function(){
+        //reload the tabs, will fail on older viewers
+        $("#tabs").tabs('select',0);
+
 		//load the data
 		$('#data-details').html("Loading...");
 		

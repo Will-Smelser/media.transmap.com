@@ -22,6 +22,8 @@ class Project{
 	
 	private $session;
 
+    private $addedServices = array();
+
 	function Project($projectName, $survey, $image, $host=null, Session &$session=null){
 		$this->HOST = (empty($host)) ? '' : $host;
         $this->HOST = rtrim($this->HOST,'/\\\/');
@@ -60,6 +62,14 @@ class Project{
 
                 $this->firstImage = $limits[0];
                 $this->lastImage = $limits[1];
+
+                //the new added services
+                if(isset($parts[4])){
+                    foreach(explode('@',$parts[4]) as $service){
+                        $sparts = explode('!',$service);
+                        array_push($this->addedServices,array('unique'=>$sparts[0],'name'=>$sparts[1],'service'=>$sparts[2]));
+                    }
+                }
 
                 fclose($handle);
                 return;
@@ -250,6 +260,16 @@ class Project{
 
     public function getImgServer(){
         return $this->IMGHOST;
+    }
+
+    public function addedServicesJS(){
+        echo "[";
+        $comma = '';
+        foreach($this->addedServices as $service){
+            echo $comma . "{unique:\"{$service['unique']}\",name:\"{$service['name']}\",service:\"{$service['service']}\"}";
+            $comma = ',';
+        }
+        echo "]";
     }
 }
 

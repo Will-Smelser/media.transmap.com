@@ -65,13 +65,19 @@ function handleActions(){
 		}
 	
 		fclose($handle);
-	
+
 		if(!$found){
+
             $line = $_POST['project'].
                 $dil.$_POST['pfolder'].
                 $dil.$_POST['service'].
-                $dil.$_POST['imageServer'].
-                "\n";
+                $dil.$_POST['imageServer'];
+
+            if(isset($_POST['addedServices']) && count($_POST['addedServices'] > 0))
+                $line .= $dil.implode('@',$_POST['addedServices']);
+
+            $line .= "\n";
+
 			if(file_put_contents($file,$line,FILE_APPEND))
 				Login::setMessage("Successfully added.");
 			else
