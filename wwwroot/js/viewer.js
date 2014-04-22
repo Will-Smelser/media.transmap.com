@@ -48,8 +48,16 @@ var Viewer = {
 	
 	refreshDims : function(){
 		//get the image width/height
-		Viewer.width = $('#image-main').width();
-		Viewer.height = $('#image-main').height();
+        var x = $('#image-main').width();
+        var y = $('#image-main').height();
+
+        if(x < 1 || y < 1){
+            setTimeout(function(){Viewer.refreshDims()},10);
+            return;
+        }
+
+        Viewer.width = x;
+        Viewer.height = y;
 		
 		$('#loading','#loading2').css('width',Viewer.width+'px').first().css('margin-top',(Viewer.height/2-40)+'px');
 		$('#map-wrapper').css('height',Viewer.height+'px');
@@ -320,7 +328,16 @@ var Viewer = {
 	},
 	loadData : function(){
         //reload the tabs, will fail on older viewers
-        $("#tabs").tabs('select',0);
+        try{
+            var tabIndex = $('#tabs').tabs('option','active');
+            var $target = $($('#tabs li')[tabIndex]).find('a');
+            var url = $target.attr('href').replace(/uniqueValue\=[0-9]+/i,'uniqueValue='+Viewer.pad(Viewer.lastClicked,5));
+            $target.attr('href',url);
+            $('#tabs').tabs('load',tabIndex);
+        }catch(e){
+            console.log("tab error:", e);
+        }
+
 
 		//load the data
 		$('#data-details').html("Loading...");
