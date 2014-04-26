@@ -91,14 +91,18 @@ class ServiceData {
                 throw new HttpQueryStringException("Arc GIS service does not have a '{$this->surveyField}' field.");
 
             if(!$uniqueFieldFound)
-                throw new HttpQueryStringException("Arc GIS service does not the '$uniqueFieldName' unqiue field.");
+                throw new HttpQueryStringException("Arc GIS service does not have the '$uniqueFieldName' unqiue field.");
 
             throw new Exception("Unknown exception making request to Arc GIS: {$this->lastQuery}");
         }
 
         //check we did not get an error
-        if(isset($data['error']))
-            throw new Exception('Arc GIS said: '.$data['error']['message']);
+        if(isset($data['error'])){
+            $msg = (empty($data['error']['message'])) ? 'No Message' : $data['error']['message'];
+            $detail = (isset($data['error']['details']) && !empty($data['error']['details'])) ?
+                implode('<br/>',$data['error']['details']) : '';
+            throw new Exception('Arc GIS said: '.$msg.'<br/><br/><small>'.$detail.'</small>');
+        }
 
         if(!isset($data['features']))
             throw new Exception("Arc GIS query worked, but no features were returned");

@@ -128,7 +128,7 @@ var Viewer = {
 		return url;
 	},
 	_surveyChange : function(evt){
-		
+
 		//set the cookie
 		$.cookie("survey", $(this).val());
 		Viewer.survey = $(this).val();

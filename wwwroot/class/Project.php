@@ -217,7 +217,7 @@ class Project{
             urlencode('[{"statisticType": "min","onStatisticField": "IMAGENUM","outStatisticFieldName": "min"},{"statisticType": "max","onStatisticField": "IMAGENUM","outStatisticFieldName": "max"}]');
 
         try{
-            $result = file_get_contents($query);
+            $result = @file_get_contents($query);
             if(!$result){
                 return array(0=>0,1=>9999);
             }

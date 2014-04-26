@@ -18,7 +18,7 @@
   <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script> 
    
   <script src="/js/cookie.js" ></script>
-  <script src="/js/viewer.js" ></script>
+  <script src="/js/viewer2.js" ></script>
   <script src="/js/preload.js" ></script>
   <script src="/js/image.js" ></script>
   
@@ -81,19 +81,34 @@
             var link = 'service.php?action=getArcData&ArcService='+info.service+'&Survey='+survey+'&uniqueField='+info.unique+'&uniqueValue=00000';
             var $li = $(document.createElement('li'));
             var $a = $(document.createElement('a')).attr('href',link).html(info.name);
+            $a.attr('data-name',info.name); //save the custom tab name
             $('#tabs ul').append($li.append($a));
         }
 
         $( "#tabs" ).tabs({
             beforeActivate : function(evt,ui){
+
                 var $target = $(evt.currentTarget);
                 var url = $target.attr('href');
-                console.log(url);
-                url = url.replace(/uniqueValue\=[0-9]+/i,'uniqueValue='+Viewer.pad(Viewer.lastClicked,5));
+
+                url = url.
+                    replace(/Survey=.*?&/i,'Survey='+Viewer.survey+"&").
+                    replace(/uniqueValue\=[0-9]+/i,'uniqueValue='+Viewer.pad(Viewer.lastClicked,5));
                 $target.attr('href',url);
-                console.log(url);
+
             },
-            beforeLoad: function( event, ui ) {
+            beforeLoad: function( evt, ui ) {
+                var width = ui.tab.width();
+                ui.tab.css("width",width+'px')
+
+                var $tag = ui.tab.find('a');
+                var text = $tag.attr('data-name');
+
+                $tag.html("Loading...");
+
+                ui.jqXHR.always(function(){
+                    $tag.html(text);
+                });
                 ui.jqXHR.error(function() {
                     ui.panel.html(
                         "Couldn't load this tab." );
@@ -180,15 +195,9 @@
 
         <div id="tabs" style="border:dotted #000 1px;">
           <ul>
-              <li><a href="#tabs-1">Image Data</a></li>
+
           </ul>
-          <div id="tabs-1">
-              <div id="data-details-wrapper" style="background-color:transparent;border:none">
-                  <div style="">
-                      <div id="data-details">No Data</div>
-                  </div>
-              </div>
-          </div>
+
         </div>
 
 		
