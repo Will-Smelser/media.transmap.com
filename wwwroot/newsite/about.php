@@ -3,51 +3,39 @@
 <head>
     <title>Transmap - Home Page</title>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="shortcut icon" href="favicon.ico">
+    <?php include 'includes/head.php'; ?>
 
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-
-    <!-- Custom styles for this template -->
-    <link href="css/justified-nav.css" rel="stylesheet">
-
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-
+    <style>
+        #movie{max-width:600px;}
+        #nomovie{
+            font-size:16px;
+            font-weight:bold;
+            color:red;
+        }
+    </style>
 </head>
-<div style="height:20px;background-color:#000;"></div>
-<div class="topwrapper">
-    <div class="container">
-    <div class="masthead">
-        <div class="row">
-            <div class="col-md-2" style="max-width:200px">
-            <img id="logo" src="images/logo.png" title="Transmap Logo" />
-            </div>
-        </div>
-        <!-- <h3 class="text-muted">Project name</h3> -->
-        <ul class="nav nav-justified">
-            <li><a href="index.html">Home</a></li>
 
-            <li><a href="services.html">Services</a></li>
-            <li class="active"><a href="#">About</a></li>
-            <li><a href="news.html">News</a></li>
-            <li><a href="#">Contact</a></li>
-        </ul>
-    </div>
-    </div>
-</div>
+<!-- Modernizer video check -->
+<script>
+    function supports_video() {
+        return !!document.createElement('video').canPlayType;
+    }
+    function supports_h264_baseline_video() {
+        if (!supports_video()) { return false; }
+        var v = document.createElement("video");
+        return v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+    }
+</script>
+
+<?php include 'includes/navigation.php'; ?>
 
 <div class="container">
+
     <h1>Our Company</h1>
+
+    <div id="nomovie" style="display:none">Your browser cannot play this movie.</div>
+    <video id="movie" preload controls src="http://tmapproject.s3.amazonaws.com/Website%20Content/TransmapVideo2.mp4"></video>
+
     <h2>Firm Profile</h2>
     <p>
         Transmap is a national provider of professional, technical, and management support services to the transportation industry.  The focus of Transmap’s services is directed towards city-owned and county-owned transportation systems in order to provide the highest quality infrastructure management solutions.  Transmap specializes in the mobile data collection, processing, analysis and inventory of roadway assets (e.g., traffic signs and pavement condition).
@@ -66,13 +54,18 @@
     </p>
 </div>
 
+
+<script>
+    if (!supports_h264_baseline_video()){
+        document.getElementById('nomovie').setAttribute("style","display:block");
+    }
+</script>
+
+<div class="container">
     <!-- Site footer -->
-    <div class="footer">
-        <p>&copy; Company 2014</p>
-    </div>
+    <?php include 'includes/foot.php'; ?>
 
 </div> <!-- /container -->
-
 
 <!-- Bootstrap core JavaScript
 ================================================== -->

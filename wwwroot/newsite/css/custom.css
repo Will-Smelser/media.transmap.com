@@ -1,0 +1,47 @@
+.masthead{
+    padding-bottom:10px;
+}
+
+#logo{
+    padding:5px;
+    width:100%;
+}
+.topwrapper{
+    background-color:#f8981d;
+    border-top:solid #CCC 1px;
+    border-bottom:solid #CCC 3px;
+}
+.bgimage{
+    position:relative;
+    margin-top:20px;
+    border-top:solid #000 1px;
+    border-bottom:solid #000 1px;
+    width:100%;
+    overflow:hidden;
+}
+.bgimage #background{
+    width:100%;
+    position:absolute;
+    bottom:0px;
+
+}
+.iconselections{
+    text-align: center;
+}
+.iconselections img{
+
+}
+.wrap{
+    background-image: url("../images/blackbg.png");
+    border-radius: 5px;
+    margin-bottom:20px;
+    margin-top:20px;
+    padding:10px;
+    color:#FFF;
+    vertical-align: top;
+}
+.wrap p{
+    text-align: left;
+    display:inline-block;
+
+}
