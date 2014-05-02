@@ -21,7 +21,7 @@ if(empty($survey)){
 
 try{
 	
-	$project = new Project($project, $survey, $image);
+	$project = new Project($project, $survey, $image, 'http://default-environment-6keidqm34v.elasticbeanstalk.com/');
 	
 }catch(Exception $e){
 	echo $e->getMessage();

@@ -238,7 +238,6 @@
                     }
                 });
 
-                /*
                 //bind up down arrows for map
                 $(document).keydown(function(evt){
                     if(evt.keyCode == 38){
@@ -247,7 +246,6 @@
                         $('#backward').trigger('click');
                     }
                 });
-                */
             });
 		});
 	
