@@ -8,12 +8,13 @@
 ?>
 
 <div class="footer">
-    <h4>Transmap Headquarters</h4>
+    <h4>Transmap Corporation</h4>
     <p>
-        3366 Riverside Dr, St 103<br/>
+        3366 Riverside Dr., Suite 103<br/>
         Upper Arlington, OH 43221<br/>
-        (P) 877.263.5589 toll-free / 614.481.6799 local<br/>
-        (F) 614.481.4017<br/>
+        (P) 614.481.6799<br/>
+        (F) 614.481.4017
+
     </p>
-    <p>&copy; Transmap Headquarters 2014</p>
+    <p>&copy; Transmap 2014</p>
 </div>

@@ -23,11 +23,10 @@
     <h3>Corporate Headquarters</h3>
     <p>
         <a target="_blank" href="http://maps.google.com/?q=3366 Riverside Drive, Columbus Ohio, 43221">
-    3366 Riverside Drive<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;Suite 103<br>
-    Upper Arlington, OH  43221<br>
-    phone: (614) 481-6799<br>
-    fax: (614) 481-4017<br>
+            3366 Riverside Dr., Suite 103<br/>
+            Upper Arlington, OH 43221<br/>
+            (P) 614.481.6799<br/>
+            (F) 614.481.4017<br/>
             </a>
     </p>
     <hr/>
@@ -35,12 +34,10 @@
 
     <h3>Florida-Regional</h3>
     <p>
-
-    3001 N. Rocky Point Drive East<br>
-    &nbsp;&nbsp;&nbsp;&nbsp;Suite 200<br>
-    Tampa, FL  33607<br>
-    phone: (813) 286-6180<br>
-
+        3001 N. Rocky Point Dr. East<br/>
+        Suite 200<br/>
+        Tampa, FL 33607<br/>
+        (P): 813.286.6180<br/>
     </p>
     <hr/>
 

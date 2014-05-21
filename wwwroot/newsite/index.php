@@ -22,22 +22,21 @@
         <div class="col-lg-4">
             <h2>Our Company</h2>
             <p>
-                Transmap is a national provider of professional, technical, and management support services to the transportation industry.  The focus of Transmap’s services is directed towards city-owned and county-owned transportation systems in order to provide the highest quality infrastructure management solutions.
+                Transmap is a national provider of professional, technical, and management support services to the transportation industry.  Our services are directed towards city-owned and county-owned transportation systems in order to provide the highest quality infrastructure management solutions.
             </p>
             <p><a class="btn btn-primary" href="about.php" role="button">View details &raquo;</a></p>
         </div>
         <div class="col-lg-4">
             <h2>Our Services</h2>
             <p>
-                We have been collecting roadway assets for over 20 years with the ability to inventory many roadway assets that provide cost savings for our customers.
+                We have been collecting roadway assets and pavement condition date for over 20 years with our technologies.
             </p>
             <p><a class="btn btn-primary" href="services.php" role="button">View details &raquo;</a></p>
         </div>
         <div class="col-lg-4">
             <h2>Recent News</h2>
             <p>
-                We regularly update our Twitter and Facbook with our current projects and events.  Come here to learn about
-                current press relases and other links to new developments within the Transmap organization.
+                We regularly update our Twitter and Facebook with current projects and events.  Come here to learn about current press releases and developments within the Transmap organization.
             </p>
             <p><a class="btn btn-primary" href="news.php" role="button">View details &raquo;</a></p>
         </div>
