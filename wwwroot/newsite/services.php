@@ -44,9 +44,9 @@
 
 <div class="container">
 
+    <?php include 'includes/foot.php'; ?>
 
 </div> <!-- /container -->
-
 
 <!-- Bootstrap core JavaScript
 ================================================== -->
