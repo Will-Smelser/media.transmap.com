@@ -13,9 +13,16 @@
 
     <h1>Recent News</h1>
     <h3>Press Release</h3>
+    <p>
     <a href="http://www10.giscafe.com/nbc/articles/1/1263409/Transmap-Corporation-Supports-City-Santa-Barbara-Goal-Having-Efficient-Sign-Management">
         Santa Barbara Nighttime Sign Inspection Press Release
-    </a></p>
+    </a>
+    </p>
+    <p>
+        <a href="http://www10.giscafe.com/nbc/articles/view_article.php?articleid=1273595">
+            Hollywood Press Release
+        </a>
+    </p>
     <h3>Facebook</h3>
     <p style="max-width:150px"><a href="https://www.facebook.com/transmap/timeline" class="btn btn-block btn-social btn-facebook"><i class="fa fa-facebook"></i>Facebook</a></p>
     <h3>Twitter</h3>
