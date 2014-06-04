@@ -10,7 +10,7 @@
 <?php include 'includes/navigation.php'; ?>
 
 <div class="bgimage">
-    <img class="hidden-xs" id="background" src="images/street.jpg" />
+    <img class="hidden-xs" id="background" src="images/bg2.jpg" />
     <div class="container">
         <div style="min-height:325px" class="visible-md visible-lg"></div>
     </div>
