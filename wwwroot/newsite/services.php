@@ -165,6 +165,7 @@
             </div>
         </div>
     </div>
+    <div style="margin-top:10px"><img width="310" class="img-thumbnail" src="images/services/web-gis-onlin-logo.png" /></div>
 
 </div>
 
