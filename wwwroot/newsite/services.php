@@ -22,6 +22,74 @@
 <div class="container">
     <h1>Our Services</h1>
 
+
+    <div class="row">
+        <div class="col-lg-7">
+            <h2>NEW Laser Crack Measurement System (LCMS)</h2>
+            <p>Transmap’s ON-SIGHT vehicle is equipped with the newest Pavemetrics
+                Laser Crack Measurement System (LCMS), which uses laser line
+                projectors, high speed cameras, and advanced optics to acquire high
+                resolution 3D profiles of the road.</p>
+        </div>
+        <div class="col-lg-3">
+            <img src="images/services/large/lcms/Pavemetrics.png" class="img-thumbnail" />
+        </div>
+        <div class="col-lg-2">
+            <a  class="image-link" href="images/services/large/lcms/LCMS-Arrow-Van-Pic.png" target="_blank">
+                <img src="images/services/small/lcms/LCMS-Arrow-Van-Pic.png" class="img-thumbnail" />
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <p>
+            The 3D/2D images produced by the LCMS have the ability to show depths, rutting wheel paths, drop offs at the
+            edge of pavement, and depths of cracks not just widths. The roadway surface model is still in Beta format.
+            </p>
+        </div>
+    </div>
+    <div class="row text-center">
+        <div class="col-lg-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><b>LCMS 3D Images</b></div>
+                <div class="panel-body">
+                    <a  class="image-link" href="images/services/large/lcms/LCMS-3D-1.jpg" target="_blank">
+                        <img src="images/services/small/lcms/LCMS-3D-1.png"  />
+                    </a>
+                    <a  class="image-link" href="images/services/large/lcms/LCMS-3d-2.jpg" target="_blank" style="margin-left:20px">
+                        <img src="images/services/small/lcms/LCMS-3d-2.png"  />
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><b>LCMS Processing Suite</b></div>
+                <div class="panel-body">
+
+                    <a  class="image-link" href="images/services/large/lcms/LCMS-Processing-Suite-Screenshot.png" target="_blank">
+                        <img src="images/services/small/lcms/LCMS-Processing-Suite-Screenshot.png" />
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <p>
+            The International Roughness Index (IRI) and rutting data will be collected for the left wheel track, the right
+            wheel track, and the average of the two wheel tracks in a manner that meets all ASTM E950 standards.
+            These lasers will capture IRI data across 13.1 feet of the surface.
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <img src="images/services/large/lcms/LCMS_IRI_Rutting.jpg" class="img-thumbnail" />
+        </div>
+    </div>
+
+
     <div class="row">
         <div class="col-lg-6">
             <h2>ON-SIGHT™ Mobile Mapping</h2>
@@ -43,7 +111,9 @@
     </div>
 
     <div class="row">
-        <h2>Pavement Management</h2>
+        <div class="col-lg-12">
+            <h2>Pavement Management</h2>
+        </div>
         <div class="col-lg-4">
             <a class="image-link" href="images/services/large/pavement-mgt-mr-table.jpg" target="_blank">
                 <img src="images/services/small/pavement-mgt-mr-table.jpg" class="img-thumbnail" />
