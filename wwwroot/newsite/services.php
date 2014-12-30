@@ -100,10 +100,6 @@
                 <img src="images/services/small/on-sight-van-1.jpg" class="img-thumbnail" />
             </a>
 
-            <a  class="image-link" href="images/services/large/on-sight-van-2.jpg" target="_blank">
-                <img src="images/services/small/on-sight-van-2.jpg" class="img-thumbnail mleft" />
-            </a>
-
             <a  class="image-link" href="images/services/large/on-sight-lidar.jpg" target="_blank">
                 <img src="images/services/small/on-sight-lidar.jpg" class="img-thumbnail mleft" />
             </a>
