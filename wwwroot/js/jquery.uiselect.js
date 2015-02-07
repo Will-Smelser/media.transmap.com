@@ -2,7 +2,7 @@
  * Use this however you feel.  If you have improvement, please
  * let me know.
  * 
- * @example $('.select-wrapper).uiselect();
+ * @example $('.select-wrapper').uiselect();
  * @requires jquery ui javascript and css
  * 
  * @author Will Smelser (willsmelser@gmail.com)
