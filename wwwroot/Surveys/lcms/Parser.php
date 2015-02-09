@@ -31,7 +31,7 @@ class Parser{
 
     private $cracks = array();
 
-    private static $rootNodeNames = ['RoadSectionInfo','GPSInformation','CrackInformation'];
+    private static $rootNodeNames = array('RoadSectionInfo','GPSInformation','CrackInformation');
 
     //image width and height
     private $width;
