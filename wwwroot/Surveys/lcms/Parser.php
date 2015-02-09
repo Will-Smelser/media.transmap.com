@@ -43,8 +43,8 @@ class Parser{
     //calculated once RoadSectionInfo is parsed
     private $factor;
 
-    private $offsety = 5;
-    private $offsetx = 10;
+    private $offsety = 10;
+    private $offsetx = 2;
 
     function __construct($file, $imageWidth = 1024, $imageHeight = 2500){
         $this->file = $file;
@@ -64,11 +64,9 @@ class Parser{
             $name = trim($reader->name);
             $method = "parse_$name";
             if(method_exists($this,$method)){
-                echo "var cracks = [\n";
                 call_user_func(array($this,$method),$reader);
-                echo "];\n";
             }elseif(!empty($name))
-                echo "Method does not exist: $method<br/>";
+                throw new Exception("Missing method '$name'");
         }
 
 
@@ -90,8 +88,7 @@ class Parser{
         $this->length = $node->SectionLength_m;
 
         //now we have enough to calculate a factor
-        $this->factor =(1/((($this->length * 1.0 ) / ($this->width * 1.0))*1000.0))*2.4475;
-        //echo "length: $this->length, width: $this->width, factor: ".$this->factor;
+        $this->factor = 1.0/(($this->length / $this->height) * 1000.0); // gives px / mm
     }
 
     public function parse_GPSInformation($reader){
@@ -103,7 +100,7 @@ class Parser{
     }
 
     public function parse_CrackInformation($reader){
-
+        echo "var cracks = [\n";
 
         //skip to the Crack node
         while($reader->read() && $reader->name !== 'Crack');
@@ -114,9 +111,11 @@ class Parser{
             $node = simplexml_import_dom($doc->importNode($reader->expand(),true));
 
             $id = $node->CrackID->__toString();
+            $depth = $node->WeightedDepth->__toString();
+            $width = $node->WeightedWidth->__toString();
 
             if(count($node->Node) > 0)
-                echo "{$comma1}";
+                echo "{$comma1}{path:";
 
             $first = true;
             $key = 0;
@@ -139,7 +138,7 @@ class Parser{
                 $first = false;
             }
 
-            echo '"';
+            echo "\",id:\"$id\",depth:$depth,width:$width}";
 
             if(count($node->Node) > 0)
                 echo "\n\t";
@@ -153,5 +152,6 @@ class Parser{
         }
 
         //echo "finished reading, made ".count($this->cracks)." elements<br/>";
+        echo "\n];";
     }
 }
