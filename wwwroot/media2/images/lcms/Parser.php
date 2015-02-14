@@ -33,6 +33,9 @@ class Parser{
 
     private static $rootNodeNames = array('RoadSectionInfo','GPSInformation','CrackInformation');
 
+    private $rotated;
+    private $ratio;
+
     //image width and height
     private $width;
     private $height;
@@ -46,10 +49,12 @@ class Parser{
     private $offsety = 10;
     private $offsetx = 2;
 
-    function __construct($file, $imageWidth = 1024, $imageHeight = 2500){
-        $this->file = $file;
-        $this->width  = $imageWidth;
-        $this->height = $imageHeight;
+    function __construct($file, $imageWidth = 1024, $imageHeight = 2500, $ratio=1.0, $rotated=true){
+        $this->file    = $file;
+        $this->width   = $imageWidth;
+        $this->height  = $imageHeight;
+        $this->rotated = $rotated;
+        $this->ratio   = $ratio;
 
         $reader = new XMLReader();
         $reader->open($this->file);
@@ -100,11 +105,11 @@ class Parser{
     }
 
     private function calcX($el){
-        return $el->X * $this->factor + $this->offsetx;
+        return $el->X * $this->factor * $this->ratio + $this->offsetx;
     }
 
     private function calcY($el){
-        return $this->height - $el->Y * $this->factor - $this->offsety;
+        return $this->height - $el->Y * $this->factor * $this->ratio - $this->offsety;
     }
 
     public function parse_CrackInformation($reader){
@@ -127,8 +132,8 @@ class Parser{
             $path = '';
             $posCh = 'M';
             foreach($node->Node as $el){
-                $x = $this->calcX($el);
-                $y = $this->calcY($el);
+                $x = ($this->rotated) ? $this->height - $this->calcY($el): $this->calcX($el);
+                $y = ($this->rotated) ? $this->calcX($el)                : $this->calcY($el);
                 $path .= "$posCh $x $y";
                 $posCh = 'L';
             }

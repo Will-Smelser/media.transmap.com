@@ -18,14 +18,14 @@
 
     <script src="/js/cookie.js" ></script>
 
-    <script type="text/javascript" src="../../js/raphael-min.js"></script>
+    <script type="text/javascript" src="/js/raphael-min.js"></script>
 
 
 </head>
 <body>
 <div class="container" id="container">
 
-    <?php include '../../includes/html/header.html'; ?>
+    <?php //include '../../includes/html/header.html'; ?>
 
     <div style="position: relative;z-index:9999">
         <div id="zoomIn" style="cursor:pointer;width:20px;height:20px;background-color:#FFF;border:solid black 5px;font-size:24px;position:absolute;top:25px;left:20px"><b>+</b></div>
@@ -37,18 +37,20 @@
     <script>
     <?php
     include 'Parser.php';
-    $parser = new Parser('data/LcmsResult_000019.xml');
+    include 'Lookup.php';
+
+    $parser = new Parser(Lookup::findXml('osceola',10315,2,0),1024,2500,.395,true);
 
     $parts = explode('/',$_SERVER['REQUEST_URI']);
 
     //move from right
     ?>
 
-    var width = <?php echo $parser->getPageWidth() ?>;
-    var height =  <?php echo $parser->getPageHeight() ?>;
+    var height = 416;
+    var width =  1000;
     var paper = Raphael("paper", width, height);
 
-    paper.image('http://media2.transmap.com/images/LCMS/EMPO/100514/1/LcmsResult_OverlayInt_000019.jpg',0,0,width,height);
+    paper.image('http://media.transmap.local/media2/images/lcms/images/image.php?path=Osceola/010315/2/000000&maxWidth=1000',0,0,width,height);
 
     paper.setViewBox(0, 0, width, height );
 
@@ -99,5 +101,5 @@
     </script>
 
 <?php
-include '../../includes/html/footer.html';
+//include '../../includes/html/footer.html';
 ?>

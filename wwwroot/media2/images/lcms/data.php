@@ -5,9 +5,10 @@
  * Date: 2/14/15
  * Time: 3:28 PM
  */
-error_reporting(E_ALL);
+error_reporting(0);
 
 include 'Parser.php';
+include 'Lookup.php';
 
 header('Content-Type: application/json');
 
@@ -28,38 +29,15 @@ if(count($parts) < 4){
 $project = array_shift($parts);
 $id      = array_shift($parts);
 $sub     = array_shift($parts);
-$instance= 'LcmsResult_'.array_shift($parts).'.xml';
+$instance= array_shift($parts);
 
-//first find the projectName, correct case
-if(!file_exists($project)){
-    foreach(scandir('..') as $file){
-        if(strtolower($file) === $project){
-            $project = $file;
-            break;
-        }
-    }
-}
+$loadFile = Lookup::findXml($project,$id,$sub,$instance);
+//$loadFile = $base.'/'.$instance;
 
-
-//find the correct filename, correct case
-$base = "$project/$id/$sub";
-if(!file_exists($base)){
-    if(file_exists($base)){
-        foreach(scandir($base) as $file){
-            if(strtolower($file) === $instance){
-                $instance = $file;
-                break;
-            }
-        }
-    }
-}
-
-$loadFile = $base.'/'.$instance;
-
-if(!file_exists($loadFile)){
+if(!$loadFile){
     echo "[]";
     http_response_code(404);
     exit;
 }
 
-$parser = new Parser($loadFile);
+$parser = new Parser($loadFile,1024,2500,.2);

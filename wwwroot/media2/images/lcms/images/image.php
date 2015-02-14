@@ -68,7 +68,7 @@ if($loadfile){
 
     if($image){
         $dst = imagecreatetruecolor($dimX,$dimY);
-        $image = imagerotate($image,90.0,0);
+        $image = imagerotate($image,-90.0,0);
 
         //again, we will be rotating things, so x and y are flipped now
         imagecopyresampled($dst,$image,0,0,0,0,$dimX,$dimY,$size[1],$size[0]);
