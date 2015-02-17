@@ -77,4 +77,25 @@ class Lookup {
 
         return realpath(__DIR__."/$projectName/$projectId/$projectSub/$xmlName");
     }
+
+    public static function listProjects(){
+        $result = self::listDirs(__DIR__);
+        unset($result['images']);
+        return $result;
+    }
+
+    public static function listDirs($path){
+        $result = array();
+
+        if(!is_dir($path)) return $result;
+
+        foreach(scandir($path) as $file){
+            if($file[0] === '.')
+                continue;
+
+            if(is_dir($path.'/'.$file))
+                $result[$file] = $file;
+        }
+        return $result;
+    }
 }
