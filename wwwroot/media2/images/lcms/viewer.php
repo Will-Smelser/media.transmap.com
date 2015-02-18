@@ -18,10 +18,11 @@
     <link rel="stylesheet" href="/css/uiselect.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="/theme-jquery/jquery-ui-1.9.2.custom/css/custom-theme/jquery-ui-1.9.2.custom.css" type="text/css" media="screen" />
 
-    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
-    <script src="/theme-jquery/jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js" ></script>
-    <script src="/js/jquery.uiselect.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript" src="/theme-jquery/jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js" ></script>
+    <script type="text/javascript" src="/js/jquery.uiselect-lcms.js"></script>
     <script type="text/javascript" src="/js/raphael-min.js"></script>
+    <script type="text/javascript" src="/js/preload.js"></script>
 
 
     <style>
@@ -57,6 +58,17 @@
             margin: 0px 100px;
             padding:20px;
         }
+
+        .ui-select input, .ui-select span:first-child{
+            width:100%;
+        }
+
+        /* remove the rounded corners to match UI already in place */
+        * {
+            -webkit-border-radius: 0 !important;
+            -moz-border-radius: 0 !important;
+            border-radius: 0 !important;
+        }
     </style>
 
 </head>
@@ -66,7 +78,7 @@
         <div class="row">
             <div class="col-md-4">
                 <form>
-                    <div class="form-group">
+                    <div class="form-group" id="form-projectId">
                         <label for="projectId">Project ID</label>
                         <select id="projectId"></select>
                     </div>
@@ -82,9 +94,9 @@
             </div>
             <div class="col-md-4">
                 <form>
-                    <div class="form-group">
+                    <div class="form-group" id="form-instance">
                         <label for="instance">Instance</label><br/>
-                        <input type="text" id="instance"/>
+                        <input class="form-control" type="text" id="instance"/>
                     </div>
                 </form>
             </div>
@@ -157,6 +169,91 @@
 
     var info = hashParser.parse();
 
+    var projectDataCache = null;
+
+    var resetProjectIdSelect = function(){
+        var projectId = hashParser.get("project");
+
+        $.getJSON("service.php?action=projectData&project="+info.project).done(function(data){
+            $('#projectId').empty();
+
+            for(var x in data){
+                var selected = (x === projectId) ? 'selected' : null;
+                $('#projectId').append('<option data-subs=\''+JSON.stringify(data[x])+'\' value='+x+' '+selected+'>'+x+'</option>');
+            }
+            $('#projectId').uiselect('refresh');
+            hashParser.add('projectId',$('#projectId option:selected').val());
+            resetSubIdSelect();
+        }).fail(function(jqXHR){
+            hashParser.remove('project');
+            hashParser.remove('subId');
+            hashParser.remove('instance');
+
+            $('#subId').empty().uiselect('refresh');
+            $("#instance").val('?????');
+
+            $("#form-projectId span:first").attr('style','border-color:#a94442');
+
+            openErrorDialog('Lookup Failure - '+jqXHR.status,
+                'Failed to lookup project data.',
+                '<ul><li>Project: '+projectId+'<li>'+jqXHR.responseText,
+                function(){$("#form-projectId span:first").attr('style','');}
+            );
+        });
+    };
+
+    var resetSubIdSelect = function(){
+
+        var subId = hashParser.get("subId");
+        var data = JSON.parse($('#projectId option:selected').attr('data-subs'));
+
+        $('#subId').empty();
+        for(var x in data){
+            var selected = (x === subId) ? 'selected' : '';
+            $('#subId').append('<option value='+x+' '+selected+'>'+x+'</option>');
+        }
+
+        $('#projectId').uiselect('refresh');
+        $('#subId').uiselect('refresh');
+
+        hashParser.add('subId',$('#subId option:selected').val());
+        resetInstance();
+    };
+
+    var data = {};
+    var resetInstance = function(){
+        var path = hashParser.get('project')+"/"+hashParser.get('projectId')+"/"+hashParser.get('subId');
+        if(typeof data[path] === "undefined"){
+            $.getJSON("service.php?action=summary&path="+path).done(function(info){
+                data[path]=info;
+
+                if(info.min >= 0){
+                    $("#instance").val(info.min);
+                    hashParser.add('instance',info.min);
+                }else
+                    $("#instance").val('?????');
+            }).fail(function(jqXHR){
+                hashParser.remove('instance');
+                $("#instance").val('?????');
+                $("#form-instance").addClass('has-error');
+                openErrorDialog('Lookup Failure - '+jqXHR.status,
+                    'Failed to lookup xml documents for given project data.',
+                    '<ul><li>Project Path: '+path+'<li>'+jqXHR.responseText,
+                    function(){$("#form-instance").removeClass('has-error');}
+                );
+            });
+        }
+    }
+
+    var openErrorDialog = function(title,message,detail,cb){
+        var d = $('#dialogErr');
+        d.dialog("option","title",title);
+        $('#dialogErrBody').html(message);
+        $('#dialogErrDetail').html(detail);
+        d.dialog("open");
+        d.on( "dialogclose", cb);
+    }
+
     var init = function(){
         info = hashParser.parse();
 
@@ -171,38 +268,8 @@
         var projectId = hashParser.get('projectId');
         var subId = hashParser.get('subId');
 
-        //look project name information up: project subId and records
-        $.getJSON("service.php?action=projectData&project="+info.project).done(function(data){
-            //clear everything
-            $('#projectId').empty().uiselect('refresh');
-            $('#subId').empty().uiselect('refresh');
+        resetProjectIdSelect();
 
-            for(var x in data){
-                var selected = (x === projectId) ? 'selected' : null;
-                $('#projectId').append('<option value='+x+' '+selected+'>'+x+'</option>');
-
-                for(var y in data[x]){
-                    var selected = (y === subId) ? 'selected' : null;
-                    $('#subId').append('<option value='+y+' '+selected+'>'+y+'</option>');
-                }
-            }
-            $('#projectId').uiselect('refresh');
-            $('#subId').uiselect('refresh');
-
-            projectId = $('#projectId option:selected').text()
-            subId = $('#subId option:selected').text()
-
-            hashParser.add('projectId',projectId);
-            hashParser.add('subId',subId);
-
-            //have to set the instance
-            $.getJSON("service.php?action=xml&path="+info.project+"/"+projectId+"/"+subId)
-            .done(function(xml){
-                console.log(xml);
-            });
-
-            //we want to load the map
-        });
 
 
         var nop = $('#noProject');
@@ -234,10 +301,14 @@
         //bind drop downs
         $('#projectId').change(function(){
             hashParser.add('projectId',$('#projectId option:selected').text());
-            //var subData =
+            hashParser.remove('subId');
+            resetSubIdSelect();
         });
+
         $('#subId').change(function(){
             hashParser.add('subId',$('#subId option:selected').text());
+            hashParser.remove('instance');
+            resetInstance();
         });
 
         //only allow digits for input box
@@ -252,6 +323,10 @@
             if (!(a.indexOf(k)>=0)){
                 e.preventDefault();
             }
+        });
+
+        $("#dialogErr").dialog({
+            autoOpen:false, width:500, modal:true
         });
 
         if(info == null || !info.project){
@@ -316,5 +391,9 @@
     */
     </script>
 
+    <div id="dialogErr" title="Error" style="display: none">
+        <p id="dialogErrBody"></p>
+        <p id="dialogErrDetail" class="bg-danger"></p>
+    </div>
 </div>
 </body>

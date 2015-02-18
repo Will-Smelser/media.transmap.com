@@ -82,6 +82,48 @@ switch(strtolower($_GET['action'])){
         }
         echo json_encode($result);
         break;
+    case 'summary':
+        if(!isset($_GET['path'])){
+            http_response_code(400);
+            echo "Error.  Missing 'path' parameter.";
+            exit;
+        }
+
+        $path = processPath($_GET['path']);
+
+        $result = array('min'=>null,'max'=>null);
+        foreach(scandir($path) as $file){
+            if($file[0] === '.') continue;
+            preg_match("/(?P<digits>\d+)\.xml/",$file,$matches);
+
+            if(isset($matches['digits'])){
+                if($result['min'] === null || $result['min'] > $matches['digits'] * 1){
+                    $result['min'] = $matches['digits'] * 1;
+                    break;
+                }
+            }
+        }
+
+        foreach(scandir($path,SCANDIR_SORT_DESCENDING) as $file){
+            if($file[0] === '.') continue;
+            preg_match("/(?P<digits>\d+)\.xml/",$file,$matches);
+
+            if(isset($matches['digits'])){
+                if($result['max'] === null || $result['max'] < $matches['digits'] * 1){
+                    $result['max'] = $matches['digits'] * 1;
+                    break;
+                }
+            }
+        }
+
+        if($result['min'] === null && $result['max'] === null){
+            http_response_code(500);
+            echo "Error. Failed to calculate min/max.";
+            exit;
+        }
+
+        echo json_encode($result);
+        break;
     case 'dims':
         $path = processPath($_GET['path']);
 
