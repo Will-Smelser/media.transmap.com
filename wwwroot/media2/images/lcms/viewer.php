@@ -32,18 +32,10 @@
         #paper{
             overflow:hidden;
             border:solid black 2px;
+            margin: 0px auto;
         }
-        #paperControls{
-            position: absolute;
-            z-index:9999
-        }
-        #paperControls .zoom{
-            cursor:pointer;
-            width:20px;
-            height:20px;
-            background-color:#FFF;
-            border:solid black 5px;
-            font-size:24px;
+        .data-container{
+            margin:0px auto;
         }
         #noProject{
             display: none;
@@ -57,6 +49,33 @@
             background-color: #FFF;
             margin: 0px 100px;
             padding:20px;
+        }
+        #goBtn{
+            position:absolute;right:0px;top:0px;
+        }
+        .paper-nav{
+            position:absolute;
+            top:0px;
+            z-index: 9999;
+        }
+        .paper-nav div{
+            position: relative;
+            left:20px;
+            width:20px;
+            height:20px;
+            border:solid #333 2px;
+            background-color: #FFF;
+            cursor: pointer;
+        }
+        .paper-nav .plus{
+            top:20px;
+        }
+        .paper-nav .minus{
+            top:30px;
+        }
+        .data-container{
+            max-height: 300px;
+            overflow-y: auto;
         }
 
         .ui-select input, .ui-select span:first-child{
@@ -96,7 +115,11 @@
                 <form>
                     <div class="form-group" id="form-instance">
                         <label for="instance">Instance</label><br/>
-                        <input class="form-control" type="text" id="instance"/>
+                        <div style="padding-right: 60px; position: relative;">
+                            <input class="form-control" type="text" id="instance"/>
+                            <button id="goBtn" type="button" class="btn btn-primary">Go</button>
+                        </div>
+
                     </div>
                 </form>
             </div>
@@ -106,13 +129,8 @@
 
 <div class="container">
     <div id="main" style="display:none">
-        <div id="paperControls">
-            <div>
-                <div id="zoomIn" class="zoom"><b>+</b></div>
-                <div id="zoomOut" class="zoom"><b>-</b></div>
-            </div>
-        </div>
-        <div id="paper"></div>
+        <div id="paper" class="paper"></div>
+        <div id="data" class="data-container"></div>
     </div>
     <div id="noProject" style="display: none">
             <p id="noProjectMsg" class="bg-danger" style="display: none"></p>
@@ -163,18 +181,16 @@
         }
     }
 
-    var current = null;
-    var projects = [];
-    var dims = null;
+
 
     var info = hashParser.parse();
+    var MAIN_WIDTH = 800;
 
-    var projectDataCache = null;
+    //initializes the project id selector
+    var resetProjectIdSelect = function(project){
+        var projectId = hashParser.get("projectId");
 
-    var resetProjectIdSelect = function(){
-        var projectId = hashParser.get("project");
-
-        $.getJSON("service.php?action=projectData&project="+info.project).done(function(data){
+        $.getJSON("service.php?action=projectData&project="+project).done(function(data){
             $('#projectId').empty();
 
             for(var x in data){
@@ -185,15 +201,19 @@
             hashParser.add('projectId',$('#projectId option:selected').val());
             resetSubIdSelect();
         }).fail(function(jqXHR){
+            //cleanup the url
             hashParser.remove('project');
             hashParser.remove('subId');
             hashParser.remove('instance');
 
+            //reset downstream inputs
             $('#subId').empty().uiselect('refresh');
             $("#instance").val('?????');
 
+            //show the error location
             $("#form-projectId span:first").attr('style','border-color:#a94442');
 
+            //give feedback to user about the error
             openErrorDialog('Lookup Failure - '+jqXHR.status,
                 'Failed to lookup project data.',
                 '<ul><li>Project: '+projectId+'<li>'+jqXHR.responseText,
@@ -217,33 +237,180 @@
         $('#subId').uiselect('refresh');
 
         hashParser.add('subId',$('#subId option:selected').val());
+
         resetInstance();
     };
 
-    var data = {};
     var resetInstance = function(){
         var path = hashParser.get('project')+"/"+hashParser.get('projectId')+"/"+hashParser.get('subId');
-        if(typeof data[path] === "undefined"){
-            $.getJSON("service.php?action=summary&path="+path).done(function(info){
-                data[path]=info;
 
-                if(info.min >= 0){
-                    $("#instance").val(info.min);
-                    hashParser.add('instance',info.min);
-                }else
-                    $("#instance").val('?????');
-            }).fail(function(jqXHR){
-                hashParser.remove('instance');
+
+        $.getJSON("service.php?action=summary&path="+path).done(function(info){
+            if(hashParser.get('instance') > info.min && hashParser.get('instance') < info.max){
+                $("#instance").val(hashParser.get('instance'));
+                $('#goBtn').trigger('click');
+            }else if(info.min >= 0){
+                $("#instance").val(info.min);
+                hashParser.add('instance',info.min);
+                $('#goBtn').trigger('click');
+            }else
                 $("#instance").val('?????');
-                $("#form-instance").addClass('has-error');
-                openErrorDialog('Lookup Failure - '+jqXHR.status,
-                    'Failed to lookup xml documents for given project data.',
-                    '<ul><li>Project Path: '+path+'<li>'+jqXHR.responseText,
-                    function(){$("#form-instance").removeClass('has-error');}
-                );
-            });
-        }
+        }).fail(function(jqXHR){
+            hashParser.remove('instance');
+            $("#instance").val('?????');
+            $("#form-instance").addClass('has-error');
+            openErrorDialog('Lookup Failure - '+jqXHR.status,
+                'Failed to lookup xml documents for given project data.',
+                '<ul><li>Project Path: '+path+'<li>'+jqXHR.responseText,
+                function(){$("#form-instance").removeClass('has-error');}
+            );
+        });
     }
+
+    var drawNavPanel = function(paper){
+        var width = paper.width;
+        var height = paper.height;
+        var initWidth = width;
+        var initHeight = height;
+
+        var $svg = $(paper.canvas);
+
+        var $cloned = $('#paper-nav').clone();
+        $svg.before($cloned);
+
+        //also add the div data element
+        $svg.after('<div class="data-raw"></div>')
+
+        $cloned.show();
+
+        var zoom = function(dir){
+            width = width - 100 * dir;
+            height = height - 100 * dir;
+
+            //reset and sow error
+            if(width <= 0 || height <= 0){
+                paper.setViewBox(0,0,initWidth,initHeight,false);
+                width = initWidth;
+                height = initHeight;
+                openErrorDialog('Cannot Zoom','Zoom limits reached.','',function(){console.log('no op');});
+            }
+            paper.setViewBox(0,0,width,height,false);
+        }
+
+        //bind clicks
+        $cloned.find('.plus').click(function(){zoom(1.0); });
+        $cloned.find('.minus').click(function(){zoom(-1.0);});
+    }
+
+    var drawPath = function(paper,pathData, $row){
+        var path = paper.path(pathData.path);
+        path.attr("stroke-width", "10");
+        path.attr("opacity",0);
+        path.data("with",pathData.width);
+        path.data("height",pathData.height);
+
+        path.hover(function(){
+            this.g = path.glow({
+                color: '#ff0',
+                width: 15
+            });
+        },function(){
+            this.g.remove();
+        });
+        path.click(function(){
+            var $container = $(paper.canvas.parentElement).parent();
+            $container.find('tr').removeClass('success');
+            $row.addClass('success');
+
+            //scroll into view
+            var dataContainer = $container.find('.data-container');
+            dataContainer.scrollTop(0);
+
+            var containerTop = dataContainer.offset().top;
+            var rowTop = $row.offset().top;
+            var diff = rowTop-containerTop;
+
+            console.log(containerTop,rowTop);
+
+            dataContainer.animate({scrollTop:diff});
+        });
+    };
+
+    var addData = function(pathData){
+        var $row = $(document.createElement('tr'));
+        var $td  = $(document.createElement('td'));
+        var $th  = $(document.createElement('th'));
+
+        var entry = $row
+            .append($th.clone().html(pathData.id))
+            .append($td.clone().html(pathData.width))
+            .append($td.clone().html(pathData.depth));
+
+        return entry;
+    }
+
+    var loadLcms = function(number,$target){
+        var path = hashParser.get('project')+'/'+hashParser.get('projectId')+'/'+hashParser.get('subId');
+
+        $.getJSON("service.php?action=dims&path="+path).done(function(info){
+            //x and y are reversed because the images have to get rotated
+            var x = info[1];
+            var y = info[0];
+
+            var ratio  = (MAIN_WIDTH * 1.0) / (x * 1.0);
+            var height = ratio * y;
+
+            path=path+"/"+number;
+
+            $.getJSON("data.php?path="+path+'&ratio='+ratio).done(function(cracks){
+
+                $('#paper').animate({height:height});
+                $('#paper').animate({width:MAIN_WIDTH});
+
+                $target.empty();
+
+                var paper = Raphael($target.attr('id'), MAIN_WIDTH, height);
+                paper.image('images/image.php?path='+path+'&maxWidth='+MAIN_WIDTH,0,0,MAIN_WIDTH,height);
+
+                drawNavPanel(paper);
+
+                //add a container for the data
+                //var $container = $(paper.canvas.parentElement);
+                var $container = $('#data').slideUp().width(paper.width);
+                var $table = $(document.createElement('table')).attr('class','table table-hover');
+                var $thead = $(document.createElement('thead'));
+                var $tbody = $(document.createElement('tbody'));
+                var $row   = $(document.createElement('tr'));
+                var $th    = $(document.createElement('th'));
+
+                $container.find('table').remove();
+
+                $table.append($thead);
+                var header = $row.clone()//.width(paper.width)
+                    .append($th.clone().html('ID'))
+                    .append($th.clone().html('Width'))
+                    .append($th.clone().html('Depth'));
+                $thead.append(header);
+                $container.append($table.append($thead).append($tbody));
+
+                //$thead.width(paper.width);
+
+                for(var x in cracks){
+                    (function(data){
+                        var row = addData(data);
+                        $tbody.append(row);
+                        drawPath(paper,data,row);
+                    })(cracks[x]);
+                }
+
+                $container.slideDown();
+            }).fail(function(jqXHR){
+                console.log('hello');
+
+            });
+        });
+
+    };
 
     var openErrorDialog = function(title,message,detail,cb){
         var d = $('#dialogErr');
@@ -265,10 +432,11 @@
         }
 
         //we have info in hash tags
+        var project = hashParser.get('project');
         var projectId = hashParser.get('projectId');
         var subId = hashParser.get('subId');
 
-        resetProjectIdSelect();
+        resetProjectIdSelect(project);
 
 
 
@@ -283,11 +451,13 @@
         //setup the drop downs
         $("select").uiselect();
 
+        //set the width
+        $('#paper').width(MAIN_WIDTH);
+
         //get the document dimensions
         $.getJSON("service.php?action=projects")
             .done(function(data){
                 for(var p in data){
-                    projects.push(p);
                     $('#projectSelector').append('<option value='+p+'>'+p+'</option>');
                 }
                 $('#projectSelector').uiselect('refresh');
@@ -311,6 +481,7 @@
             resetInstance();
         });
 
+
         //only allow digits for input box
         $('#instance').keypress(function(e){
             var a = [];
@@ -323,6 +494,11 @@
             if (!(a.indexOf(k)>=0)){
                 e.preventDefault();
             }
+        });
+
+        $('#goBtn').click(function(){
+            hashParser.add('instance',$('#instance').val());
+            loadLcms($('#instance').val(),$('#paper'));
         });
 
         $("#dialogErr").dialog({
@@ -394,6 +570,11 @@
     <div id="dialogErr" title="Error" style="display: none">
         <p id="dialogErrBody"></p>
         <p id="dialogErrDetail" class="bg-danger"></p>
+    </div>
+
+    <div id="paper-nav" class="paper-nav" style="display: none">
+        <div class="plus ui-icon ui-icon-plus"></div>
+        <div class="minus ui-icon ui-icon-minus"></div>
     </div>
 </div>
 </body>

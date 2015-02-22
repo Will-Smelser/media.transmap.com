@@ -17,7 +17,7 @@ function processPath($path){
 
     if(count($parts) < 3){
         http_response_code(400);
-        echo "Error.  Invalid 'path' parameter.  Expected project/id/subId";
+        echo "Invalid 'path' parameter.  Expected project/id/subId";
         exit;
     }
 
@@ -36,7 +36,7 @@ function processPath($path){
 
     if(!is_dir($path)){
         http_response_code(404);
-        echo "Error.  No project data found.";
+        echo "No project data found.";
         exit;
     }
 
@@ -51,7 +51,7 @@ switch(strtolower($_GET['action'])){
     case 'projectdata':
         if(!isset($_GET['project'])){
             http_response_code(400);
-            echo "Error.  Missing 'project' parameter.";
+            echo "Missing 'project' parameter.";
             exit;
         }
 
@@ -67,7 +67,7 @@ switch(strtolower($_GET['action'])){
     case 'xml':
         if(!isset($_GET['path'])){
             http_response_code(400);
-            echo "Error.  Missing 'path' parameter.";
+            echo "Missing 'path' parameter.";
             exit;
         }
 
@@ -85,7 +85,7 @@ switch(strtolower($_GET['action'])){
     case 'summary':
         if(!isset($_GET['path'])){
             http_response_code(400);
-            echo "Error.  Missing 'path' parameter.";
+            echo "Missing 'path' parameter.";
             exit;
         }
 
@@ -118,13 +118,19 @@ switch(strtolower($_GET['action'])){
 
         if($result['min'] === null && $result['max'] === null){
             http_response_code(500);
-            echo "Error. Failed to calculate min/max.";
+            echo "Failed to calculate min/max.";
             exit;
         }
 
         echo json_encode($result);
         break;
     case 'dims':
+        if(!isset($_GET['path'])){
+            http_response_code(400);
+            echo "Missing 'path' parameter.";
+            exit;
+        }
+
         $path = processPath($_GET['path']);
 
         $size = null;
@@ -138,7 +144,7 @@ switch(strtolower($_GET['action'])){
 
         if(!$size){
             http_response_code(404);
-            echo "Error.  Failed to lookup valid image.";
+            echo "Failed to lookup valid image.";
             exit;
         }
 
@@ -147,7 +153,7 @@ switch(strtolower($_GET['action'])){
         break;
     default:
         http_response_code(400);
-        echo "Error.  No parameter '{$_GET['action']} supported.";
+        echo "No parameter '{$_GET['action']} supported.";
         break;
 }
 ?>

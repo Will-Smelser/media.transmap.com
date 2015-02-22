@@ -12,7 +12,7 @@ include 'Lookup.php';
 
 header('Content-Type: application/json');
 
-if(!isset($_GET['path'])){
+if(!isset($_GET['path']) || !isset($_GET['ratio'])){
     echo '[]';
     http_response_code(404);
     exit;
@@ -40,4 +40,18 @@ if(!$loadFile){
     exit;
 }
 
-$parser = new Parser($loadFile,1024,2500,.2);
+//need to get the image dimensions
+$imgFile = Lookup::findImage($project,$id,$sub,$instance);
+$size = getimagesize($imgFile);
+
+if(!$size){
+    http_response_code(404);
+    echo "Failed to lookup valid image.";
+    exit;
+}
+
+//var_dump($size);
+
+//$parser = new Parser($loadFile,1024,2500,$_GET['ratio']*1.0);
+
+$parser = new Parser($loadFile,$size[0],$size[1],$_GET['ratio']*1.0);

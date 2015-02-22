@@ -46,7 +46,7 @@ class Parser{
     //calculated once RoadSectionInfo is parsed
     private $factor;
 
-    private $offsety = 10;
+    private $offsety = 0;
     private $offsetx = 2;
 
     function __construct($file, $imageWidth = 1024, $imageHeight = 2500, $ratio=1.0, $rotated=true){
@@ -113,7 +113,7 @@ class Parser{
     }
 
     public function parse_CrackInformation($reader){
-        echo "var cracks = [\n";
+        echo "[\n";
 
         //skip to the Crack node
         while($reader->read() && $reader->name !== 'Crack');
@@ -152,6 +152,6 @@ class Parser{
         }
 
         //echo "finished reading, made ".count($this->cracks)." elements<br/>";
-        echo "\n];";
+        echo "\n]";
     }
 }
