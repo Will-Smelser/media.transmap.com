@@ -520,6 +520,7 @@
                 var down = false;
                 var mTargetX = $mTargetOffset.top;
                 var mTargetY = $mTargetOffset.left;
+                $mTarget.off();
                 $mTarget.mousedown(function(evt) {
                     down = true;
                     $(this).mousemove(function(dragEvt){
