@@ -1,5 +1,21 @@
 <?php
 
+if(!function_exists('http_response_code')){
+    function http_response_code($code){
+        switch($code){
+            case 400:
+                header("HTTP/1.1 400 Bad Request");
+                break;
+            case 404:
+                header("HTTP/1.1 404 Not Found");
+                break;
+            case 500:
+                header("HTTP/1.1 500 Internal Server Error");
+                break;
+        }
+    };
+}
+
 if(!isset($_GET['action'])){
     http_response_code(400);
     echo "Error.  Missing 'action' parameter.";
@@ -62,6 +78,12 @@ switch(strtolower($_GET['action'])){
         foreach($ids as $id)
             $ids[$id] = Lookup::listDirs(__DIR__."/$project/$id");
 
+        if(count($ids) <= 0){
+            http_response_code(404);
+            echo "[]";
+            exit;
+        }
+
         echo json_encode($ids);
         break;
     case 'xml':
@@ -104,7 +126,7 @@ switch(strtolower($_GET['action'])){
             }
         }
 
-        foreach(scandir($path,SCANDIR_SORT_DESCENDING) as $file){
+        foreach(scandir($path,1) as $file){
             if($file[0] === '.') continue;
             preg_match("/(?P<digits>\d+)\.xml/",$file,$matches);
 

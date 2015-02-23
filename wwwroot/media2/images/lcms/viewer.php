@@ -29,13 +29,27 @@
         #main{
             position:relative;
         }
-        #paper{
+        .paper{
             overflow:hidden;
             border:solid black 2px;
             margin: 0px auto;
         }
         .data-container{
             margin:0px auto;
+        }
+        .data-container .data-body{
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .data-container .data-body TR:first-child TD, .data-container .data-body TR:first-child TH{
+            border-top:none; !important
+        }
+        .data-container .data-body TR{
+            cursor: pointer;
+        }
+        .data-container .data-head table, .data-container .data-head tr{
+            margin-bottom: 0px;
+            padding-bottom:0px;
         }
         #noProject{
             display: none;
@@ -56,7 +70,7 @@
         .paper-nav{
             position:absolute;
             top:0px;
-            z-index: 9999;
+            z-index: 1;
         }
         .paper-nav div{
             position: relative;
@@ -72,10 +86,6 @@
         }
         .paper-nav .minus{
             top:30px;
-        }
-        .data-container{
-            max-height: 300px;
-            overflow-y: auto;
         }
 
         .ui-select input, .ui-select span:first-child{
@@ -129,18 +139,23 @@
 
 <div class="container">
     <div id="main" style="display:none">
-        <div id="paper" class="paper"></div>
-        <div id="data" class="data-container"></div>
+        <div class="wrapper current">
+            <div class="paper"></div>
+            <div class="data-container">
+                <div class="data-head"></div>
+                <div class="data-body"></div>
+            </div>
+        </div>
     </div>
     <div id="noProject" style="display: none">
-            <p id="noProjectMsg" class="bg-danger" style="display: none"></p>
-            <form>
-                <div class="form-group" style="max-width:200px;text-align:left">
-                    <label for="projectSelector">Choose Project</label>
-                    <select id="projectSelector"></select>
-                    <a id="noProjectBtn" class="btn btn-default" style="margin-top:5px">Submit</a>
-                </div>
-            </form>
+        <p id="noProjectMsg" class="bg-danger" style="display: none"></p>
+        <form>
+            <div class="form-group" style="max-width:200px;text-align:left">
+                <label for="projectSelector">Choose Project</label>
+                <select id="projectSelector"></select>
+                <a id="noProjectBtn" class="btn btn-default" style="margin-top:5px">Submit</a>
+            </div>
+        </form>
     </div>
 
     <script>
@@ -186,6 +201,68 @@
     var info = hashParser.parse();
     var MAIN_WIDTH = 800;
 
+    var createPath = function(){
+        return hashParser.get('project')+"/"+hashParser.get('projectId')+"/"+hashParser.get('subId');
+    }
+
+    var createTableHeader = function(){
+
+        var $table = $(document.createElement('table')).attr('class','table table-hover');
+        var $thead = $(document.createElement('thead'));
+        var $tbody = $(document.createElement('tbody'));
+        var $row   = $(document.createElement('tr'));
+        var $th    = $(document.createElement('th'));
+
+        var header = $row
+            .append($th.clone().html('ID'))
+            .append($th.clone().html('Width'))
+            .append($th.clone().html('Depth'));
+
+        $thead.append(header);
+
+        $table.append($thead).append($tbody);
+
+        return $table;
+    }
+
+    var createTableBody = function(){
+        var $table = $(document.createElement('table')).attr('class','table table-hover');
+        var $tbody = $(document.createElement('tbody'));
+
+        return $table.append($tbody);
+    }
+
+    var showLoading = function($target){
+        $target.find('.paper:first').slideUp();
+        $target.find('.data-container:first').slideUp();
+    }
+
+    var showLoadingComplete = function($target){
+        $target.find('.paper:first').slideDown();
+        $target.find('.data-container:first').slideDown();
+    }
+
+    var loadViewerError = function(){
+
+        var $current = $('.current');
+
+        //remove the data
+        var $dataContainer = $current.find('.data-container').slideUp().empty().width(MAIN_WIDTH);
+
+        //create the default error image
+        var path = createPath()+'/'+hashParser.get('instance');
+        var $target = $current.find('.paper').empty();
+        var paper = Raphael($target.get(0), MAIN_WIDTH, height);
+        paper.image('images/image.php?path='+path+'&maxWidth='+MAIN_WIDTH,0,0,MAIN_WIDTH,height);
+
+        var $table = createTableHeader();
+        var $tr = $(document.createElement('tr'));
+        var $td = $(document.createElement('td')).attr('colspan','3').attr('style','text-align:center').text('No Data');
+        $table.find('tbody').append($tr.append($td));
+
+        $dataContainer.append($table).slideDown();
+    }
+
     //initializes the project id selector
     var resetProjectIdSelect = function(project){
         var projectId = hashParser.get("projectId");
@@ -202,6 +279,7 @@
             resetSubIdSelect();
         }).fail(function(jqXHR){
             //cleanup the url
+
             hashParser.remove('project');
             hashParser.remove('subId');
             hashParser.remove('instance');
@@ -217,7 +295,11 @@
             openErrorDialog('Lookup Failure - '+jqXHR.status,
                 'Failed to lookup project data.',
                 '<ul><li>Project: '+projectId+'<li>'+jqXHR.responseText,
-                function(){$("#form-projectId span:first").attr('style','');}
+                function(){
+                    $("#form-projectId span:first").attr('style','');
+                    $('#main').slideUp();
+                    $('#noProject').slideDown();
+                }
             );
         });
     };
@@ -242,23 +324,27 @@
     };
 
     var resetInstance = function(){
-        var path = hashParser.get('project')+"/"+hashParser.get('projectId')+"/"+hashParser.get('subId');
-
-
+        var path = createPath();
         $.getJSON("service.php?action=summary&path="+path).done(function(info){
-            if(hashParser.get('instance') > info.min && hashParser.get('instance') < info.max){
-                $("#instance").val(hashParser.get('instance'));
-                $('#goBtn').trigger('click');
+            var instance = hashParser.get('instance');
+
+            if(instance > info.min && instance < info.max){
+                $("#instance").val(instance);
             }else if(info.min >= 0){
                 $("#instance").val(info.min);
                 hashParser.add('instance',info.min);
-                $('#goBtn').trigger('click');
             }else
                 $("#instance").val('?????');
+
+            $('#goBtn').trigger('click');
+
         }).fail(function(jqXHR){
             hashParser.remove('instance');
             $("#instance").val('?????');
             $("#form-instance").addClass('has-error');
+
+            loadViewerError();
+
             openErrorDialog('Lookup Failure - '+jqXHR.status,
                 'Failed to lookup xml documents for given project data.',
                 '<ul><li>Project Path: '+path+'<li>'+jqXHR.responseText,
@@ -275,7 +361,7 @@
 
         var $svg = $(paper.canvas);
 
-        var $cloned = $('#paper-nav').clone();
+        var $cloned = $('.paper-nav.super').clone().removeClass('super');
         $svg.before($cloned);
 
         //also add the div data element
@@ -308,6 +394,7 @@
         path.attr("opacity",0);
         path.data("with",pathData.width);
         path.data("height",pathData.height);
+        path.id = 'path-'+pathData.id;
 
         path.hover(function(){
             this.g = path.glow({
@@ -318,38 +405,68 @@
             this.g.remove();
         });
         path.click(function(){
+            if(paper.myglow)
+                paper.myglow.remove();
+
+            paper.myglow = path.glow({
+                color: '#ff0',
+                width: 15
+            });
+
             var $container = $(paper.canvas.parentElement).parent();
             $container.find('tr').removeClass('success');
             $row.addClass('success');
 
             //scroll into view
-            var dataContainer = $container.find('.data-container');
+            var dataContainer = $container.find('.data-container .data-body');
             dataContainer.scrollTop(0);
 
             var containerTop = dataContainer.offset().top;
             var rowTop = $row.offset().top;
             var diff = rowTop-containerTop;
 
-            console.log(containerTop,rowTop);
-
             dataContainer.animate({scrollTop:diff});
         });
     };
 
-    var addData = function(pathData){
+    var addData = function(pathData,paper){
         var $row = $(document.createElement('tr'));
         var $td  = $(document.createElement('td'));
         var $th  = $(document.createElement('th'));
 
-        var entry = $row
+        $row
             .append($th.clone().html(pathData.id))
             .append($td.clone().html(pathData.width))
             .append($td.clone().html(pathData.depth));
 
-        return entry;
+        (function(id,paper){
+            $row.click(function(){
+
+                $(paper.canvas.parentElement).parent().find('tr').removeClass('success');
+                $row.addClass('success');
+
+                if(paper.myglow)
+                    paper.myglow.remove();
+
+                var path = paper.getById('path-'+id);
+                paper.myglow = path.glow({
+                    color: '#ff0',
+                    width: 15
+                });
+
+                window.paper = paper;
+            });
+        })(pathData.id,paper);
+
+        return $row;
     }
 
     var loadLcms = function(number,$target){
+
+        var $paper = $target.find('.paper:first').width(MAIN_WIDTH);
+
+        showLoading($target);
+
         var path = hashParser.get('project')+'/'+hashParser.get('projectId')+'/'+hashParser.get('subId');
 
         $.getJSON("service.php?action=dims&path="+path).done(function(info){
@@ -357,57 +474,45 @@
             var x = info[1];
             var y = info[0];
 
+            //ratio is the actual image size to the window width
             var ratio  = (MAIN_WIDTH * 1.0) / (x * 1.0);
             var height = ratio * y;
 
             path=path+"/"+number;
 
             $.getJSON("data.php?path="+path+'&ratio='+ratio).done(function(cracks){
+                $paper.empty();
 
-                $('#paper').animate({height:height});
-                $('#paper').animate({width:MAIN_WIDTH});
-
-                $target.empty();
-
-                var paper = Raphael($target.attr('id'), MAIN_WIDTH, height);
+                var paper = Raphael($paper.get(0), MAIN_WIDTH, height);
                 paper.image('images/image.php?path='+path+'&maxWidth='+MAIN_WIDTH,0,0,MAIN_WIDTH,height);
 
                 drawNavPanel(paper);
+                //$paper.animate({height:height});
 
-                //add a container for the data
-                //var $container = $(paper.canvas.parentElement);
-                var $container = $('#data').slideUp().width(paper.width);
-                var $table = $(document.createElement('table')).attr('class','table table-hover');
-                var $thead = $(document.createElement('thead'));
-                var $tbody = $(document.createElement('tbody'));
-                var $row   = $(document.createElement('tr'));
-                var $th    = $(document.createElement('th'));
+                var $table = createTableHeader();
+                var $tableBody = createTableBody();
+                var $tbody = $tableBody.find('tbody');
 
+                var $container = $target.find('.data-container').width(MAIN_WIDTH);
                 $container.find('table').remove();
-
-                $table.append($thead);
-                var header = $row.clone()//.width(paper.width)
-                    .append($th.clone().html('ID'))
-                    .append($th.clone().html('Width'))
-                    .append($th.clone().html('Depth'));
-                $thead.append(header);
-                $container.append($table.append($thead).append($tbody));
-
-                //$thead.width(paper.width);
+                $container.find('.data-head:first').append($table);
+                $container.find('.data-body:first').append($tableBody);
 
                 for(var x in cracks){
                     (function(data){
-                        var row = addData(data);
+                        var row = addData(data,paper);
                         $tbody.append(row);
                         drawPath(paper,data,row);
                     })(cracks[x]);
                 }
 
-                $container.slideDown();
+                //$container.slideDown();
+                showLoadingComplete($target);
             }).fail(function(jqXHR){
-                console.log('hello');
-
+                loadViewerError();
             });
+        }).fail(function(jqXHR){
+            loadViewerError();
         });
 
     };
@@ -498,7 +603,7 @@
 
         $('#goBtn').click(function(){
             hashParser.add('instance',$('#instance').val());
-            loadLcms($('#instance').val(),$('#paper'));
+            loadLcms($('#instance').val(),$('.current'));
         });
 
         $("#dialogErr").dialog({
@@ -572,7 +677,7 @@
         <p id="dialogErrDetail" class="bg-danger"></p>
     </div>
 
-    <div id="paper-nav" class="paper-nav" style="display: none">
+    <div class="paper-nav super" style="display: none">
         <div class="plus ui-icon ui-icon-plus"></div>
         <div class="minus ui-icon ui-icon-minus"></div>
     </div>

@@ -71,7 +71,7 @@ class Lookup {
         }
 
         if(!file_exists(__DIR__."/$projectName/$projectId/$projectSub/$xmlName")){
-            echo __DIR__."/$projectName/$projectId/$projectSub/$xmlName";
+            //echo __DIR__."/$projectName/$projectId/$projectSub/$xmlName";
             return false;
         }
 
