@@ -73,7 +73,7 @@
             z-index: 1;
         }
         .paper-nav div{
-            position: relative;
+            position: absolute;
             left:20px;
             width:20px;
             height:20px;
@@ -85,7 +85,7 @@
             top:20px;
         }
         .paper-nav .minus{
-            top:30px;
+            top:50px;
         }
 
         .ui-select input, .ui-select span:first-child{
@@ -380,6 +380,8 @@
                 height = initHeight;
                 openErrorDialog('Cannot Zoom','Zoom limits reached.','',function(){console.log('no op');});
             }
+            paper.myWidth = width;
+            paper.myHeight = height;
             paper.setViewBox(0,0,width,height,false);
         }
 
@@ -419,13 +421,17 @@
 
             //scroll into view
             var dataContainer = $container.find('.data-container .data-body');
+
+
+
             dataContainer.scrollTop(0);
+
 
             var containerTop = dataContainer.offset().top;
             var rowTop = $row.offset().top;
             var diff = rowTop-containerTop;
 
-            dataContainer.animate({scrollTop:diff});
+            dataContainer.scrollTop(diff);
         });
     };
 
@@ -506,8 +512,27 @@
                     })(cracks[x]);
                 }
 
-                //$container.slideDown();
                 showLoadingComplete($target);
+
+                //add the drag functionality
+                var $mTarget = $target.find('.paper:first');
+                var $mTargetOffset = $mTarget.offset();
+                var down = false;
+                var mTargetX = $mTargetOffset.top;
+                var mTargetY = $mTargetOffset.left;
+                $mTarget.mousedown(function(evt) {
+                    down = true;
+                    $(this).mousemove(function(dragEvt){
+                        if(down === true){
+                            if(paper.myWidth)
+                                paper.setViewBox(evt.pageX-dragEvt.pageX, evt.pageY- dragEvt.pageY, paper.myWidth, paper.myHeight, false);
+                            else
+                                paper.setViewBox(evt.pageX-dragEvt.pageX, evt.pageY- dragEvt.pageY, paper.width, paper.height, false);
+                        }
+                    });
+                }).mouseup(function(){
+                    down = false;
+                });
             }).fail(function(jqXHR){
                 loadViewerError();
             });
@@ -617,59 +642,6 @@
         init();
     });
 
-
-
-    var height = 416;
-    var width =  1000;
-
-    /*
-    var paper = Raphael("paper", width, height);
-
-    paper.image('http://media.transmap.local/media2/images/lcms/images/image.php?path=Osceola/010315/2/000000&maxWidth=1000',0,0,width,height);
-
-    paper.setViewBox(0, 0, width, height );
-
-    // Setting preserveAspectRatio to 'none' lets you stretch the SVG
-    paper.canvas.setAttribute('preserveAspectRatio', 'none');
-
-    $('#zoomIn').click(function(){
-        width = width - 100;
-        height = height - 100;
-        console.log("hello",width,height);
-        paper.setViewBox(0,0,width,height,false);
-    });
-
-    $('#zoomOut').click(function(){
-        width = width + 100;
-        height = height + 100;
-        console.log("hello",width,height);
-        //$('#paper').attr('width', width).attr('height', height);
-        paper.setViewBox(0,0,width,height,false);
-    });
-
-    for(var x in cracks){
-        //need a closure
-        (function(data){
-            var path = paper.path(data.path);
-            path.attr("stroke-width", "10");
-            path.attr("opacity",0);
-            path.data("with",data.width);
-            path.data("height",data.height);
-
-            path.hover(function(){
-                this.g = path.glow({
-                        color: '#ff0',
-                        width: 15
-                    });
-            },function(){
-                this.g.remove();
-            });
-            path.click(function(){
-                alert('width: '+data.width+"\ndepth: "+data.depth);
-            });
-        })(cracks[x]);
-    }
-    */
     </script>
 
     <div id="dialogErr" title="Error" style="display: none">
@@ -680,6 +652,7 @@
     <div class="paper-nav super" style="display: none">
         <div class="plus ui-icon ui-icon-plus"></div>
         <div class="minus ui-icon ui-icon-minus"></div>
+        </table>
     </div>
 </div>
 </body>
