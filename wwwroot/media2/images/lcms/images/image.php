@@ -76,7 +76,7 @@ if($loadfile){
 
         if(imagejpeg($dst,$targetSave)){
             header('Content-Type: image/jpeg');
-            header('Content-Length: ' . filesize($targetSave));
+            //header('Content-Length: ' . filesize($targetSave));
             header("Cache-Control: private, max-age=31556926, pre-check=10800");
             header("Pragma: private");
             header("Expires: " . date('D, d M Y H:i:s',time()+360*60*60*24)); //a little less than 1 day into the future

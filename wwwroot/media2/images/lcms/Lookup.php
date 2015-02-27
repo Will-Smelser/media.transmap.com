@@ -8,6 +8,7 @@
 
 class Lookup {
     public static function findImage($projectName,$projectId,$projectSub,$instance){
+
         $instance = str_pad($instance,6,'0',STR_PAD_LEFT);
         $projectId = str_pad($projectId,6,'0',STR_PAD_LEFT);
 

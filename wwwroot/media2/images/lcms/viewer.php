@@ -72,20 +72,41 @@
             top:0px;
             z-index: 1;
         }
-        .paper-nav div{
+        .paper-nav{
             position: absolute;
+            top:0px;
+        }
+        .paper-nav div{
+            position:absolute;
+            top:0px;
             left:20px;
-            width:20px;
-            height:20px;
             border:solid #333 2px;
             background-color: #FFF;
             cursor: pointer;
+            width:20px;
+            height:20px;
         }
         .paper-nav .plus{
             top:20px;
         }
         .paper-nav .minus{
             top:50px;
+        }
+
+        .paper-nav-right{
+            position:absolute;
+            top:0px;
+        }
+        .paper-nav-right .ext-link{
+            position:absolute;
+            top:20px;
+            right:20px;
+            width:20px;
+            height:20px;
+            border:solid #333 2px;
+            background-color: #FFF;
+            cursor: pointer;
+            z-index:2;
         }
 
         .ui-select input, .ui-select span:first-child{
@@ -364,6 +385,20 @@
         });
     }
 
+    var drawRightNavPanel = function(paper,path){
+        var width = paper.width;
+        var $cloned = $('.paper-nav-right.super').clone().removeClass('super');
+        $cloned.width(width);
+
+        $(paper.canvas).before($cloned);
+
+        $cloned.click(function(){
+            window.open('images/raw.php?path='+path)
+        });
+
+        $cloned.show();
+    }
+
     var drawNavPanel = function(paper){
         var width = paper.width;
         var height = paper.height;
@@ -389,7 +424,7 @@
                 paper.setViewBox(0,0,initWidth,initHeight,false);
                 width = initWidth;
                 height = initHeight;
-                openErrorDialog('Cannot Zoom','Zoom limits reached.','',function(){console.log('no op');});
+                openErrorDialog('Cannot Zoom','Zoom limits reached.','',function(){/*no-op*/;});
             }
             paper.myWidth = width;
             paper.myHeight = height;
@@ -476,13 +511,11 @@
         return $row;
     }
 
-    var loadLcms = function(number,$target){
+    var loadLcms = function(number, $target, path){
 
         var $paper = $target.find('.paper:first').width(MAIN_WIDTH);
 
         showLoading($target);
-
-        var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
 
         $.getJSON("service.php?action=dims&path="+path).done(function(info){
             //x and y are reversed because the images have to get rotated
@@ -502,7 +535,7 @@
                 paper.image('images/image.php?path='+path+'&maxWidth='+MAIN_WIDTH,0,0,MAIN_WIDTH,height);
 
                 drawNavPanel(paper);
-                //$paper.animate({height:height});
+                drawRightNavPanel(paper,path);
 
                 var $table = createTableHeader();
                 var $tableBody = createTableBody();
@@ -639,7 +672,8 @@
 
         $('#goBtn').click(function(){
             hashParser.add('image',$('#image').val());
-            loadLcms($('#image').val(),$('.current'));
+            var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
+            loadLcms($('#image').val(),$('.current'),path);
         });
 
         $("#dialogErr").dialog({
@@ -663,7 +697,10 @@
     <div class="paper-nav super" style="display: none">
         <div class="plus ui-icon ui-icon-plus"></div>
         <div class="minus ui-icon ui-icon-minus"></div>
-        </table>
+    </div>
+
+    <div class="paper-nav-right super" style="display: none">
+        <div class="ext-link ui-icon  ui-icon-extlink"></div>
     </div>
 </div>
 </body>
