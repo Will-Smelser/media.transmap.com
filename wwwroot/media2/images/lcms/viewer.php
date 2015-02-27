@@ -107,26 +107,26 @@
         <div class="row">
             <div class="col-md-4">
                 <form>
-                    <div class="form-group" id="form-projectId">
-                        <label for="projectId">Project ID</label>
-                        <select id="projectId"></select>
+                    <div class="form-group" id="form-projectDate">
+                        <label for="projectDate">Date</label>
+                        <select id="projectDate"></select>
                     </div>
                 </form>
             </div>
             <div class="col-md-4">
                 <form>
                     <div class="form-group">
-                        <label for="subId">Sub ID</label>
-                        <select id="subId"></select>
+                        <label for="session">session</label>
+                        <select id="session"></select>
                     </div>
                 </form>
             </div>
             <div class="col-md-4">
                 <form>
                     <div class="form-group" id="form-instance">
-                        <label for="instance">Instance</label><br/>
+                        <label for="image">Image</label><br/>
                         <div style="padding-right: 60px; position: relative;">
-                            <input class="form-control" type="text" id="instance"/>
+                            <input class="form-control" type="text" id="image"/>
                             <button id="goBtn" type="button" class="btn btn-primary">Go</button>
                         </div>
 
@@ -202,7 +202,7 @@
     var MAIN_WIDTH = 800;
 
     var createPath = function(){
-        return hashParser.get('project')+"/"+hashParser.get('projectId')+"/"+hashParser.get('subId');
+        return hashParser.get('project')+"/"+hashParser.get('projectDate')+"/"+hashParser.get('session');
     }
 
     var createTableHeader = function(){
@@ -247,11 +247,16 @@
         var $current = $('.current');
 
         //remove the data
-        var $dataContainer = $current.find('.data-container').slideUp().empty().width(MAIN_WIDTH);
+        var $dataContainer = $current.find('.data-container').slideUp().width(MAIN_WIDTH);
+
+        //empty the container data content
+        $dataContainer.find('.data-head:first').empty();
+        $dataContainer.find('.data-body:first').empty();
 
         //create the default error image
-        var path = createPath()+'/'+hashParser.get('instance');
+        var path = createPath()+'/'+hashParser.get('image');
         var $target = $current.find('.paper').empty();
+        var height = 300;
         var paper = Raphael($target.get(0), MAIN_WIDTH, height);
         paper.image('images/image.php?path='+path+'&maxWidth='+MAIN_WIDTH,0,0,MAIN_WIDTH,height);
 
@@ -260,43 +265,45 @@
         var $td = $(document.createElement('td')).attr('colspan','3').attr('style','text-align:center').text('No Data');
         $table.find('tbody').append($tr.append($td));
 
-        $dataContainer.append($table).slideDown();
+        $dataContainer.find('.data-head:first').append($table);
+        $dataContainer.slideDown();
     }
 
     //initializes the project id selector
-    var resetProjectIdSelect = function(project){
-        var projectId = hashParser.get("projectId");
+    var resetProjectDateSelect = function(project){
+        var projectDate = hashParser.get("projectDate");
 
         $.getJSON("service.php?action=projectData&project="+project).done(function(data){
-            $('#projectId').empty();
+            $('#projectDate').empty();
 
             for(var x in data){
-                var selected = (x === projectId) ? 'selected' : null;
-                $('#projectId').append('<option data-subs=\''+JSON.stringify(data[x])+'\' value='+x+' '+selected+'>'+x+'</option>');
+                var selected = (x === projectDate) ? 'selected' : null;
+                $('#projectDate').append('<option data-subs=\''+JSON.stringify(data[x])+'\' value='+x+' '+selected+'>'+
+                    prettyDate(x)+'</option>');
             }
-            $('#projectId').uiselect('refresh');
-            hashParser.add('projectId',$('#projectId option:selected').val());
-            resetSubIdSelect();
+            $('#projectDate').uiselect('refresh');
+            hashParser.add('projectDate',$('#projectDate option:selected').val());
+            resetSessionSelect();
         }).fail(function(jqXHR){
             //cleanup the url
 
             hashParser.remove('project');
-            hashParser.remove('subId');
-            hashParser.remove('instance');
+            hashParser.remove('session');
+            hashParser.remove('image');
 
             //reset downstream inputs
-            $('#subId').empty().uiselect('refresh');
-            $("#instance").val('?????');
+            $('#session').empty().uiselect('refresh');
+            $("#image").val('?????');
 
             //show the error location
-            $("#form-projectId span:first").attr('style','border-color:#a94442');
+            $("#form-projectDate span:first").attr('style','border-color:#a94442');
 
             //give feedback to user about the error
             openErrorDialog('Lookup Failure - '+jqXHR.status,
                 'Failed to lookup project data.',
-                '<ul><li>Project: '+projectId+'<li>'+jqXHR.responseText,
+                '<ul><li>Project: '+projectDate+'<li>'+jqXHR.responseText,
                 function(){
-                    $("#form-projectId span:first").attr('style','');
+                    $("#form-projectDate span:first").attr('style','');
                     $('#main').slideUp();
                     $('#noProject').slideDown();
                 }
@@ -304,51 +311,55 @@
         });
     };
 
-    var resetSubIdSelect = function(){
-
-        var subId = hashParser.get("subId");
-        var data = JSON.parse($('#projectId option:selected').attr('data-subs'));
-
-        $('#subId').empty();
-        for(var x in data){
-            var selected = (x === subId) ? 'selected' : '';
-            $('#subId').append('<option value='+x+' '+selected+'>'+x+'</option>');
-        }
-
-        $('#projectId').uiselect('refresh');
-        $('#subId').uiselect('refresh');
-
-        hashParser.add('subId',$('#subId option:selected').val());
-
-        resetInstance();
+    var prettyDate = function(input){
+        return input.substring(0,2)+'/'+input.substring(2,4)+'/'+input.substring(4,6);
     };
 
-    var resetInstance = function(){
+    var resetSessionSelect = function(){
+
+        var session = hashParser.get("session");
+        var data = JSON.parse($('#projectDate option:selected').attr('data-subs'));
+
+        $('#session').empty();
+        for(var x in data){
+            var selected = (x === session) ? 'selected' : '';
+            $('#session').append('<option value='+x+' '+selected+'>'+x+'</option>');
+        }
+
+        $('#projectDate').uiselect('refresh');
+        $('#session').uiselect('refresh');
+
+        hashParser.add('session',$('#session option:selected').val());
+
+        resetImage();
+    };
+
+    var resetImage = function(){
         var path = createPath();
         $.getJSON("service.php?action=summary&path="+path).done(function(info){
-            var instance = hashParser.get('instance');
+            var image = hashParser.get('image');
 
-            if(instance > info.min && instance < info.max){
-                $("#instance").val(instance);
+            if(image > info.min && image < info.max){
+                $("#image").val(image);
             }else if(info.min >= 0){
-                $("#instance").val(info.min);
-                hashParser.add('instance',info.min);
+                $("#image").val(info.min);
+                hashParser.add('image',info.min);
             }else
-                $("#instance").val('?????');
+                $("#image").val('?????');
 
             $('#goBtn').trigger('click');
 
         }).fail(function(jqXHR){
-            hashParser.remove('instance');
-            $("#instance").val('?????');
-            $("#form-instance").addClass('has-error');
+            hashParser.remove('image');
+            $("#image").val('?????');
+            $("#form-image").addClass('has-error');
 
             loadViewerError();
 
             openErrorDialog('Lookup Failure - '+jqXHR.status,
                 'Failed to lookup xml documents for given project data.',
                 '<ul><li>Project Path: '+path+'<li>'+jqXHR.responseText,
-                function(){$("#form-instance").removeClass('has-error');}
+                function(){$("#form-image").removeClass('has-error');}
             );
         });
     }
@@ -422,8 +433,6 @@
             //scroll into view
             var dataContainer = $container.find('.data-container .data-body');
 
-
-
             dataContainer.scrollTop(0);
 
 
@@ -473,7 +482,7 @@
 
         showLoading($target);
 
-        var path = hashParser.get('project')+'/'+hashParser.get('projectId')+'/'+hashParser.get('subId');
+        var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
 
         $.getJSON("service.php?action=dims&path="+path).done(function(info){
             //x and y are reversed because the images have to get rotated
@@ -501,6 +510,7 @@
 
                 var $container = $target.find('.data-container').width(MAIN_WIDTH);
                 $container.find('table').remove();
+
                 $container.find('.data-head:first').append($table);
                 $container.find('.data-body:first').append($tableBody);
 
@@ -564,10 +574,10 @@
 
         //we have info in hash tags
         var project = hashParser.get('project');
-        var projectId = hashParser.get('projectId');
-        var subId = hashParser.get('subId');
+        var projectDate = hashParser.get('projectDate');
+        var session = hashParser.get('session');
 
-        resetProjectIdSelect(project);
+        resetProjectDateSelect(project);
 
 
 
@@ -583,7 +593,7 @@
         $("select").uiselect();
 
         //set the width
-        $('#paper').width(MAIN_WIDTH);
+        $('.paper').width(MAIN_WIDTH);
 
         //get the document dimensions
         $.getJSON("service.php?action=projects")
@@ -595,26 +605,26 @@
             });
 
         $('#noProjectBtn').click(function(){
-            location.hash = 'project:'+$('#projectSelector option:selected').text();
+            location.hash = 'project:'+$('#projectSelector option:selected').val();
             init();
         });
 
         //bind drop downs
-        $('#projectId').change(function(){
-            hashParser.add('projectId',$('#projectId option:selected').text());
-            hashParser.remove('subId');
-            resetSubIdSelect();
+        $('#projectDate').change(function(){
+            hashParser.add('projectDate',$('#projectDate option:selected').val());
+            hashParser.remove('session');
+            resetSessionSelect();
         });
 
-        $('#subId').change(function(){
-            hashParser.add('subId',$('#subId option:selected').text());
-            hashParser.remove('instance');
-            resetInstance();
+        $('#session').change(function(){
+            hashParser.add('session',$('#session option:selected').val());
+            hashParser.remove('image');
+            resetImage();
         });
 
 
         //only allow digits for input box
-        $('#instance').keypress(function(e){
+        $('#image').keypress(function(e){
             var a = [];
             var k = e.which;
 
@@ -628,8 +638,8 @@
         });
 
         $('#goBtn').click(function(){
-            hashParser.add('instance',$('#instance').val());
-            loadLcms($('#instance').val(),$('.current'));
+            hashParser.add('image',$('#image').val());
+            loadLcms($('#image').val(),$('.current'));
         });
 
         $("#dialogErr").dialog({
