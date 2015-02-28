@@ -474,16 +474,19 @@
 
         }).fail(function(jqXHR){
             hashParser.remove('image');
-            $("#image").val('?????');
+            $("#image").val('?????').attr('min',0).attr('max',0);
             $("#form-image").addClass('has-error');
 
-            loadViewerError($('.current'));
+            $('.wrapper').slideUp();
+
 
             openErrorDialog('Lookup Failure - '+jqXHR.status,
                 'Failed to lookup xml documents for given project data.',
                 '<ul><li>Project Path: '+path+'<li>'+jqXHR.responseText,
                 function(){$("#form-image").removeClass('has-error');}
             );
+
+            $('#goBtn').trigger('click');
         });
     }
 
@@ -627,7 +630,7 @@
 
             path=path+"/"+number;
 
-            $target.find('.box:first').attr('data-path',path);
+            $target.attr('data-path',path);
 
             $.getJSON("data.php?path="+path+'&ratio='+ratio).done(function(cracks){
                 $paper.empty();
@@ -681,7 +684,6 @@
                     down = false;
                 });
             }).fail(function(jqXHR){
-                console.log('load failed ',number);
                 loadViewerError($target);
             });
         }).fail(function(jqXHR){
@@ -784,7 +786,7 @@
         var $newBox = $('.box.super:first').clone().removeClass('super').prependTo($fromTarget).show();
 
         //the new element
-        loadLcms($img.val()-2*dir,$fromTarget,path);
+        loadLcms($img.val()-2*dir,$newBox,path);
 
         $from.addClass('front').animate(option,duration,'swing',function(){
             //add the $from to $curTarget
@@ -858,9 +860,9 @@
             var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
             var image = $('#image').val() * 1;
 
-            loadLcms(image,$('.current'),path,true);
-            loadLcms(image+1,$('.after'),path);
-            loadLcms(image-1,$('.before'),path);
+            loadLcms(image,$('.current .box:first'),path,true);
+            loadLcms(image+1,$('.after .box:first'),path);
+            loadLcms(image-1,$('.before .box:first'),path);
         });
 
         $("#dialogErr").dialog({
