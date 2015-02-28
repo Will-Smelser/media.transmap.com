@@ -36,7 +36,7 @@ $loadFile = Lookup::findXml($project,$id,$sub,$instance);
 
 if(!$loadFile){
     echo "[]";
-    http_response_code(404);
+    http_response_code(200);
     exit;
 }
 
@@ -44,9 +44,11 @@ if(!$loadFile){
 $imgFile = Lookup::findImage($project,$id,$sub,$instance);
 $size = getimagesize($imgFile);
 
+
 if(!$size){
-    http_response_code(404);
-    echo "Failed to lookup valid image.";
+    http_response_code(200);
+    //echo "Failed to lookup valid image.";
+    echo "[]";
     exit;
 }
 

@@ -69,8 +69,11 @@
             margin: 0px auto;
         }
         .paper svg{
+            border-top: solid 2px;
+            border-bottom: solid 2px;
+        }
+        .current .paper svg{
             border: solid 2px;
-            border-left: none;
         }
         .current .paper .paper-nav, .current .paper .paper-nav-right{
             visibility: visible;
@@ -210,9 +213,9 @@
             <div class="col-md-4">
                 <form>
                     <div class="form-group" id="form-instance">
-                        <label for="image">Image</label><br/>
+                        <label id="image-label" for="image">Image</label><br/>
                         <div style="padding-right: 60px; position: relative;">
-                            <input class="form-control" type="text" id="image"/>
+                            <input class="form-control" type="number" step="1" id="image"/>
                             <button id="goBtn" type="button" class="btn btn-primary">Go</button>
                         </div>
 
@@ -348,18 +351,21 @@
         $target.find('.data-container:first').slideUp();
     }
 
-    var showLoadingComplete = function($target){
+    var showLoadingComplete = function($target, isCurrent){
         $target.find('.paper:first').slideDown();
-        $target.find('.data-container:first').slideDown();
-        $('.wrapper').slideDown();
+
+        if(isCurrent)
+            $target.find('.data-container:first').slideDown(
+                function(){$('.wrapper').slideDown();}
+            );
+        else
+            $('.wrapper').slideDown();
     }
 
-    var loadViewerError = function(){
-
-        var $current = $('.current');
+    var loadViewerError = function($target){
 
         //remove the data
-        var $dataContainer = $current.find('.data-container').slideUp().width(MAIN_WIDTH);
+        var $dataContainer = $target.find('.data-container').slideUp().width(MAIN_WIDTH);
 
         //empty the container data content
         $dataContainer.find('.data-head:first').empty();
@@ -367,9 +373,9 @@
 
         //create the default error image
         var path = createPath()+'/'+hashParser.get('image');
-        var $target = $current.find('.paper').empty();
+        var $paper = $target.find('.paper').empty();
         var height = 300;
-        var paper = Raphael($target.get(0), MAIN_WIDTH, height);
+        var paper = Raphael($paper.get(0), MAIN_WIDTH, height);
         paper.image('images/image.php?path='+path+'&maxWidth='+MAIN_WIDTH,0,0,MAIN_WIDTH,height);
 
         var $table = createTableHeader();
@@ -379,6 +385,7 @@
 
         $dataContainer.find('.data-head:first').append($table);
         $dataContainer.slideDown();
+
     }
 
     //initializes the project id selector
@@ -451,7 +458,10 @@
         $.getJSON("service.php?action=summary&path="+path).done(function(info){
             var image = hashParser.get('image');
 
-            if(image > info.min && image < info.max){
+            $('#image-label').html('Image <small>min: '+info.min+', max: '+info.max+"</small>");
+            $('#image').attr('min',info.min).attr('max',info.max);
+
+            if(image > info.min && image <= info.max){
                 $("#image").val(image);
             }else if(info.min >= 0){
                 $("#image").val(info.min);
@@ -466,7 +476,7 @@
             $("#image").val('?????');
             $("#form-image").addClass('has-error');
 
-            loadViewerError();
+            loadViewerError($('.current'));
 
             openErrorDialog('Lookup Failure - '+jqXHR.status,
                 'Failed to lookup xml documents for given project data.',
@@ -599,7 +609,7 @@
         return $row;
     }
 
-    var loadLcms = function(number, $target, path){
+    var loadLcms = function(number, $target, path, isCurrent){
 
         var $paper = $target.find('.paper:first').width(MAIN_WIDTH);
 
@@ -637,6 +647,7 @@
                 $container.find('.data-head:first').append($table);
                 $container.find('.data-body:first').append($tableBody);
 
+
                 for(var x in cracks){
                     (function(data){
                         var row = addData(data,paper);
@@ -645,7 +656,7 @@
                     })(cracks[x]);
                 }
 
-                showLoadingComplete($target);
+                showLoadingComplete($target, isCurrent);
 
                 //add the drag functionality
                 var $mTarget = $target.find('.paper:first');
@@ -668,10 +679,11 @@
                     down = false;
                 });
             }).fail(function(jqXHR){
-                loadViewerError();
+                console.log('load failed ',number);
+                loadViewerError($target);
             });
         }).fail(function(jqXHR){
-            loadViewerError();
+            loadViewerError($target);
         });
 
     };
@@ -737,6 +749,9 @@
 
             //add this box
             $(this).prependTo($target).attr('style','').removeClass('front');
+
+            //hide the data
+            $target.find('.data-container:first').slideUp();
         });
 
 
@@ -759,6 +774,9 @@
             $img.val($img.val()*1-1*dir); //we are actually 1 ahead or 1 behind current
             hashParser.add('image',$img.val());
 
+            showLoadingComplete($to,true);
+
+            //the new element
             loadLcms($img.val()-1*dir,$fromTarget,path);
         });
 
@@ -822,7 +840,7 @@
             var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
             var image = $('#image').val() * 1;
 
-            loadLcms(image,$('.current'),path);
+            loadLcms(image,$('.current'),path,true);
             loadLcms(image+1,$('.after'),path);
             loadLcms(image-1,$('.before'),path);
         });
