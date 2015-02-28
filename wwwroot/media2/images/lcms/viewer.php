@@ -28,11 +28,8 @@
     <style>
         #main{
             position:relative;
-        }
-        .paper{
+            width:100%;
             overflow:hidden;
-            border:solid black 2px;
-            margin: 0px auto;
         }
         .data-container{
             margin:0px auto;
@@ -67,14 +64,22 @@
         #goBtn{
             position:absolute;right:0px;top:0px;
         }
+        .paper{
+            overflow: hidden;
+            margin: 0px auto;
+        }
+        .paper svg{
+            border: solid 2px;
+            border-left: none;
+        }
+        .current .paper .paper-nav, .current .paper .paper-nav-right{
+            visibility: visible;
+        }
         .paper-nav{
             position:absolute;
             top:0px;
             z-index: 1;
-        }
-        .paper-nav{
-            position: absolute;
-            top:0px;
+            visibility: hidden;
         }
         .paper-nav div{
             position:absolute;
@@ -96,6 +101,7 @@
         .paper-nav-right{
             position:absolute;
             top:0px;
+            visibility: hidden;
         }
         .paper-nav-right .ext-link{
             position:absolute;
@@ -109,6 +115,64 @@
             z-index:2;
         }
 
+        .front{
+            z-index:99;
+        }
+        .wrapper{
+            margin:0px auto;
+            padding:0px;
+            position:relative;
+            min-height:400px;
+        }
+        .current{
+            position:relative;
+        }
+        .current div.box{
+            position:relative;
+        }
+        .before{
+            position:absolute;
+            top:0px;
+            left:-800px;
+            width:800px;
+            height:400px;
+        }
+        .after{
+            position:absolute;
+            top:0px;
+            left:800px;
+            width:800px;
+            height:400px;
+        }
+        .box{
+            position: absolute;
+            top:0px;
+        }
+
+        #moveRight, #moveLeft{
+            position:fixed;
+            top:0px;
+            bottom:0px;
+            width:50px;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-color: #efefef;
+            opacity: .5;
+            cursor: pointer;
+            z-index:100;
+        }
+        #moveRight:hover, #moveLeft:hover{
+            opacity: .85;
+        }
+        #moveLeft{
+            left:0px;
+            background-image: url(images/arrow_left_grey.png);
+        }
+        #moveRight{
+            right:0px;
+            background-image: url(images/arrow_right_grey.png);
+        }
+
         .ui-select input, .ui-select span:first-child{
             width:100%;
         }
@@ -119,6 +183,7 @@
             -moz-border-radius: 0 !important;
             border-radius: 0 !important;
         }
+
     </style>
 
 </head>
@@ -158,13 +223,35 @@
     </div>
 </div>
 
-<div class="container">
-    <div id="main" style="display:none">
-        <div class="wrapper current">
-            <div class="paper"></div>
-            <div class="data-container">
-                <div class="data-head"></div>
-                <div class="data-body"></div>
+<div>
+    <div id="main" class="container-fluid" style="display:none">
+        <div class="wrapper">
+            <div class="before">
+                <div class="box">
+                    <div class="paper"></div>
+                    <div class="data-container">
+                        <div class="data-head"></div>
+                        <div class="data-body"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="current">
+                <div class="box">
+                    <div class="paper"></div>
+                    <div class="data-container">
+                        <div class="data-head"></div>
+                        <div class="data-body"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="after">
+                <div class="box">
+                    <div class="paper"></div>
+                    <div class="data-container">
+                        <div class="data-head"></div>
+                        <div class="data-body"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -178,6 +265,9 @@
             </div>
         </form>
     </div>
+
+    <div id="moveRight" style="display: none"></div>
+    <div id="moveLeft" style="display: none"></div>
 
     <script>
 
@@ -261,6 +351,7 @@
     var showLoadingComplete = function($target){
         $target.find('.paper:first').slideDown();
         $target.find('.data-container:first').slideDown();
+        $('.wrapper').slideDown();
     }
 
     var loadViewerError = function(){
@@ -410,9 +501,6 @@
         var $cloned = $('.paper-nav.super').clone().removeClass('super');
         $svg.before($cloned);
 
-        //also add the div data element
-        $svg.after('<div class="data-raw"></div>')
-
         $cloned.show();
 
         var zoom = function(dir){
@@ -528,6 +616,8 @@
 
             path=path+"/"+number;
 
+            $target.find('.box:first').attr('data-path',path);
+
             $.getJSON("data.php?path="+path+'&ratio='+ratio).done(function(cracks){
                 $paper.empty();
 
@@ -605,6 +695,9 @@
             return;
         }
 
+        $('#moveRight').fadeIn();
+        $('#moveLeft').fadeIn();
+
         //we have info in hash tags
         var project = hashParser.get('project');
         var projectDate = hashParser.get('projectDate');
@@ -612,12 +705,66 @@
 
         resetProjectDateSelect(project);
 
-
-
         var nop = $('#noProject');
         if(nop.is(":visible")) nop.slideUp();
 
+        $('.wrapper').width(MAIN_WIDTH);
         $('#main').slideDown();
+
+    }
+
+    var move = function(direction){
+        //thes are left (.before) - middle (.current) - right (.after)
+        var $right = $('.after:first .box:first');
+        var $middle  = $('.current:first .box:first');
+        var $left= $('.before:first .box:first');
+
+        var $curTarget = $('.current:first');
+        var $leftTarget = $('.before:first');
+        var $rightTarget = $('.after:first');
+
+        var duration = 1000;
+
+        var dir = (direction === 'right') ? -1.0 : 1.0;
+        var option = {left:dir*MAIN_WIDTH};
+
+        //animate the middle to (right or left) $target
+        $middle.addClass('front').animate(option,duration,'swing',function(){
+            var $target = (direction === 'left') ? $rightTarget : $leftTarget;
+
+            //remove the current box before attaching this one
+            $target.find('.box:first').detach();
+
+            //add this box
+            $(this).prependTo($target).attr('style','').removeClass('front');
+        });
+
+
+
+        //animate to current, (right or left) $from to $curTarget
+        var $fromTarget = (direction === 'right') ? $rightTarget : $leftTarget; //where we add a new lcms
+        var $from = (direction === 'right') ? $right : $left;
+        var $to = $curTarget;
+
+        $from.addClass('front').animate(option,duration,'swing',function(){
+            //add the $from to $curTarget
+            $(this).prependTo($to).attr('style','');
+
+            //clone empty object and add to $fromTarget (where the element animated from)
+            $('.box.super:first').clone().removeClass('super').appendTo($fromTarget).show();
+
+            //change the window location fragment
+            var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
+            var $img = $('#image');
+            $img.val($img.val()*1-1*dir); //we are actually 1 ahead or 1 behind current
+            hashParser.add('image',$img.val());
+
+            loadLcms($img.val()-1*dir,$fromTarget,path);
+        });
+
+        //animate (right or left) out and remove from DOM
+        var $remove = (direction === 'right') ? $left : $right;
+        $remove.animate(option,duration,'swing');
 
     }
 
@@ -673,7 +820,11 @@
         $('#goBtn').click(function(){
             hashParser.add('image',$('#image').val());
             var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
-            loadLcms($('#image').val(),$('.current'),path);
+            var image = $('#image').val() * 1;
+
+            loadLcms(image,$('.current'),path);
+            loadLcms(image+1,$('.after'),path);
+            loadLcms(image-1,$('.before'),path);
         });
 
         $("#dialogErr").dialog({
@@ -685,6 +836,13 @@
             return;
         }
         init();
+
+        $('#moveLeft').click(function(){
+            move('left');
+        });
+        $('#moveRight').click(function(){
+            move('right');
+        })
     });
 
     </script>
@@ -701,6 +859,14 @@
 
     <div class="paper-nav-right super" style="display: none">
         <div class="ext-link ui-icon  ui-icon-extlink"></div>
+    </div>
+
+    <div class="box super" style="display: none">
+        <div class="paper"></div>
+        <div class="data-container">
+            <div class="data-head"></div>
+            <div class="data-body"></div>
+        </div>
     </div>
 </div>
 </body>
