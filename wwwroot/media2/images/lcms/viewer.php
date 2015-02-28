@@ -129,6 +129,7 @@
         }
         .current{
             position:relative;
+            z-index:2;
         }
         .current div.box{
             position:relative;
@@ -136,14 +137,14 @@
         .before{
             position:absolute;
             top:0px;
-            left:-800px;
+            left:-798px;
             width:800px;
             height:400px;
         }
         .after{
             position:absolute;
             top:0px;
-            left:800px;
+            left:798px;
             width:800px;
             height:400px;
         }
@@ -642,6 +643,7 @@
                 var $tbody = $tableBody.find('tbody');
 
                 var $container = $target.find('.data-container').width(MAIN_WIDTH);
+                $container.attr('data-path',path);
                 $container.find('table').remove();
 
                 $container.find('.data-head:first').append($table);
@@ -726,6 +728,11 @@
     }
 
     var move = function(direction){
+        //get min max
+        var $img = $('#image');
+        var min = $img.attr('min');
+        var max = $img.attr('max');
+
         //thes are left (.before) - middle (.current) - right (.after)
         var $right = $('.after:first .box:first');
         var $middle  = $('.current:first .box:first');
@@ -739,6 +746,18 @@
 
         var dir = (direction === 'right') ? -1.0 : 1.0;
         var option = {left:dir*MAIN_WIDTH};
+
+        //dont slide past valid values
+        var updatedValue = $img.val()*1-1*dir;
+        if(updatedValue < min || updatedValue > max){
+            var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
+            openErrorDialog('Min/Max Error ',
+                'Cannot exceed min/max.',
+                '<ul><li>Project: '+path+'<li>Min: '+min+'<li>Max: '+max,
+                function(){/*no-po*/}
+            );
+            return;
+        }
 
         //animate the middle to (right or left) $target
         $middle.addClass('front').animate(option,duration,'swing',function(){
@@ -754,30 +773,29 @@
             $target.find('.data-container:first').slideUp();
         });
 
-
+        var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
 
         //animate to current, (right or left) $from to $curTarget
         var $fromTarget = (direction === 'right') ? $rightTarget : $leftTarget; //where we add a new lcms
         var $from = (direction === 'right') ? $right : $left;
         var $to = $curTarget;
 
+        //clone empty object and add to $fromTarget (where the element animated from)
+        var $newBox = $('.box.super:first').clone().removeClass('super').prependTo($fromTarget).show();
+
+        //the new element
+        loadLcms($img.val()-2*dir,$fromTarget,path);
+
         $from.addClass('front').animate(option,duration,'swing',function(){
             //add the $from to $curTarget
             $(this).prependTo($to).attr('style','');
 
-            //clone empty object and add to $fromTarget (where the element animated from)
-            $('.box.super:first').clone().removeClass('super').appendTo($fromTarget).show();
-
             //change the window location fragment
-            var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
+
             var $img = $('#image');
             $img.val($img.val()*1-1*dir); //we are actually 1 ahead or 1 behind current
             hashParser.add('image',$img.val());
-
             showLoadingComplete($to,true);
-
-            //the new element
-            loadLcms($img.val()-1*dir,$fromTarget,path);
         });
 
         //animate (right or left) out and remove from DOM
