@@ -24,8 +24,13 @@
     <script type="text/javascript" src="/js/raphael-min.js"></script>
     <script type="text/javascript" src="/js/preload.js"></script>
 
+    <link href="//www.transmap.com/css/custom.css" rel="stylesheet">
+
 
     <style>
+        div.ui-select span > input{
+            background-color: #FFF; !important
+        }
         #main{
             position:relative;
             width:100%;
@@ -192,42 +197,47 @@
 
 </head>
 <body>
-<div class="container">
-    <div id="nav">
-        <div class="row">
-            <div class="col-md-4">
-                <form>
-                    <div class="form-group" id="form-projectDate">
-                        <label for="projectDate">Date</label>
-                        <select id="projectDate"></select>
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-4">
-                <form>
-                    <div class="form-group">
-                        <label for="session">session</label>
-                        <select id="session"></select>
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-4">
-                <form>
-                    <div class="form-group" id="form-instance">
-                        <label id="image-label" for="image">Image</label><br/>
-                        <div style="padding-right: 60px; position: relative;">
-                            <input class="form-control" type="number" step="1" id="image"/>
-                            <button id="goBtn" type="button" class="btn btn-primary">Go</button>
+<div style="height:20px;background-color:#000;"></div>
+<div class="topwrapper">
+    <div class="container">
+        <div id="nav">
+            <div class="row">
+                <div class="col-md-3">
+                    <img id="logo" src="images/logo.png" width="200">
+                </div>
+                <div class="col-md-3">
+                    <form>
+                        <div class="form-group" id="form-projectDate">
+                            <label for="projectDate">Date</label>
+                            <select id="projectDate"></select>
                         </div>
+                    </form>
+                </div>
+                <div class="col-md-3">
+                    <form>
+                        <div class="form-group">
+                            <label for="session">session</label>
+                            <select id="session"></select>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-3">
+                    <form>
+                        <div class="form-group" id="form-instance">
+                            <label id="image-label" for="image">Image</label><br/>
+                            <div style="padding-right: 60px; position: relative;">
+                                <input class="form-control" type="number" step="1" id="image"/>
+                                <button id="goBtn" type="button" class="btn btn-primary">Go</button>
+                            </div>
 
-                    </div>
-                </form>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<div>
+<div style="margin-top:12px">
     <div id="main" class="container-fluid" style="display:none">
         <div class="wrapper">
             <div class="before">
@@ -969,4 +979,21 @@
         </div>
     </div>
 </div>
+
+<div style="position: fixed;left:15px;bottom:10px;">
+    <!-- Site footer -->
+
+    <div class="footer">
+        <h4>Transmap Corporation</h4>
+        <p>
+            3366 Riverside Dr., Suite 103<br/>
+            Upper Arlington, OH 43221<br/>
+            (P) 614.481.6799<br/>
+            (F) 614.481.4017
+
+        </p>
+        <p>&copy; Transmap 2014</p>
+    </div>
+</div> <!-- /container -->
+
 </body>
