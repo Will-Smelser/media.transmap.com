@@ -475,6 +475,7 @@
         }).fail(function(jqXHR){
             hashParser.remove('image');
             $("#image").val('?????').attr('min',0).attr('max',0);
+            $('#image-label').html('Image <small>min: 0, max: 0</small>');
             $("#form-image").addClass('has-error');
 
             $('.wrapper').slideUp();
@@ -652,6 +653,13 @@
                 $container.find('.data-head:first').append($table);
                 $container.find('.data-body:first').append($tableBody);
 
+                //print header row of no data
+                if(cracks.length === 0){
+                    var $tr = $(document.createElement('tr'));
+                    var $td = $(document.createElement('td')).attr('colspan','3').attr('style','text-align:center').text('No Data');
+                    $table.find('tbody').append($tr.append($td));
+                    $container.find('.data-head:first').append($table);
+                }
 
                 for(var x in cracks){
                     (function(data){
@@ -869,18 +877,19 @@
             autoOpen:false, width:500, modal:true
         });
 
-        if(info == null || !info.project){
-            $('#noProject').slideDown();
-            return;
-        }
-        init();
-
         $('#moveLeft').click(function(){
             move('left');
         });
         $('#moveRight').click(function(){
             move('right');
-        })
+        });
+
+        if(info == null || !info.project){
+            $('#noProject').slideDown();
+            return;
+        }
+
+        init();
     });
 
     </script>
