@@ -112,11 +112,31 @@ class Parser{
         return $this->height - $el->Y * $this->factor * $this->ratio - $this->offsety;
     }
 
+    private function xmlToJSON(SimpleXMLElement $node){
+        $comma = '';
+        foreach($node->children() as $child){
+            echo $comma . '"' .strtolower($child->getName()) . '": "' . $child->__toString() . '"';
+            $comma = ',';
+        }
+    }
+
     public function parse_CrackInformation($reader){
-        echo "[\n";
+        echo "{\n";
+
+        //skip to Unit node
+        while($reader->read() && $reader->name !== 'Unit');
+
+        //parse the units
+        $doc = new DOMDocument();
+        $node = simplexml_import_dom($doc->importNode($reader->expand(),true));
+        echo "\"units\": {";
+        $this->xmlToJSON($node);
+        echo "},\n";
 
         //skip to the Crack node
         while($reader->read() && $reader->name !== 'Crack');
+
+        echo "\"paths\":[\n";
 
         $comma = "";
         while($reader->name === 'Crack'){
@@ -126,6 +146,7 @@ class Parser{
             $id = $node->CrackID->__toString();
             $depth = $node->WeightedDepth->__toString();
             $width = $node->WeightedWidth->__toString();
+            $length = $node->Length->__toString();
 
             $row = array();
 
@@ -142,6 +163,7 @@ class Parser{
             $row['id'] = $id;
             $row['depth'] = $depth;
             $row['width'] = $width;
+            $row['length'] = $length;
 
             echo $comma . json_encode($row);
 
@@ -152,6 +174,6 @@ class Parser{
         }
 
         //echo "finished reading, made ".count($this->cracks)." elements<br/>";
-        echo "\n]";
+        echo "\n]}";
     }
 }

@@ -320,7 +320,7 @@
         return hashParser.get('project')+"/"+hashParser.get('projectDate')+"/"+hashParser.get('session');
     }
 
-    var createTableHeader = function(){
+    var createTableHeader = function(units){
 
         var $table = $(document.createElement('table')).attr('class','table table-hover');
         var $thead = $(document.createElement('thead'));
@@ -328,10 +328,15 @@
         var $row   = $(document.createElement('tr'));
         var $th    = $(document.createElement('th'));
 
+        var lUnit = (units && units.length) ? ' ('+units.length+')' : '';
+        var wUnit = (units && units.width) ? ' ('+units.width+')' : '';
+        var dUnit = (units && units.depth) ? ' ('+units.depth+')' : '';
+
         var header = $row
             .append($th.clone().html('ID'))
-            .append($th.clone().html('Width'))
-            .append($th.clone().html('Depth'));
+            .append($th.clone().html('Length'+lUnit))
+            .append($th.clone().html('Width'+wUnit))
+            .append($th.clone().html('Depth'+dUnit));
 
         $thead.append(header);
 
@@ -381,7 +386,7 @@
 
         var $table = createTableHeader();
         var $tr = $(document.createElement('tr'));
-        var $td = $(document.createElement('td')).attr('colspan','3').attr('style','text-align:center').text('No Data');
+        var $td = $(document.createElement('td')).attr('colspan','4').attr('style','text-align:center').text('No Data');
         $table.find('tbody').append($tr.append($td));
 
         $dataContainer.find('.data-head:first').append($table);
@@ -589,6 +594,7 @@
 
         $row
             .append($th.clone().html(pathData.id))
+            .append($td.clone().html(pathData.length))
             .append($td.clone().html(pathData.width))
             .append($td.clone().html(pathData.depth));
 
@@ -620,6 +626,13 @@
 
         showLoading($target);
 
+        var min = $('#image').attr('min');
+        var max = $('#image').attr('max');
+
+        //skip loading anything if these are outside of range
+        if(number < min || number > max)
+            return;
+
         $.getJSON("service.php?action=dims&path="+path).done(function(info){
             //x and y are reversed because the images have to get rotated
             var x = info[1];
@@ -642,7 +655,7 @@
                 drawNavPanel(paper);
                 drawRightNavPanel(paper,path);
 
-                var $table = createTableHeader();
+                var $table = createTableHeader(cracks.units);
                 var $tableBody = createTableBody();
                 var $tbody = $tableBody.find('tbody');
 
@@ -656,17 +669,17 @@
                 //print header row of no data
                 if(cracks.length === 0){
                     var $tr = $(document.createElement('tr'));
-                    var $td = $(document.createElement('td')).attr('colspan','3').attr('style','text-align:center').text('No Data');
+                    var $td = $(document.createElement('td')).attr('colspan','4').attr('style','text-align:center').text('No Data');
                     $table.find('tbody').append($tr.append($td));
                     $container.find('.data-head:first').append($table);
                 }
 
-                for(var x in cracks){
+                for(var x in cracks.paths){
                     (function(data){
                         var row = addData(data,paper);
                         $tbody.append(row);
                         drawPath(paper,data,row);
-                    })(cracks[x]);
+                    })(cracks.paths[x]);
                 }
 
                 showLoadingComplete($target, isCurrent);
@@ -737,7 +750,17 @@
 
     }
 
+    var allowAnimate = true;
     var move = function(direction){
+        if(!allowAnimate) return;
+
+        allowAnimate = false;
+
+        //misleading names, but track completion for each nodes animation
+        var beforeAnimComplete = false;
+        var afterAnimComplete = false;
+        var currentAnimComplete = false;
+
         //get min max
         var $img = $('#image');
         var min = $img.attr('min');
@@ -766,6 +789,7 @@
                 '<ul><li>Project: '+path+'<li>Min: '+min+'<li>Max: '+max,
                 function(){/*no-po*/}
             );
+            allowAnimate = true;
             return;
         }
 
@@ -781,6 +805,10 @@
 
             //hide the data
             $target.find('.data-container:first').slideUp();
+
+            //set allow animate
+            currentAnimComplete = true;
+            allowAnimate = (currentAnimComplete && beforeAnimComplete && afterAnimComplete);
         });
 
         var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
@@ -806,11 +834,17 @@
             $img.val($img.val()*1-1*dir); //we are actually 1 ahead or 1 behind current
             hashParser.add('image',$img.val());
             showLoadingComplete($to,true);
+
+            beforeAnimComplete = true;
+            allowAnimate = (currentAnimComplete && beforeAnimComplete && afterAnimComplete);
         });
 
         //animate (right or left) out and remove from DOM
         var $remove = (direction === 'right') ? $left : $right;
-        $remove.animate(option,duration,'swing');
+        $remove.animate(option,duration,'swing',function(){
+            afterAnimComplete = true;
+            allowAnimate = (currentAnimComplete && beforeAnimComplete && afterAnimComplete);
+        });
 
     }
 
@@ -863,26 +897,45 @@
             }
         });
 
-        $('#goBtn').click(function(){
-            hashParser.add('image',$('#image').val());
+
+        $('#goBtn')
+            .dblclick(function(e){
+                e.preventDefault();
+            })
+            .click(function(){;
+
+            var $img = $('#image');
+            var image = $img.val() * 1;
             var path = hashParser.get('project')+'/'+hashParser.get('projectDate')+'/'+hashParser.get('session');
-            var image = $('#image').val() * 1;
+
+            hashParser.add('image',image);
 
             loadLcms(image,$('.current .box:first'),path,true);
             loadLcms(image+1,$('.after .box:first'),path);
             loadLcms(image-1,$('.before .box:first'),path);
+
         });
 
         $("#dialogErr").dialog({
             autoOpen:false, width:500, modal:true
         });
 
-        $('#moveLeft').click(function(){
-            move('left');
-        });
-        $('#moveRight').click(function(){
-            move('right');
-        });
+        $('#moveLeft')
+            .dblclick(function(e){
+                e.preventDefault();
+            })
+            .click(function(){
+                move('left');
+            }
+        );
+        $('#moveRight')
+            .dblclick(function(e){
+                e.preventDefault();
+            })
+            .click(function(){
+                move('right');
+            }
+        );
 
         if(info == null || !info.project){
             $('#noProject').slideDown();
