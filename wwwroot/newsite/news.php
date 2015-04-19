@@ -5,6 +5,39 @@
 
     <?php include 'includes/head.php'; ?>
 
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js" ></script>
+
+    <style>
+        #movie{max-width:600px;}
+        #nomovie{
+            font-size:16px;
+            font-weight:bold;
+            color:red;
+        }
+    </style>
+
+    <!-- Modernizer video check -->
+    <script>
+        function supports_video() {
+            return !!document.createElement('video').canPlayType;
+        }
+        function supports_h264_baseline_video() {
+            if (!supports_video()) { return false; }
+            var v = document.createElement("video");
+            return v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+        }
+
+        $(document).ready(function(){
+            var video = "http://www.10tv.com/content/mediaplayer/embed.html?ooid=V4b2YydDrKqB8kcVK8zvLODs_edz-Czz&cmpid=share";
+            $("#10tvMovie").load(function(){
+                setTimeout(function(){
+                    $("#10tvLoading").hide();
+                    $("#10tvMovie").show();
+                },1000);
+            }).attr("src",video);
+        });
+    </script>
+
 </head>
 
 <?php include 'includes/navigation.php'; ?>
@@ -13,6 +46,22 @@
     <div class="row">
         <h1>Recent News</h1>
         <div class="col-md-6">
+            <h3>City of Dublin, Ohio Project</h3>
+            <div style="width:510px;height: 321px; position: relative;">
+                <div id="10tvLoading" style="position: absolute;z-index: 1">Loading...</div>
+                <iframe id="10tvMovie" style="position: absolute;z-index: 2;display: none;" width="510" height="321" frameborder="0" allowfullscreen scrolling="no"></iframe>
+            </div>
+
+            <h3>City of Evansville, IN MPO Project</h3>
+            <div>
+                <div id="nomovie" style="display:none">Your browser cannot play this movie.</div>
+                <video width="510" id="movie" preload controls src="http://mediaassets.courierpress.com/video_src/2014/10/02/MPO_1412300614814_8653700_ver1.0.mp4">
+                    Browser does not support this video.
+                </video>
+                <a href="http://www.courierpress.com/news/local-news/vanderburgh-warrick-henderson-team-up-on-road-repair-technology_27559833">
+                    Vanderburgh, Warrick, Henderson team up on road repair technology
+                </a>
+            </div>
 
             <h3>Press Release</h3>
             <p>

@@ -35,8 +35,8 @@
             <img src="images/services/large/lcms/Pavemetrics.png" class="img-thumbnail" />
         </div>
         <div class="col-lg-2">
-            <a  class="image-link" href="images/services/large/lcms/LCMS-Arrow-Van-Pic.png" target="_blank">
-                <img src="images/services/small/lcms/LCMS-Arrow-Van-Pic.png" class="img-thumbnail" />
+            <a  class="image-link" href="images/services/large/lcms/VanPicBack-3_2015.jpg" target="_blank">
+                <img src="images/services/small/lcms/VanPicBack-3_2015.jpg" class="img-thumbnail" />
             </a>
         </div>
     </div>
@@ -93,7 +93,7 @@
     <div class="row">
         <div class="col-lg-6">
             <h2>ON-SIGHT™ Mobile Mapping</h2>
-            <p>Transmap uses its ON-SIGHT™ HD Mobile Mapping System to capture ground-based LiDAR, 360 degree street-level, photogrammetric images and a dedicated HD camera scanning for pavement distresses.  The ON-SIGHT™ HD Mobile Mapping System collects data at normal driving speeds so special traffic control devices are not required during data collection.</p>
+            <p>Transmap uses its ON-SIGHT™ HD Mobile Mapping System to capture ground-based LiDAR, 360 degree street-level, photogrammetric images and a dedicated HD camera scanning for pavement distresses.  The ON-SIGHT™ HD Mobile Mapping System collects data at normal driving speeds so special traffic control devices are not required during data collection. Transmap's system now includes Ladybug5, which is equipped with 30 megapixels consisting of six high sensitivity five megapixel sensors.</p>
         </div>
         <div class="col-lg-6">
             <a  class="image-link" href="images/services/large/on-sight-van-1.jpg" target="_blank">
@@ -102,6 +102,15 @@
 
             <a  class="image-link" href="images/services/large/on-sight-lidar.jpg" target="_blank">
                 <img src="images/services/small/on-sight-lidar.jpg" class="img-thumbnail mleft" />
+            </a>
+
+            <a  class="image-link" href="images/services/large/Ladybug5_pic1.jpg" target="_blank">
+                <img src="images/services/small/Ladybug5_pic1.jpg" class="img-thumbnail mleft" />
+            </a>
+        </div>
+        <div class="col-lg-12">
+            <a  class="image-link" href="images/services/large/Ladybug5-Panoramic-Image.jpg" target="_blank">
+                <img src="images/services/small/Ladybug5-Panoramic-Image.jpg" class="img-thumbnail mleft" />
             </a>
         </div>
     </div>
@@ -225,10 +234,17 @@
                 </a>
             </div>
             <div class="img-thumbnail mleft">
+                <a class="image-link mleft" target="_blank" href="images/services/large/ArcGIS_Online_Collector_App2.jpg">
+                    <img src="images/services/small/ArcGIS_Online_Collector_App2.jpg" />
+                </a>
+            </div>
+            <div class="img-thumbnail mleft">
                 <a class="image-link mleft" target="_blank" href="images/services/large/web-gis-2.jpg">
                     <img src="images/services/small/web-gis-2.jpg" />
                 </a>
             </div>
+
+
         </div>
     </div>
     <div style="margin-top:10px"><img width="310" class="img-thumbnail" src="images/services/web-gis-onlin-logo.png" /></div>
