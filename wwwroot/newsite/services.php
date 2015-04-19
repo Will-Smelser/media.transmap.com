@@ -234,16 +234,15 @@
                 </a>
             </div>
             <div class="img-thumbnail mleft">
-                <a class="image-link mleft" target="_blank" href="images/services/large/ArcGIS_Online_Collector_App2.jpg">
-                    <img src="images/services/small/ArcGIS_Online_Collector_App2.jpg" />
-                </a>
-            </div>
-            <div class="img-thumbnail mleft">
                 <a class="image-link mleft" target="_blank" href="images/services/large/web-gis-2.jpg">
                     <img src="images/services/small/web-gis-2.jpg" />
                 </a>
             </div>
-
+            <div class="img-thumbnail mleft">
+                <a class="image-link mleft" target="_blank" href="images/services/large/ArcGIS_Online_Collector_App2.jpg">
+                    <img src="images/services/small/ArcGIS_Online_Collector_App2.jpg" />
+                </a>
+            </div>
 
         </div>
     </div>
