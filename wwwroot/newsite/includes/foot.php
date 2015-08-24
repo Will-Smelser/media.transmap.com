@@ -16,5 +16,5 @@
         (F) 614.481.4017
 
     </p>
-    <p>&copy; Transmap 2014</p>
+    <p>&copy; Transmap <?php echo date("Y"); ?></p>
 </div>

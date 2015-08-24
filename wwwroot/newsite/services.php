@@ -35,8 +35,8 @@
             <img src="images/services/large/lcms/Pavemetrics.png" class="img-thumbnail" />
         </div>
         <div class="col-lg-2">
-            <a  class="image-link" href="images/services/large/lcms/VanPicBack-3_2015.jpg" target="_blank">
-                <img src="images/services/small/lcms/VanPicBack-3_2015.jpg" class="img-thumbnail" />
+            <a  class="image-link" href="images/services/large/lcms/LCMS_van-back.jpg" target="_blank">
+                <img src="images/services/small/lcms/LCMS_van-back.jpg" class="img-thumbnail" />
             </a>
         </div>
     </div>
@@ -91,26 +91,44 @@
 
 
     <div class="row">
-        <div class="col-lg-6">
+        <div class="col-lg-12">
             <h2>ON-SIGHT™ Mobile Mapping</h2>
-            <p>Transmap uses its ON-SIGHT™ HD Mobile Mapping System to capture ground-based LiDAR, 360 degree street-level, photogrammetric images and a dedicated HD camera scanning for pavement distresses.  The ON-SIGHT™ HD Mobile Mapping System collects data at normal driving speeds so special traffic control devices are not required during data collection. Transmap's system now includes Ladybug5, which is equipped with 30 megapixels consisting of six high sensitivity five megapixel sensors.</p>
+            <p>Transmap uses its ON-SIGHT™ HD Mobile Mapping System to capture ground-based LiDAR, 360 degree street-level,
+                photogrammetric images and a dedicated HD camera scanning for pavement distresses.  The ON-SIGHT™
+                HD Mobile Mapping System collects data at normal driving speeds so special traffic control devices are not
+                required during data collection.</p>
         </div>
-        <div class="col-lg-6">
-            <a  class="image-link" href="images/services/large/on-sight-van-1.jpg" target="_blank">
-                <img src="images/services/small/on-sight-van-1.jpg" class="img-thumbnail" />
-            </a>
-
-            <a  class="image-link" href="images/services/large/on-sight-lidar.jpg" target="_blank">
-                <img src="images/services/small/on-sight-lidar.jpg" class="img-thumbnail mleft" />
-            </a>
-
-            <a  class="image-link" href="images/services/large/Ladybug5_pic1.jpg" target="_blank">
-                <img src="images/services/small/Ladybug5_pic1.jpg" class="img-thumbnail mleft" />
+        <div class="col-lg-12">
+            <h3>Dual Systems - Both Directions</h3>
+            <div class="panel panel-default">
+                <div class="panel-heading text-center"><b>12 Total Asset Cameras - 2 HD LiDAR Solutions</b></div>
+                <div class="panel-body">
+                    <div class="row text-center">
+                        <div class="col-xs-6">
+                            <a  class="image-link" href="images/services/large/lcms/LCMS_van-back.jpg" target="_blank">
+                                <img src="images/services/small/lcms/LCMS_van-back.jpg" class="img-thumbnail" />
+                            </a>
+                        </div>
+                        <div class="col-xs-6">
+                            <a class="image-link" href="images/services/large/LiDAR_LadyBug.jpg" target="_blank">
+                                <img src="images/services/small/LiDAR_LadyBug.jpg" class="img-thumbnail mleft">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <h3>Velodyne LiDAR: Over One Million Points Per Second Captured</h3>
+            <a class="image-link" href="images/services/large/LiDAR-wide.jpg" target="_blank">
+                <img src="images/services/small/LiDAR-wide.jpg" class="img-thumbnail mleft">
             </a>
         </div>
         <div class="col-lg-12">
-            <a  class="image-link" href="images/services/large/Ladybug5-Panoramic-Image.jpg" target="_blank">
-                <img src="images/services/small/Ladybug5-Panoramic-Image.jpg" class="img-thumbnail mleft" />
+            <h3>Ladybug5: 30MP Panoramic Images</h3>
+
+            <a class="image-link" href="images/services/large/pan-building.jpg" target="_blank">
+                <img src="images/services/small/pan-building.jpg" class="img-thumbnail mleft">
             </a>
         </div>
     </div>
@@ -234,8 +252,8 @@
                 </a>
             </div>
             <div class="img-thumbnail mleft">
-                <a class="image-link mleft" target="_blank" href="images/services/large/web-gis-2.jpg">
-                    <img src="images/services/small/web-gis-2.jpg" />
+                <a class="image-link mleft" target="_blank" href="images/services/large/lcms-viewer.jpg">
+                    <img src="images/services/small/lcms-viewer.jpg" />
                 </a>
             </div>
             <div class="img-thumbnail mleft">
