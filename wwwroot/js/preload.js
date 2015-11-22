@@ -150,13 +150,24 @@ var Preload = function(id)
 			}(this, this._images[hash]));
 			
 			//bind the onload...pass vars using closure ;)
-			this._images[hash].$img.load(function(obj, hash){
-					//only executes on successful load
-					return function(){
-						if(typeof obj._images[hash] !== "undefined")
-							obj._images[hash].func.call(obj, obj._images[hash]);
-					}
-				}(this, hash));
+            if(this._images[hash].$img.imagesLoaded){
+                this._images[hash].$img.imagesLoaded(function(obj, hash){
+                    //only executes on successful load
+                    return function(){
+                        console.log("loaded");
+                        if(typeof obj._images[hash] !== "undefined")
+                            obj._images[hash].func.call(obj, obj._images[hash]);
+                    }
+                }(this, hash));
+            }else{
+                this._images[hash].$img.load(function(obj, hash){
+                        //only executes on successful load
+                        return function(){
+                            if(typeof obj._images[hash] !== "undefined")
+                                obj._images[hash].func.call(obj, obj._images[hash]);
+                        }
+                    }(this, hash));
+            }
 			
 			//we always want to trigger our functions, but jquery only
 			//callsback on success, so have to keep poll at the image timeout
