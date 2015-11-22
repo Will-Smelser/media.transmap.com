@@ -188,7 +188,7 @@ var Preload = function(id)
 			var imgObj = this._images[hash];
 			
 			if(typeof imgObj === "undefined"){
-				if(imgObj.debug){
+				if(console){
 					console.log("WARNING: waitOnImage called for image that was not in preloader.");
 					console.log("Call preload() on image url first.");
 				}
