@@ -15,6 +15,7 @@
     <script type="text/javascript" src="/theme-jquery/jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js" ></script>
     <script type="text/javascript" src="/js/forms.js"></script>
     <script type="text/javascript" src="/js/preload.js"></script>
+    <script type="text/javascript" src="/js/imagesloaded.min.js"></script>
 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
@@ -126,7 +127,7 @@
             </div>
             <div class="embed-responsive embed-responsive-16by9">
                 <div  class="embed-responsive-item" style="overflow:hidden;">
-                    <img id="main-image" src="http://storage.googleapis.com/tmap_pano/080615/3/Front/ladybug_panoramic_002611.jpg" />
+                    <img id="main-image" src="" />
                 </div>
             </div>
         </div>
@@ -254,10 +255,14 @@
                 }
 
                 $loading.modal('show');
+                $img.fadeOut();
                 loader.preload(url);
                 loader.waitOnImage(url,function(){
-                    $img.attr('src',url).fadeIn();
-                    $loading.modal('hide');
+                    $img.attr('src',url).imagesLoaded(function(){
+                        $loading.modal('hide');
+                        $img.fadeIn();
+                    });
+                    //$loading.modal('hide');
                 });
 
             });
@@ -334,17 +339,23 @@
 
         var doLoad = function(){
             var next = getNextNurls(bigStep,1);
+            var prev = getNextNurls(bigStep,-1);
+
+            /*
             for(var x in next){
-                console.log("load",next[x]);
                 loader.preload(next[x]);
-            }
+            }*/
+            //loader.preload(next[1]);
+            loader.preload(next[bigStep]);
+            //loader.preload(prev[1]);
+            loader.preload(prev[bigStep]);
+
         }
 
         var doCleanup = function(){
             var prev = getNextNurls(bigStep*2,-1);
             var remove = prev.slice(bigStep+1);
             for(var x in remove){
-                console.log("delete",remove[x]);
                 loader.removeImage(remove[x]);
             }
         }
