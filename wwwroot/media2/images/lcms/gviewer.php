@@ -26,9 +26,11 @@
     <script type="text/javascript" src="/js/hash-parser.js"></script>
     <script type="text/javascript" src="/js/handlebars-v4.0.5.js"></script>
 
+    <!--
     <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.5.9/slick.min.js"></script>
-
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    -->
+    <link rel="stylesheet" href="/flipster/jquery.flipster.min.css" />
+    <script type="text/javascript" src="/flipster/jquery.flipster.min.js"></script>
 
     <link href="//www.transmap.com/css/custom.css" rel="stylesheet">
 
@@ -120,7 +122,7 @@
 <div style="margin-top:12px">
     <div id="main" class="container-fluid">
         <div class="row">
-            <div class="col-sm-12" id="slider"></div>
+            <div class="col-sm-12" id="slider"><ul id="slides"></ul></div>
         </div>
     </div>
 </div>
@@ -130,23 +132,25 @@
 
 <!-- box -->
 <script id="box-template" type="text/x-handlebars-template">
-    <div class="box" data-path="{{path}}" data-image="{{image}}">
-        <div class="paper" style="width: {{width}}px; display: block;">
-            <h2>IMGE: {{image}}</h2>
-        </div>
-        <div class="data-container" style="width: {{width}}px; display: block;">
-            <div class="data-head"><table class="table table-hover"><thead><tr><th>ID</th><th>Length (meter)</th><th>Width (millimeter)</th><th>Depth (millimeter)</th></tr></thead><tbody></tbody></table></div>
-            <div class="data-body">
-                <table class="table table-hover">
-                    <tbody>
-                    {{#each data}}
-                        <tr><td>{{id}}</td><td>{{length}}</td><td>{{width}}</td><td>{{depth}}</td></tr>
-                    {{/each}}
-                    </tbody>
-                </table>
+    <li>
+        <div class="box" data-path="{{path}}" id="{{date}}-{{session}}-{{image}}" data-image="{{image}}">
+            <div class="paper" style="width: {{width}}px; display: block;">
+                <h2>IMGE: {{image}}</h2>
+            </div>
+            <div class="data-container" style="width: {{width}}px; display: block;">
+                <div class="data-head"><table class="table table-hover"><thead><tr><th>ID</th><th>Length (meter)</th><th>Width (millimeter)</th><th>Depth (millimeter)</th></tr></thead><tbody></tbody></table></div>
+                <div class="data-body">
+                    <table class="table table-hover">
+                        <tbody>
+                        {{#each data}}
+                            <tr><td>{{id}}</td><td>{{length}}</td><td>{{width}}</td><td>{{depth}}</td></tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    </li>
 </script>
 <script id="box-template-empty" type="text/x-handlebars-template">
     <div class="box" data-image="-1"></div>
@@ -165,28 +169,28 @@
     var tpl = Handlebars.compile($('#box-template').html());
     var tplEmpty = Handlebars.compile($('#box-template-empty').html());
 
-    var path = function(data){
-        document.location.hash = "#/date/"+data.date+"/session/"+data.session+"/image/"+data.image;
+    var path = function(date,session,image){
+        return "/date/"+date+"/session/"+session+"/image/"+image;
     }
 
     //setup the slider
-    var $slider = $('#slider').slick({
-        dots: true,
-        infinite: false,
-        speed: 300,
-        slidesToShow: 3,
-        adaptiveHeight: true,
-        variableWidth: true,
-        centerMode: true,
-        centerPadding: '0px'
+    var $slider = $('#slider').flipster({
+        loop:false,
+        style:'flat',
+        spacing:0,
+        click:false
     });
 
-    var getData = function(image){
+    var $slides = $("#slides");
+
+    var getData = function(date,session,image){
         var $defer = $.Deferred();
 
         var example = {
-            path : "",
+            path : path({date:date,session:session,image:image}),
             image : image,
+            session : session,
+            date : date,
             width : MAIN_WIDTH,
             data : [
                 {id:0,length:10,width:5,depth:99}
@@ -198,44 +202,41 @@
     }
 
     //empty slider contents and reload
-    var resetSlider = function(image){
+    var resetSlider = function(date,session,image){
         var image = parseInt(image);
 
-        //make sure slider is empty
-        $slider.slick('slickRemove');
-        $slider.slick('slickRemove');
-        $slider.slick('slickRemove');
-        $slider.slick('slickRemove');//just have to have 1 extra!
+        //remove everything
+        $slides.empty();
 
         //then we 3 slides
         if(image > 0 && image < IMAGE_MAX){
-            $.when(getData(image-1),getData(image),getData(image+1)).always(function(data1,data2,data3){
-                $slider.slick('slickAdd',tpl(data1));
-                $slider.slick('slickAdd',tpl(data2));
-                $slider.slick('slickAdd',tpl(data3));
-                $slider.slick('slickAdd',tplEmpty());//just have to have 1 extra!
+            $.when(getData(date,session,image-1),getData(date,session,image),getData(date,session,image+1))
+                .always(function(data1,data2,data3){
+                    $slides.append(tpl(data1));
+                    $slides.append(tpl(data2));
+                    $slides.append(tpl(data3));
             });
 
         //1 image to right
         }else if(image === 0){
-            $.when(getData(image),getData(image+1)).always(function(data1,data2){
-                $slider.slick('slickAdd',tplEmpty());
-                $slider.slick('slickAdd',tpl(data1));
-                $slider.slick('slickAdd',tpl(data2));
-                $slider.slick('slickAdd',tplEmpty());//just have to have 1 extra!
+            $.when(getData(date,session,image),getData(date,session,image+1))
+                .always(function(data1,data2){
+                    $slides.append(tpl(data1));
+                    $slides.append(tpl(data2));
             });
 
         //1 images to left
         }else if(image === IMAGE_MAX){
-            $.when(getData(image-1),getData(image)).always(function(data1,data2){
-                $slider.slick('slickAdd',tpl(data1));
-                $slider.slick('slickAdd',tpl(data2));
-                $slider.slick('slickAdd',tplEmpty());
-                $slider.slick('slickAdd',tplEmpty());//just have to have 1 extra!
+            $.when(getData(date,session,image-1),getData(date,session,image))
+                .always(function(data1,data2){
+                    $slides.append(tpl(data1));
+                    $slides.append(tpl(data2));
             });
         }
 
-        $slider.slick('slickGoTo',1);
+        $slider.flipster('index');
+        $slider.flipster('jump',1);
+
     }
 
     //main form events and logic here
@@ -279,26 +280,19 @@
             form.fill({date:date,session:sess,image:image});
         });
 
-        var slickCnt = $slider.slick('getSlick').$slides.length;
-
         //just reset image
         if(CUR_DATE !== date || CUR_SESS !== sess || image > CUR_IMAGE+1 || image < CUR_IMAGE-1){
-            resetSlider(image);
+            resetSlider(date,sess,image);
 
         //move right
         }else if(image > CUR_IMAGE){
-            console.log("right");
             if(image === IMAGE_MAX){
-                $slider.slick('slickNext');
-                $slider.slick('slickAdd',tplEmpty());
-            }else if(slickCnt > 5){
-                console.log("HELLO",image);
-                resetSlider(image);
+                $slider.flipster('next');
             }else{
-                console.log("move right - not max : image-"+(image+1));
-                getData(image+1).done(function(data){
-                    $slider.slick('slickNext');
-                    //$slider.slick('slickAdd',tpl(data),3);
+                getData(date,sess,image+1).done(function(data){
+                    $slides.append(tpl(data));
+                    $slider.flipster('index');
+                    $slider.flipster('next');
                 });
             }
 
@@ -306,12 +300,12 @@
         }else if(image < CUR_IMAGE){
             console.log("left");
             if(image === IMAGE_MIN){
-                $slider.slick('slickAdd',tplEmpty(),0);
-                $slider.slick('slickPrev');
+                $slider.flipster('prev');
             }else{
-                getData(image-1).done(function(data){
-                    $slider.slick('slickAdd',tpl(data),0);
-                    $slider.slick('slickPrev');
+                getData(date,sess,image-1).done(function(data){
+                    $slides.prepend(tpl(data));
+                    $slider.flipster('index');
+                    $slider.flipster('jump',1);
                 });
             }
         }
@@ -330,7 +324,7 @@
     $(".goBtn").click(function(){
         $form.forms(function(form){
             var data = form.extract();
-            path(data);
+            document.location.hash = "#"+path(data.date,data.session,data.image);
         });
     });
 
@@ -338,16 +332,14 @@
     $("#moveRight").click(function(){
         $form.forms(function(form){
             var data = form.extract();
-            data.image = parseInt(data.image)+1;
-            path(data);
+            document.location.hash = "#"+path(data.date,data.session,parseInt(data.image)+1);
         });
     });
 
     $("#moveLeft").click(function(){
         $form.forms(function(form){
             var data = form.extract();
-            data.image = parseInt(data.image)-1;
-            path(data);
+            document.location.hash = "#"+path(data.date,data.session,parseInt(data.image)-1);
         });
     });
 
