@@ -16,7 +16,6 @@
 
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="/theme-jquery/jquery-ui-1.9.2.custom/css/custom-theme/jquery-ui-1.9.2.custom.css" type="text/css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.5.9/slick.css"/>
 
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
     <script type="text/javascript" src="/theme-jquery/jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js" ></script>
@@ -25,12 +24,7 @@
     <script type="text/javascript" src="/js/forms.js"></script>
     <script type="text/javascript" src="/js/hash-parser.js"></script>
     <script type="text/javascript" src="/js/handlebars-v4.0.5.js"></script>
-
-    <!--
-    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.5.9/slick.min.js"></script>
-    -->
-    <link rel="stylesheet" href="/flipster/jquery.flipster.min.css" />
-    <script type="text/javascript" src="/flipster/jquery.flipster.min.js"></script>
+    <script type="text/javascript" src="http://coolcarousels.frebsite.nl/c/5/jquery.carouFredSel-6.0.4-packed.js"></script>
 
     <link href="//www.transmap.com/css/custom.css" rel="stylesheet">
 
@@ -66,6 +60,10 @@
         #moveRight{
             right:0px;
             background-image: url(images/arrow_right_grey.png);
+        }
+        .slide{
+            display: inline-block;
+            width:700px;
         }
 
     </style>
@@ -122,7 +120,7 @@
 <div style="margin-top:12px">
     <div id="main" class="container-fluid">
         <div class="row">
-            <div class="col-sm-12" id="slider"><ul id="slides"></ul></div>
+            <div class="col-sm-12"><ul id="slides"></ul></div>
         </div>
     </div>
 </div>
@@ -132,10 +130,10 @@
 
 <!-- box -->
 <script id="box-template" type="text/x-handlebars-template">
-    <li>
+    <li class="slide">
         <div class="box" data-path="{{path}}" id="{{date}}-{{session}}-{{image}}" data-image="{{image}}">
             <div class="paper" style="width: {{width}}px; display: block;">
-                <h2>IMGE: {{image}}</h2>
+                <h2>IMAGE: {{image}}</h2>
             </div>
             <div class="data-container" style="width: {{width}}px; display: block;">
                 <div class="data-head"><table class="table table-hover"><thead><tr><th>ID</th><th>Length (meter)</th><th>Width (millimeter)</th><th>Depth (millimeter)</th></tr></thead><tbody></tbody></table></div>
@@ -153,7 +151,7 @@
     </li>
 </script>
 <script id="box-template-empty" type="text/x-handlebars-template">
-    <div class="box" data-image="-1"></div>
+    <li class="slide"><div class="box" data-image="-1"></div></li>
 </script>
 
 <script>
@@ -174,12 +172,7 @@
     }
 
     //setup the slider
-    var $slider = $('#slider').flipster({
-        loop:false,
-        style:'flat',
-        spacing:0,
-        click:false
-    });
+    var $slider = $('#slides');
 
     var $slides = $("#slides");
 
@@ -201,9 +194,32 @@
         return $defer.promise();
     }
 
+    var _createCarousel = function(idx){
+        $slider.carouFredSel({
+            circular: true,
+            infinite: false,
+            width: '100%',
+            height: "variable",
+            items: {
+                visible: 3,
+                start: idx,
+                height: "variable",
+                width:700
+            },
+            scroll: {
+                items: 2,
+                duration: 1000,
+                timeoutDuration: 3000
+            },
+            auto:false
+        });
+    }
+
     //empty slider contents and reload
     var resetSlider = function(date,session,image){
         var image = parseInt(image);
+
+        $slider.trigger('destroy');
 
         //remove everything
         $slides.empty();
@@ -215,27 +231,29 @@
                     $slides.append(tpl(data1));
                     $slides.append(tpl(data2));
                     $slides.append(tpl(data3));
+                    _createCarousel(1);
             });
 
         //1 image to right
         }else if(image === 0){
-            $.when(getData(date,session,image),getData(date,session,image+1))
-                .always(function(data1,data2){
+            $.when(getData(date,session,image),getData(date,session,image+1),getData(date,session,image+2))
+                .always(function(data1,data2,data3){
                     $slides.append(tpl(data1));
                     $slides.append(tpl(data2));
+                    $slides.append(tpl(data3));
+                    _createCarousel(0);
             });
 
         //1 images to left
         }else if(image === IMAGE_MAX){
-            $.when(getData(date,session,image-1),getData(date,session,image))
-                .always(function(data1,data2){
+            $.when(getData(date,session,image-2),getData(date,session,image-1),getData(date,session,image))
+                .always(function(data0,data1,data2){
+                    $slides.append(tpl(data0));
                     $slides.append(tpl(data1));
                     $slides.append(tpl(data2));
+                    _createCarousel(2);
             });
         }
-
-        $slider.flipster('index');
-        $slider.flipster('jump',1);
 
     }
 
@@ -281,36 +299,9 @@
         });
 
         //just reset image
-        if(CUR_DATE !== date || CUR_SESS !== sess || image > CUR_IMAGE+1 || image < CUR_IMAGE-1){
+        if(CUR_DATE !== date || CUR_SESS !== sess || image != CUR_IMAGE){
             resetSlider(date,sess,image);
-
-        //move right
-        }else if(image > CUR_IMAGE){
-            if(image === IMAGE_MAX){
-                $slider.flipster('next');
-            }else{
-                getData(date,sess,image+1).done(function(data){
-                    $slides.append(tpl(data));
-                    $slider.flipster('index');
-                    $slider.flipster('next');
-                });
-            }
-
-        //move left
-        }else if(image < CUR_IMAGE){
-            console.log("left");
-            if(image === IMAGE_MIN){
-                $slider.flipster('prev');
-            }else{
-                getData(date,sess,image-1).done(function(data){
-                    $slides.prepend(tpl(data));
-                    $slider.flipster('index');
-                    $slider.flipster('jump',1);
-                });
-            }
         }
-        console.log(CUR_IMAGE,image);
-
 
         CUR_DATE = date;
         CUR_IMAGE = image;
@@ -325,21 +316,52 @@
         $form.forms(function(form){
             var data = form.extract();
             document.location.hash = "#"+path(data.date,data.session,data.image);
+            resetSlider(data.date,data.session,data.image);
         });
     });
 
+    var navLock = false;
 
     $("#moveRight").click(function(){
+        if(navLock) return;
+
+        navLock = true;
         $form.forms(function(form){
             var data = form.extract();
-            document.location.hash = "#"+path(data.date,data.session,parseInt(data.image)+1);
+            var imgNumber = parseInt(data.image)+1;
+
+            CUR_IMAGE = imgNumber;
+
+            document.location.hash = "#"+path(data.date,data.session,imgNumber);
+            getData(data.date,data.sess,imgNumber+1).done(function(data){
+                $slider.trigger('insertItem',[tpl(data),"end"]);
+                $slider.trigger("next",[1,true,function(){
+                    $slider.trigger('removeItem',[$(this), 0]);
+                    navLock = false;
+                }]);
+            });
         });
     });
 
     $("#moveLeft").click(function(){
+        if(navLock) return;
+
+        navLock = true;
         $form.forms(function(form){
             var data = form.extract();
-            document.location.hash = "#"+path(data.date,data.session,parseInt(data.image)-1);
+            var imgNumber = parseInt(data.image)-1;
+
+            CUR_IMAGE = imgNumber;
+
+            document.location.hash = "#"+path(data.date,data.session,imgNumber);
+            getData(data.date,data.sess,imgNumber-1).done(function(data){
+                $slider.trigger('insertItem',[tpl(data),"end"]);
+                $slider.trigger("prev",[1,true,function(){
+                    $slider.trigger('removeItem',[$(this), 0]);
+                    navLock = false;
+                }]);
+            });
+
         });
     });
 
