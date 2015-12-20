@@ -65,6 +65,32 @@
             display: inline-block;
             width:700px;
         }
+        li.slide{
+            margin:0px;
+            padding:0px;
+        }
+
+        .image-wrapper{
+            position:relative;
+            width:700px;
+            height: 290px;
+            border:solid black 2px;
+            overflow:hidden;
+        }
+        .image-inner{
+            position: absolute;
+            /*top:291px;*/
+            left:700px;
+        }
+        .image-inner img{
+            -ms-transform: rotate(-90deg) scale(0.28); /* IE 9 */
+            -webkit-transform: rotate(-90deg) scale(0.28); /* Chrome, Safari, Opera */
+            transform: rotate(90deg) scale(0.28);
+
+            -ms-transform-origin: top left;
+            -webkit-transform-origin: top left;
+            transform-origin: top left;
+        }
 
     </style>
 
@@ -130,12 +156,16 @@
 
 <!-- box -->
 <script id="box-template" type="text/x-handlebars-template">
-    <li class="slide">
+    <li class="slide" style="width:{{width}}px;overflow:hidden;margin:0px;padding:0px;position:relative;left:0px">
         <div class="box" data-path="{{path}}" id="{{date}}-{{session}}-{{image}}" data-image="{{image}}">
             <div class="paper" style="width: {{width}}px; display: block;">
-                <h2>IMAGE: {{image}}</h2>
+                <div class="image-wrapper">
+                    <div class="image-inner">
+                        <img src="https://storage.googleapis.com/tmap_lcms/{{date}}/{{session}}/LcmsResult_OverlayInt_{{image}}.jpg" />
+                    </div>
+                </div>
             </div>
-            <div class="data-container" style="width: {{width}}px; display: block;">
+            <div class="data-container" style="width: {{width}}px; display: inline-block;">
                 <div class="data-head"><table class="table table-hover"><thead><tr><th>ID</th><th>Length (meter)</th><th>Width (millimeter)</th><th>Depth (millimeter)</th></tr></thead><tbody></tbody></table></div>
                 <div class="data-body">
                     <table class="table table-hover">
@@ -156,7 +186,7 @@
 
 <script>
 
-    var MAIN_WIDTH = 800;
+    var MAIN_WIDTH = 700;
     var IMAGE_MAX = 9999;
     var IMAGE_MIN = 0;
     var MAX_SLIDER_COUNT = 50;
@@ -176,8 +206,19 @@
 
     var $slides = $("#slides");
 
+    var pad = function(str,len){
+        var res = str.toString();
+        while(res.length < len){
+            res = "0"+res;
+        }
+        return res;
+    };
+
     var getData = function(date,session,image){
         var $defer = $.Deferred();
+
+        var image = pad(image,6);
+        var date = pad(date,6);
 
         var example = {
             path : path({date:date,session:session,image:image}),
@@ -333,7 +374,7 @@
             CUR_IMAGE = imgNumber;
 
             document.location.hash = "#"+path(data.date,data.session,imgNumber);
-            getData(data.date,data.sess,imgNumber+1).done(function(data){
+            getData(data.date,data.session,imgNumber+1).done(function(data){
                 $slider.trigger('insertItem',[tpl(data),"end"]);
                 $slider.trigger("next",[1,true,function(){
                     $slider.trigger('removeItem',[$(this), 0]);
@@ -354,7 +395,7 @@
             CUR_IMAGE = imgNumber;
 
             document.location.hash = "#"+path(data.date,data.session,imgNumber);
-            getData(data.date,data.sess,imgNumber-1).done(function(data){
+            getData(data.date,data.session,imgNumber-1).done(function(data){
                 $slider.trigger('insertItem',[tpl(data),"end"]);
                 $slider.trigger("prev",[1,true,function(){
                     $slider.trigger('removeItem',[$(this), 0]);
