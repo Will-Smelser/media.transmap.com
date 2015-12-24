@@ -381,10 +381,10 @@
         for(var i=0; i < formEls.length; i++){
             var $el = $(formEls[i]);
 
+            if($el.attr('data-forms-visited') === 'true' || typeof $el.attr('name') === 'undefined') continue;
+
             var type = elToType($el);
             var name = type.getName();
-
-            if($el.attr('data-forms-visited') === 'true' || typeof name==='undefined') continue;
 
             $el.attr('data-forms-visited',true);
 
