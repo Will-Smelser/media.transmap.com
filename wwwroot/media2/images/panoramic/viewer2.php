@@ -56,56 +56,74 @@
 <body>
 <div style="height:20px;background-color:#000;"></div>
 <div class="topwrapper">
-    <div class="container">
-        <form name="form-nav" id="form-nav">
-        <div id="nav">
-            <div class="row">
-                <div class="col-md-3">
-                    <img id="logo" src="../lcms/images/logo.png" width="200"  class="img-responsive visible-lg-block visible-md-block" alt="TransMap">
-                    <input type="button" id="goBtn2" class="goBtn btn btn-primary pull-right hidden-md hidden-lg"  value="Go">
-                    <h2 class="hidden-md hidden-lg">TransMap Inc.</h2>
+
+            <nav class="navbar navbar-inverse" style="background-color: transparent; border:none; margin-bottom: 0px;">
+                <div class="container-fluid">
+
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#form-nav" style="background-color: #000">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+
+                    <a class="navbar-brand visible-xs-block" href="#" style="color:#000">Transmap</a>
                 </div>
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <label for="direction">Direction</label>
-                        <select name="direction" id="direction" class="form-control">
-                            <option vlaue="Front" selected>Front</option>
-                            <option vlaue="Back">Back</option>
-                        </select>
-                    </div>
+
+
+                        <form name="form-nav" id="form-nav" class="collapse navbar-collapse" style="margin:0px;padding:0px;overflow:hidden">
+                            <div class="nav navbar-nav row">
+                                <div class="col-xs-3 hidden-xs">
+                                    <img id="logo" src="../lcms/images/logo.png" width="200"  class="img-responsive hidden-xs" alt="TransMap">
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group">
+                                        <label for="direction">Direction</label>
+                                        <select name="direction" id="direction" class="form-control">
+                                            <option vlaue="Front" selected>Front</option>
+                                            <option vlaue="Back">Back</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group" id="form-projectDate">
+                                        <label for="projectDate">Date</label>
+                                        <input id="projectDate" name="date" class="form-control" placeholder="Choose Date" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group">
+                                        <label for="session">Session</label>
+                                        <input id="session" name="session" class="form-control" placeholder="Enter Session" type="number" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="form-group">
+                                        <div class="form-group">
+                                            <label for="image">Image</label>
+                                            <input class="form-control" name="image" type="number" step="1" id="image" placeholder="Image #"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <div class="form-group">
+                                        <div class="form-group">
+                                            <label for="goBtn2">&nbsp;</label>
+                                            <input type="button" id="goBtn2" style="min-width: 45px" class="form-control goBtn btn btn-primary"  value="Go">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+
+
+
+
                 </div>
-                <div class="col-md-2">
-                    <div class="form-group" id="form-projectDate">
-                        <label for="projectDate">Date</label>
-                        <input id="projectDate" name="date"  class="form-control" placeholder="Choose Date" />
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <label for="session">Session</label>
-                        <input id="session" name="session" class="form-control" placeholder="Enter Session" type="number" />
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <div class="form-group">
-                            <label for="image">Image</label>
-                            <input class="form-control" name="image" type="number" step="1" id="image" placeholder="Image #"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-1  visible-lg-block visible-md-block">
-                    <div class="form-group">
-                        <div class="form-group">
-                            <label for="goBtn2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                            <input type="button" id="goBtn2" class="goBtn btn btn-primary"  value="Go">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </form>
-    </div>
+            </nav>
+
+
 </div>
 
 <div class="container-fluid">
@@ -260,11 +278,24 @@
         router.start();
 
         //add datepicker for form
-        $("#projectDate").datepicker();
+        $("#projectDate").datepicker({
+            beforeShow: function() {
+                setTimeout(function(){
+                    $('.ui-datepicker').css('z-index', 9999);
+                }, 1);
+            }
+        });
 
         //the go button clicks and Front/Back change
         $('.goBtn,#goBtn2,#direction').click(function(){
             setHashLocation(form.extract());
+        });
+
+        //listen for "enter" key
+        $('.form-control').keypress(function(e) {
+            if(e.which == 13) {
+                setHashLocation(form.extract());
+            }
         });
 
         //image navigation stuff
