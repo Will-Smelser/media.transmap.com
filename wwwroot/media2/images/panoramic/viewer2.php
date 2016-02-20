@@ -22,6 +22,9 @@
     <link href="//www.transmap.com/css/custom.css" rel="stylesheet">
 
     <style>
+    body{
+        overflow:hidden;
+    }
     #main-image{
         position:absolute;
         top: -1250px;
@@ -54,10 +57,11 @@
 
 </head>
 <body>
-<div style="height:20px;background-color:#000;"></div>
-<div class="topwrapper">
+<!--<div style="height:20px;background-color:#000;"></div>-->
+<!--<div class="topwrapper">-->
+<div>
 
-            <nav class="navbar navbar-inverse" style="background-color: transparent; border:none; margin-bottom: 0px;">
+            <nav class="navbar navbar-inverse" style="background-color: transparent; border:none; margin-bottom: 0px; display:none;">
                 <div class="container-fluid">
 
                 <div class="navbar-header">
@@ -185,6 +189,48 @@
 </div>
 <!-- Modal ends Here -->
 
+<div class="modal fade" tabindex="-1" role="dialog" id="main-dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Please Choose</h4>
+            </div>
+            <div class="modal-body">
+                <form id="no-data-form" name="no-data-form">
+
+                    <div class="form-group">
+                        <label for="direction">Direction</label>
+                        <select name="direction" id="direction" class="form-control">
+                            <option vlaue="Front" selected>Front</option>
+                            <option vlaue="Back">Back</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="form-projectDate">
+                        <label for="projectDate">Date (MM-DD-YY)</label>
+                        <input id="projectDate" name="date" class="form-control" placeholder="Choose Date (MM-DD-YY)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="session">Session</label>
+                        <input id="session" name="session" class="form-control" placeholder="Enter Session" type="number" />
+                    </div>
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="image">Image</label>
+                            <input class="form-control" name="image" type="number" step="1" id="image" placeholder="Image #"/>
+                        </div>
+                    </div>
+
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="no-route-btn">Submit</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <script>
     var Preloader = function(){
         var $container = $(document.createElement('div')).hide();
@@ -275,7 +321,21 @@
                 });
 
         });
+        router.noRoute = function(){
+            $('#main-dialog').modal('show');
+        };
         router.start();
+
+        //the no route popup button
+        $('#no-route-btn').click(function(){
+            $('#no-data-form').forms(function(f){
+                var data = f.extract();
+                data.date = data.date.replace(/-/g,'');
+                setHashLocation(data);
+                $('#main-dialog').modal('hide');
+            });
+        });
+
 
         //add datepicker for form
         $("#projectDate").datepicker({
@@ -286,9 +346,24 @@
             }
         });
 
+        var setImagePos = function(data){
+            var pos = imageInitPosFront;
+            if(data.direction === 'Back'){
+                pos = imageInitPosBack;
+            }
+            $img.css('top',pos.top+'px');
+            $img.css('left',pos.left+'px');
+        }
+
         //the go button clicks and Front/Back change
-        $('.goBtn,#goBtn2,#direction').click(function(){
+        $('.goBtn').click(function(){
             setHashLocation(form.extract());
+        });
+
+        $('#direction').change(function(){
+            var data = form.extract();
+            setImagePos(data);
+            setHashLocation(data);
         });
 
         //listen for "enter" key
@@ -301,10 +376,20 @@
         //image navigation stuff
         $img.draggable();
 
+        var imageInitPosFront = {
+            left:-1492, top: -1206
+        };
+        var imageInitPosBack = {
+            left:-2119, top: -1257
+        };
+
         var zoomStep = .25;
         var imageInitWidth = 5400;
         var imageInitHeight = 2700;
-        var imageInitPos = $img.position();
+        var imageInitPos = imageInitPosFront;
+
+        //initialize the position
+        setImagePos(form.extract());
 
         var center = 20;
         $("#zoom").slider({
@@ -321,9 +406,6 @@
                 var newHeight = pct*imageInitHeight;
                 var newPosTop = imageInitPos.top+(imageInitHeight - newHeight)/ 1.5;
                 var newPosLeft = imageInitPos.left+(imageInitWidth - newWidth)/2.5;
-                //var pos = $img.position();
-                //var newPosTop = pct*pos.top;
-                //var newPosLeft = pct*pos.left;
 
                 //set width and try to keep things centered
                 $img.attr('width',newWidth+'px');
@@ -335,11 +417,14 @@
 
         var goTo = function(add){
             var data = form.extract();
-
             var dir = (data.direction === 'Front') ? 1 : -1;
 
             data.image = parseInt(data.image) + add * dir;
+
+            if(data.image < 0) return;
+
             setHashLocation(data);
+            doLoad();
         }
 
         var doLoad = function(){
@@ -350,10 +435,18 @@
             var dir = (data.direction === 'Front') ? 1 : -1;
 
             var current = parseInt(data.image);
-            urls.push(imageUrl(data.direction,data.date,data.session,current+1*dir));
-            urls.push(imageUrl(data.direction,data.date,data.session,current-1*dir));
-            urls.push(imageUrl(data.direction,data.date,data.session,current+bigStep*dir));
-            urls.push(imageUrl(data.direction,data.date,data.session,current-bigStep*dir));
+            var images = [];
+
+            images.push(current+1*dir);
+            images.push(current-1*dir);
+            images.push(current+bigStep*dir);
+            images.push(current-bigStep*dir);
+
+            for(var x in images){
+                if(images[x] >= 0){
+                    urls.push(imageUrl(data.direction,data.date,data.session,images[x]));
+                }
+            }
 
             loader.preload(urls);
         }
@@ -361,39 +454,19 @@
         var bigStep = 5;
         $("#forward").click(function(){
             goTo(1);
-            doLoad();
         });
         $("#forwardBig").click(function(){
             goTo(bigStep);
-            doLoad();
         });
         $("#backward").click(function(){
             goTo(-1);
-            doLoad();
         });
         $("#backwardBig").click(function(){
             goTo(-bigStep);
-            doLoad();
         });
 
 
     });
 </script>
-
-<div style="position: fixed;left:15px;bottom:10px;z-index: 100;box-shadow: 5px 5px 8px #888888;background-color: #efefef; border: solid #ccc 1px;padding:5px">
-    <!-- Site footer -->
-
-    <div class="footer">
-        <h4>Transmap Corporation</h4>
-        <p>
-            3366 Riverside Dr., Suite 103<br/>
-            Upper Arlington, OH 43221<br/>
-            (P) 614.481.6799<br/>
-            (F) 614.481.4017
-
-        </p>
-        <p>&copy; Transmap 2014</p>
-    </div>
-</div> <!-- /container -->
 
 </body>
