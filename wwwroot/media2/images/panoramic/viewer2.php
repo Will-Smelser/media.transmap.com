@@ -77,8 +77,8 @@
 
                         <form name="form-nav" id="form-nav" class="collapse navbar-collapse" style="margin:0px;padding:0px;overflow:hidden">
                             <div class="nav navbar-nav row">
-                                <div class="col-xs-3 hidden-xs">
-                                    <img id="logo" src="../lcms/images/logo.png" width="200"  class="img-responsive hidden-xs" alt="TransMap">
+                                <div class="col-xs-2 hidden-xs">
+                                    <img id="logo" src="../lcms/images/logo.png" class="img-responsive hidden-xs" alt="TransMap">
                                 </div>
                                 <div class="col-sm-2">
                                     <div class="form-group">
@@ -98,14 +98,22 @@
                                 <div class="col-sm-2">
                                     <div class="form-group">
                                         <label for="session">Session</label>
-                                        <input id="session" name="session" class="form-control" placeholder="Enter Session" type="number" />
+                                        <input id="session" name="session" class="form-control" placeholder="Enter Session" type="number" style="padding-right: 0px"/>
                                     </div>
                                 </div>
                                 <div class="col-sm-2">
                                     <div class="form-group">
                                         <div class="form-group">
                                             <label for="image">Image</label>
-                                            <input class="form-control" name="image" type="number" step="1" id="image" placeholder="Image #"/>
+                                            <input class="form-control" name="image" type="number" step="1" id="image" placeholder="Image #" style="padding-right: 0px"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <div class="form-group">
+                                        <div class="form-group">
+                                            <label for="truck">Truck#</label>
+                                            <input class="form-control" name="truck" type="number" step="1" min="0" id="truck" value="0" style="padding-right: 0px" />
                                         </div>
                                     </div>
                                 </div>
@@ -119,11 +127,6 @@
                                 </div>
                             </div>
                         </form>
-
-
-
-
-
                 </div>
             </nav>
 
@@ -211,6 +214,10 @@
                         <input id="projectDate" name="date" class="form-control" placeholder="Choose Date (MM-DD-YY)" />
                     </div>
                     <div class="form-group">
+                        <label for="truck">Truck</label>
+                        <input id="truck" name="truck" class="form-control" placeholder="(Optional) Truck #" type="number" />
+                    </div>
+                    <div class="form-group">
                         <label for="session">Session</label>
                         <input id="session" name="session" class="form-control" placeholder="Enter Session" type="number" />
                     </div>
@@ -256,15 +263,17 @@
         return val;
     };
 
-    var imageUrl = function(dir,date,session,image){
-        return "http://storage.googleapis.com/tmap_pano/"+date
+    var imageUrl = function(dir,date,truck,session,image){
+        var dateTruck = (truck && parseInt(truck) > 0) ? date + pad("0",1,truck.toString()) : date;
+        var url = "http://storage.googleapis.com/tmap_pano/"+dateTruck
             +"/"+session
             +"/"+dir+"/ladybug_panoramic_"+pad("0",5,image+"")
             +".jpg";
+        return url;
     };
 
     var setHashLocation = function(data){
-        window.location.hash = '#/'+data.direction+'/date/'+data.date+'/session/'+data.session+'/image/'+data.image;
+        window.location.hash = '#/'+data.direction+'/date/'+data.date+'/truck/'+data.truck+'/session/'+data.session+'/image/'+data.image;
     }
 
     var loader = new Preloader();
@@ -292,7 +301,7 @@
             return obj;
         });
         form.addNameFillFilter('date',function(type,obj){
-            if(obj.value && obj.value.length === 6){
+            if(obj.value && obj.value.length >= 6){
                 var month = obj.value.substr(0,2);
                 var day  =obj.value.substr(2,2);
                 var yr = obj.value.substr(4,2);
@@ -303,10 +312,10 @@
 
         //setup the hash route
         var router = new HashRouter();
-        router.addPath("/{direction:[a-zA-Z]+}/date/{date:\\d+}/session/{session:\\d+}/image/{image:\\d+}",function(data){
+        router.addPath("/{direction:[a-zA-Z]+}/date/{date:\\d+}/truck/{truck:\\d+}/session/{session:\\d+}/image/{image:\\d+}",function(data){
             form.fill(data);
 
-            var url = imageUrl(data.direction,data.date,data.session,data.image);
+            var url = imageUrl(data.direction,data.date,data.truck,data.session,data.image);
 
             $loading.modal('show');
 
@@ -317,7 +326,7 @@
                     $img.fadeIn();
                 })
                 .fail(function(){
-                    alert('Failed to load image.  Please check the Date, Session, and Image are correct/valid.');
+                    alert('Failed to load image.  Please check the Date, Truck, Session, and Image are correct/valid.');
                 });
 
         });
@@ -444,7 +453,7 @@
 
             for(var x in images){
                 if(images[x] >= 0){
-                    urls.push(imageUrl(data.direction,data.date,data.session,images[x]));
+                    urls.push(imageUrl(data.direction,data.date,data.truck,data.session,images[x]));
                 }
             }
 
