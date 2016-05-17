@@ -239,6 +239,14 @@
 </div><!-- /.modal -->
 
 <script>
+    //redirect if this is the old style
+    var temp = new HashRouter();
+    temp.addPath("/{direction:[a-zA-Z]+}/date/{date:\\d+}/session/{session:\\d+}/image/{image:\\d+}",function(data){
+        window.location.hash = '#/'+data.direction+'/date/'+data.date+'/truck/0/session/'+data.session+'/image/'+data.image;
+    });
+    temp.evaluate(document.location.hash);
+
+
     var Preloader = function(){
         var $container = $(document.createElement('div')).hide();
         $('body').append($container);
@@ -330,6 +338,7 @@
                 });
 
         });
+
         router.noRoute = function(){
             $('#main-dialog').modal('show');
         };
