@@ -239,7 +239,9 @@
 </div><!-- /.modal -->
 
 <script>
-    //redirect if this is the old style
+    var DATE_FORMAT = null;
+
+    //redirect if this is the old style, meaning missing the "truck" attribute
     var temp = new HashRouter();
     temp.addPath("/{direction:[a-zA-Z]+}/date/{date:\\d+}/session/{session:\\d+}/image/{image:\\d+}",function(data){
         window.location.hash = '#/'+data.direction+'/date/'+data.date+'/truck/0/session/'+data.session+'/image/'+data.image;
@@ -271,9 +273,24 @@
         return val;
     };
 
+    var parseDate = function(fmt, date, truck){
+        //old format
+        if("MMDDYY" === fmt){
+            return date;
+
+        //new format YYMMDD
+        }else{
+            var month = date.substr(0,2);
+            var day  = date.substr(2,2);
+            var year = date.substr(4,2);
+            return year + month + day + pad("0",1,truck.toString());
+        }
+    };
+
     var imageUrl = function(dir,date,truck,session,image){
+        console.log(DATE_FORMAT,date,truck);
         var dateTruck = (truck && parseInt(truck) > 0) ? date + pad("0",1,truck.toString()) : date;
-        var url = "http://storage.googleapis.com/tmap_pano/"+dateTruck
+        var url = "http://storage.googleapis.com/tmap_pano/"+parseDate(DATE_FORMAT, date, truck)
             +"/"+session
             +"/"+dir+"/ladybug_panoramic_"+pad("0",5,image+"")
             +".jpg";
@@ -300,20 +317,26 @@
         //fix the date on the way in and out
         form.addNameExtractFilter('date',function(type,obj){
             if(obj.value && obj.value.length){
+
                 var parts = obj.value.split("/");
                 var month = parts[0];
                 var day = parts[1];
                 var yr = parts[2].substr(2);
                 obj.value = month + day + yr;
+
+                //obj.value = extractDate(DATE_FORMAT, obj.value);
             }
             return obj;
         });
         form.addNameFillFilter('date',function(type,obj){
             if(obj.value && obj.value.length >= 6){
+
                 var month = obj.value.substr(0,2);
                 var day  =obj.value.substr(2,2);
                 var yr = obj.value.substr(4,2);
                 obj.value = month+"/"+day+"/20"+yr;
+
+                //obj.value = fillDate(DATE_FORMAT, obj.value);
             }
             return obj;
         });
@@ -321,6 +344,9 @@
         //setup the hash route
         var router = new HashRouter();
         router.addPath("/{direction:[a-zA-Z]+}/date/{date:\\d+}/truck/{truck:\\d+}/session/{session:\\d+}/image/{image:\\d+}",function(data){
+
+            DATE_FORMAT = (parseInt(data.truck) === 0) ? 'MMDDYY' : 'YYMMDD';
+
             form.fill(data);
 
             var url = imageUrl(data.direction,data.date,data.truck,data.session,data.image);
@@ -349,6 +375,11 @@
             $('#no-data-form').forms(function(f){
                 var data = f.extract();
                 data.date = data.date.replace(/-/g,'');
+
+                if(!data.truck){
+                    data.truck = 0;
+                }
+
                 setHashLocation(data);
                 $('#main-dialog').modal('hide');
             });
