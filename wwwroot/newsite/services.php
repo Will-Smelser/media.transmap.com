@@ -62,13 +62,33 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-3">
             <div class="panel panel-default">
                 <div class="panel-heading"><b>LCMS Processing Suite</b></div>
                 <div class="panel-body">
 
                     <a  class="image-link" href="images/services/large/lcms/LCMS-Processing-Suite-Screenshot.png" target="_blank">
                         <img src="images/services/small/lcms/LCMS-Processing-Suite-Screenshot.png" />
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><b>Intelligent Crack Index</b></div>
+                <div class="panel-body">
+                    <a  class="image-link" href="images/services/large/Intelligent-Crack-Index.jpg" target="_blank">
+                        <img src="images/services/small/Intelligent-Crack-Index.jpg" />
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><b>Cross Slope Data</b></div>
+                <div class="panel-body">
+                    <a  class="image-link" href="images/services/large/slope-data.jpg" target="_blank">
+                        <img src="images/services/small/slope-data.jpg" />
                     </a>
                 </div>
             </div>
@@ -123,6 +143,12 @@
             <a class="image-link" href="images/services/large/LiDAR-wide.jpg" target="_blank">
                 <img src="images/services/small/LiDAR-wide.jpg" class="img-thumbnail mleft">
             </a>
+            <a class="image-link" href="images/services/large/pavement-sipping-lidar.png" target="_blank">
+                <img src="images/services/small/pavement-sipping-lidar.png" class="img-thumbnail mleft">
+            </a>
+            <a class="image-link" href="images/services/large/sidewalk-lidar.jpg" target="_blank">
+                <img src="images/services/small/sidewalk-lidar.jpg" class="img-thumbnail mleft">
+            </a>
         </div>
         <div class="col-lg-12">
             <h3>Ladybug5: 30MP Panoramic Images</h3>
@@ -152,17 +178,14 @@
             </p>
 
             <div>
-                <a class="image-link" href="images/services/large/pavement-mgt-map-1.jpg" target="_blank">
-                    <img src="images/services/small/pavement-mgt-map-1.jpg" class="img-thumbnail" />
+                <a class="image-link" href="images/services/large/EvansvilleACHoldPCI.jpg" target="_blank">
+                    <img src="images/services/small/EvansvilleACHoldPCI.jpg" class="img-thumbnail" />
                 </a>
-                <a class="image-link" href="images/services/large/pavement-mgt-map-2.jpg" target="_blank">
-                    <img src="images/services/small/pavement-mgt-map-2.jpg" class="img-thumbnail mleft" />
+                <a class="image-link" href="images/services/large/EvansvilleACMajor.jpg" target="_blank">
+                    <img src="images/services/small/EvansvilleACMajor.jpg" class="img-thumbnail mleft" />
                 </a>
-                <a class="image-link" href="images/services/large/pavement-mgt-map-3.jpg" target="_blank">
-                    <img src="images/services/small/pavement-mgt-map-3.jpg" class="img-thumbnail mleft" />
-                </a>
-                <a class="image-link" href="images/services/large/pavement-mgt-map-4.jpg" target="_blank">
-                    <img src="images/services/small/pavement-mgt-map-4.jpg" class="img-thumbnail mleft" />
+                <a class="image-link" href="images/services/large/EvansvillePCCHoldPCI.jpg" target="_blank">
+                    <img src="images/services/small/EvansvillePCCHoldPCI.jpg" class="img-thumbnail mleft" />
                 </a>
             </div>
 
@@ -171,15 +194,15 @@
 
     <h2>Asset Management</h2>
     <p>
-        We have been collecting roadway assets for over 20 years with the ability to inventory the assets that provide cost savings for our customers.  Some of these assets include traffic signs, traffic signals and poles, sidewalks, curbs, manholes, water valves, parking meters, hydrants, power vaults, gas valves, survey monuments, catch basins, light poles, drop inlets, pavement markings, guide rails, culverts, ditches, speed zones, school zones, cross walks, and street trees.
+        We have been collecting roadway assets for over 22 years with the ability to inventory the assets that provide cost savings for our customers.  Some of these assets include traffic signs, traffic signals and poles, sidewalks, curbs, manholes, water valves, parking meters, hydrants, power vaults, gas valves, survey monuments, catch basins, light poles, drop inlets, pavement markings, guide rails, culverts, ditches, speed zones, school zones, cross walks, and street trees.
     </p>
     <div class="row text-center">
         <div class="col-lg-4">
             <div class="panel panel-default">
             <div class="panel-heading"><b>Existing Sidewalks</b></div>
             <div class="panel-body">
-                <a class="image-link" target="_blank" href="images/services/large/asset-mgt-map-1.jpg">
-                    <img src="images/services/small/asset-mgt-map-1.jpg" />
+                <a class="image-link" target="_blank" href="images/services/large/StMarysExistingSidewalks.jpg">
+                    <img src="images/services/small/StMarysExistingSidewalks.jpg" />
                 </a>
             </div>
             </div>
@@ -188,14 +211,47 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><b>Missing Sidewalks</b></div>
                 <div class="panel-body">
-                    <a class="image-link" target="_blank" href="images/services/large/asset-mgt-map-2.jpg">
-                        <img src="images/services/small/asset-mgt-map-2.jpg" />
+                    <a class="image-link" target="_blank" href="images/services/large/StMarysSidewalkDoesNotExist.jpg">
+                        <img src="images/services/small/StMarysSidewalkDoesNotExist.jpg" />
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="row">
+        <h3>Trail and Bikeway Inventory</h3>
+        <div class="col-lg-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><b>Trail and Bikeway LiDAR</b></div>
+                <div class="panel-body">
+                    <a class="image-link" target="_blank" href="images/services/large/Trail-and-Bikeway-LiDAR.jpg">
+                        <img src="images/services/small/Trail-and-Bikeway-LiDAR.jpg" />
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><b>Trail and Bikeway Motorcycle</b></div>
+                <div class="panel-body">
+                    <a class="image-link" target="_blank" href="images/services/large/Trail-and-Bikeway-Motorcycle.jpg">
+                        <img src="images/services/small/Trail-and-Bikeway-Motorcycle.jpg" />
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><b>Front View Motorcycle</b></div>
+                <div class="panel-body">
+                    <a class="image-link" target="_blank" href="images/services/large/Trail-Front-View-Motorcycle.jpg">
+                        <img src="images/services/small/Trail-Front-View-Motorcycle.jpg" />
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-lg-5">
@@ -247,13 +303,13 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="img-thumbnail">
-                <a class="image-link mleft" target="_blank" href="images/services/large/web-gis-1.jpg">
-                    <img src="images/services/small/web-gis-1.jpg" />
+                <a class="image-link mleft" target="_blank" href="images/services/large/Online-Panoramic-Image-Viewer.jpg">
+                    <img src="images/services/small/Online-Panoramic-Image-Viewer.jpg" />
                 </a>
             </div>
             <div class="img-thumbnail mleft">
-                <a class="image-link mleft" target="_blank" href="images/services/large/lcms-viewer.jpg">
-                    <img src="images/services/small/lcms-viewer.jpg" />
+                <a class="image-link mleft" target="_blank" href="images/services/large/lcms-viewer-lines.jpg">
+                    <img src="images/services/small/lcms-viewer-lines.jpg" />
                 </a>
             </div>
             <div class="img-thumbnail mleft">
