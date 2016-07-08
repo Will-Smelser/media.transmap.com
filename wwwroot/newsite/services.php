@@ -25,7 +25,7 @@
 
     <div class="row">
         <div class="col-lg-7">
-            <h2>NEW Laser Crack Measurement System (LCMS)</h2>
+            <h2>Laser Crack Measurement System (LCMS)</h2>
             <p>Transmap’s ON-SIGHT vehicle is equipped with the newest Pavemetrics
                 Laser Crack Measurement System (LCMS), which uses laser line
                 projectors, high speed cameras, and advanced optics to acquire high
@@ -44,7 +44,7 @@
         <div class="col-lg-12">
             <p>
             The 3D/2D images produced by the LCMS have the ability to show depths, rutting wheel paths, drop offs at the
-            edge of pavement, and depths of cracks not just widths. The roadway surface model is still in Beta format.
+            edge of pavement, and depths of cracks - not just widths.
             </p>
         </div>
     </div>
@@ -143,8 +143,8 @@
             <a class="image-link" href="images/services/large/LiDAR-wide.jpg" target="_blank">
                 <img src="images/services/small/LiDAR-wide.jpg" class="img-thumbnail mleft">
             </a>
-            <a class="image-link" href="images/services/large/pavement-sipping-lidar.png" target="_blank">
-                <img src="images/services/small/pavement-sipping-lidar.png" class="img-thumbnail mleft">
+            <a class="image-link" href="images/services/large/OSU-LiDAR.png" target="_blank">
+                <img src="images/services/small/OSU-LiDAR.png" class="img-thumbnail mleft">
             </a>
             <a class="image-link" href="images/services/large/sidewalk-lidar.jpg" target="_blank">
                 <img src="images/services/small/sidewalk-lidar.jpg" class="img-thumbnail mleft">
@@ -179,7 +179,7 @@
 
             <div>
                 <a class="image-link" href="images/services/large/EvansvilleACHoldPCI.jpg" target="_blank">
-                    <img src="images/services/small/EvansvilleACHoldPCI.jpg" class="img-thumbnail" />
+                    <img src="images/services/small/EvansvilleACHoldPCI.jpg" class="img-thumbnail mleft" width="152" />
                 </a>
                 <a class="image-link" href="images/services/large/EvansvilleACMajor.jpg" target="_blank">
                     <img src="images/services/small/EvansvilleACMajor.jpg" class="img-thumbnail mleft" />
@@ -194,7 +194,11 @@
 
     <h2>Asset Management</h2>
     <p>
-        We have been collecting roadway assets for over 22 years with the ability to inventory the assets that provide cost savings for our customers.  Some of these assets include traffic signs, traffic signals and poles, sidewalks, curbs, manholes, water valves, parking meters, hydrants, power vaults, gas valves, survey monuments, catch basins, light poles, drop inlets, pavement markings, guide rails, culverts, ditches, speed zones, school zones, cross walks, and street trees.
+        We have been collecting roadway assets for over 22 years with the ability to inventory the assets that provide cost savings for our customers.
+        Some of these assets include traffic signs, traffic signals and poles, sidewalks, curbs, manholes, water valves, parking meters, hydrants,
+        power vaults, gas valves, survey monuments, catch basins, light poles,
+        drop inlets, pavement markings, guide rails, culverts, ditches, speed zones, school zones, cross walks, and street trees.
+        Transmap also uses street level orthophotography, which is a valuable tool for roadway asset extraction.
     </p>
     <div class="row text-center">
         <div class="col-lg-4">
@@ -220,10 +224,43 @@
     </div>
 
     <div class="row">
-        <h3>Trail and Bikeway Inventory</h3>
+        <div class="col-lg-12">
+            <h3>Street Level Orthophotography</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="img-thumbnail">
+                <a class="image-link mleft" target="_blank" href="images/services/large/StreetLevel_Ortho_1.jpg">
+                    <img src="images/services/small/StreetLevel_Ortho_1.jpg" />
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="img-thumbnail">
+                <a class="image-link mleft" target="_blank" href="images/services/large/StreetLevel_Ortho_2.jpg">
+                    <img src="images/services/small/StreetLevel_Ortho_2.jpg" />
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="img-thumbnail">
+                <a class="image-link mleft" target="_blank" href="images/services/large/StreetLevel_Ortho_3.jpg">
+                    <img src="images/services/small/StreetLevel_Ortho_3.jpg" />
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h3>Trail and Bikeway Inventory</h3>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-lg-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><b>Trail and Bikeway LiDAR</b></div>
+                <div class="panel-heading text-center"><b>Trail and Bikeway LiDAR</b></div>
                 <div class="panel-body">
                     <a class="image-link" target="_blank" href="images/services/large/Trail-and-Bikeway-LiDAR.jpg">
                         <img src="images/services/small/Trail-and-Bikeway-LiDAR.jpg" />
@@ -233,7 +270,7 @@
         </div>
         <div class="col-lg-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><b>Trail and Bikeway Motorcycle</b></div>
+                <div class="panel-heading text-center"><b>Trail and Bikeway Motorcycle</b></div>
                 <div class="panel-body">
                     <a class="image-link" target="_blank" href="images/services/large/Trail-and-Bikeway-Motorcycle.jpg">
                         <img src="images/services/small/Trail-and-Bikeway-Motorcycle.jpg" />
@@ -243,7 +280,7 @@
         </div>
         <div class="col-lg-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><b>Front View Motorcycle</b></div>
+                <div class="panel-heading text-center"><b>Front View Motorcycle</b></div>
                 <div class="panel-body">
                     <a class="image-link" target="_blank" href="images/services/large/Trail-Front-View-Motorcycle.jpg">
                         <img src="images/services/small/Trail-Front-View-Motorcycle.jpg" />
@@ -254,24 +291,26 @@
     </div>
 
     <div class="row">
-        <div class="col-lg-5">
+        <div class="col-lg-12">
             <h3>Sign Inventory</h3>
             <p>
                 Through our technology and our expert employees, Transmap can meet and exceed the data requirements for the condition assessment of all signs.  These services include, but are not limited to: Sign location (within 1 meter), sign orientation, sign position, MUTCD code, standard width and height, sign structure, post structure condition, sign condition, etc.
             </p>
         </div>
-
-        <div class="col-lg-7">
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
             <div class="panel panel-default text-center">
                 <div class="panel-heading"><b>Images and LiDAR Representation</b></div>
                 <div style="display: inline-block;padding:10px;">
-                    <a class="image-link" target="_blank" href="images/services/large/sign-inventory-1.jpg">
-                        <img src="images/services/small/sign-inventory-1.jpg" />
+                    <a class="image-link" target="_blank" href="images/services/large/Sign_Inventory2.jpg">
+                        <img src="images/services/small/Sign_Inventory2.jpg" />
                     </a>
                 </div>
+
                 <div style="display: inline-block;padding:10px;">
-                    <a class="image-link" target="_blank" href="images/services/large/sign-inventory-2.jpg">
-                        <img src="images/services/small/sign-inventory-2.jpg" />
+                    <a class="image-link" target="_blank" href="images/services/large/Sign_Inventory_3.jpg">
+                        <img src="images/services/small/Sign_Inventory_3.jpg" />
                     </a>
                 </div>
             </div>
@@ -298,7 +337,7 @@
 
     <h2>Web GIS <img src="images/services/web-gis-collector-app.png" title="Web GIS Collector App" /></h2>
     <p>
-        Transmap has been a Public Works Solutions Partner with Esri for over 20 years.  We are extremely well-versed in Geographic Information Systems (GIS), and how to best utilize GIS tools in the infrastructure management needs of our customers. With an increasingly changing software environment, Transmap’s open source policy allows for data to be seamlessly implemented into dozens of software systems.
+        Transmap has been a Public Works Solutions Partner with Esri for over 22 years.  We are extremely well-versed in Geographic Information Systems (GIS), and how to best utilize GIS tools in the infrastructure management needs of our customers. With an increasingly changing software environment, Transmap’s open source policy allows for data to be seamlessly implemented into dozens of software systems.
     </p>
     <div class="row">
         <div class="col-lg-12">
