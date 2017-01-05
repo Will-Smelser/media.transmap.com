@@ -23,8 +23,8 @@
     <h3>Corporate Headquarters</h3>
     <p>
         <a target="_blank" href="http://maps.google.com/?q=3366 Riverside Drive, Columbus Ohio, 43221">
-            3366 Riverside Dr., Suite 103<br/>
-            Upper Arlington, OH 43221<br/>
+            5030 Transamerica Drive<br/>
+            Columbus, OH 43228<br/>
             (P) 614.481.6799<br/>
             (F) 614.481.4017<br/>
             </a>
