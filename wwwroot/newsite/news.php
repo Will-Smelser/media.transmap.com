@@ -46,10 +46,9 @@
     <div class="row">
         <h1>Recent News</h1>
         <div class="col-md-6">
-            <h3>City of Dublin, Ohio Project</h3>
-            <div style="width:510px;height: 321px; position: relative;">
-                <div id="10tvLoading" style="position: absolute;z-index: 1">Loading...</div>
-                <iframe id="10tvMovie" style="position: absolute;z-index: 2;display: none;" width="510" height="321" frameborder="0" allowfullscreen scrolling="no"></iframe>
+            <h3>City of Midland, Texas Project</h3>
+            <div style="position: relative;">
+               <script type='text/javascript' src='http://KWES.images.worldnow.com/interface/js/WNVideo.js?rnd=379111316;hostDomain=www.newswest9.com;playerWidth=510;playerHeight=321;isShowIcon=true;clipId=13361380;flvUri=;partnerclipid=;adTag=News;advertisingZone=;enableAds=true;landingPage=;islandingPageoverride=;playerType=STANDARD_EMBEDDEDscript;controlsType=overlay'></script><a href="http://www.newswest9.com" title="KWES  NewsWest 9 / Midland, Odessa, Big Spring, TX: newswest9.com">KWES  NewsWest 9 / Midland, Odessa, Big Spring, TX: newswest9.com</a>
             </div>
 
             <h3>City of Evansville, IN MPO Project</h3>
