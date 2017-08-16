@@ -24,9 +24,9 @@
 
 
     <div class="row">
-        <div class="col-lg-7">
+        <div class="col-lg-4">
             <h2>Laser Crack Measurement System (LCMS)</h2>
-            <p>Transmap’s ON-SIGHT vehicle is equipped with the newest Pavemetrics
+            <p>Transmap’s ON-SIGHT vehicles is equipped with the newest Pavemetrics
                 Laser Crack Measurement System (LCMS), which uses laser line
                 projectors, high speed cameras, and advanced optics to acquire high
                 resolution 3D profiles of the road.</p>
@@ -37,6 +37,11 @@
         <div class="col-lg-2">
             <a  class="image-link" href="images/services/large/lcms/LCMS_van-back.jpg" target="_blank">
                 <img src="images/services/small/lcms/LCMS_van-back.jpg" class="img-thumbnail" />
+            </a>
+        </div>
+        <div class="col-lg-3">
+            <a  class="image-link" href="images/services/large/lcms/PickUp_Truck_LCMS.JPG" target="_blank">
+                <img src="images/services/small/lcms/PickUp_Truck_LCMS.JPG" class="img-thumbnail" />
             </a>
         </div>
     </div>
@@ -121,7 +126,7 @@
         <div class="col-lg-12">
             <h3>Dual Systems - Both Directions</h3>
             <div class="panel panel-default">
-                <div class="panel-heading text-center"><b>12 Total Asset Cameras - 2 HD LiDAR Solutions</b></div>
+                <div class="panel-heading text-center"><b>360° panoramic images - HD LiDAR Solutions</b></div>
                 <div class="panel-body">
                     <div class="row text-center">
                         <div class="col-xs-6">
@@ -139,12 +144,15 @@
             </div>
         </div>
         <div class="col-lg-12">
-            <h3>Velodyne LiDAR: Over One Million Points Per Second Captured</h3>
+            <h3>Velodyne LiDAR</h3>
             <a class="image-link" href="images/services/large/LiDAR-wide.jpg" target="_blank">
                 <img src="images/services/small/LiDAR-wide.jpg" class="img-thumbnail mleft">
             </a>
             <a class="image-link" href="images/services/large/OSU-LiDAR.png" target="_blank">
                 <img src="images/services/small/OSU-LiDAR.png" class="img-thumbnail mleft">
+            </a>
+             <a class="image-link" href="images/services/large/LiDAR.png" target="_blank">
+                <img src="images/services/small/LiDAR.png" class="img-thumbnail mleft">
             </a>
             <a class="image-link" href="images/services/large/sidewalk-lidar.jpg" target="_blank">
                 <img src="images/services/small/sidewalk-lidar.jpg" class="img-thumbnail mleft">

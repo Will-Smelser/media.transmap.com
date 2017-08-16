@@ -46,9 +46,9 @@
     <div class="row">
         <h1>Recent News</h1>
         <div class="col-md-6">
-            <h3>City of Midland, Texas Project</h3>
-            <div style="position: relative;">
-               <script type='text/javascript' src='http://KWES.images.worldnow.com/interface/js/WNVideo.js?rnd=379111316;hostDomain=www.newswest9.com;playerWidth=510;playerHeight=321;isShowIcon=true;clipId=13361380;flvUri=;partnerclipid=;adTag=News;advertisingZone=;enableAds=true;landingPage=;islandingPageoverride=;playerType=STANDARD_EMBEDDEDscript;controlsType=overlay'></script><a href="http://www.newswest9.com" title="KWES  NewsWest 9 / Midland, Odessa, Big Spring, TX: newswest9.com">KWES  NewsWest 9 / Midland, Odessa, Big Spring, TX: newswest9.com</a>
+            <h3>Transmap Trail Mapping in Washington State</h3>
+            <div>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/XxsqIxmb5z4" frameborder="0" allowfullscreen></iframe>
             </div>
 
             <h3>City of Evansville, IN MPO Project</h3>
